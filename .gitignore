@@ -1,0 +1,172 @@
+# =========================
+# Flutter / Dart
+# =========================
+.dart_tool/
+.packages
+.package_config.json
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+.flutter-versions
+.pub-cache/
+.pub/
+build/
+coverage/
+flutter_*.png
+*.stamp
+**/.last_build_id
+lib/generated_plugin_registrant.dart
+
+# Environment / Secrets
+.env
+.env.*
+*.keystore
+*.jks
+*.p12
+*.p8
+*.pem
+*.key
+*.crt
+*.der
+*.cer
+*.mobileprovision
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+**/firebase_app_id_file.json
+**/google-services.json
+**/GoogleService-Info.plist
+
+# =========================
+# Android
+# =========================
+**/android/.gradle/
+**/android/captures/
+**/android/local.properties
+**/android/**/build/
+**/android/*.iml
+**/android/**/generated/
+**/android/**/out/
+**/android/**/intermediates/
+**/android/**/release/
+**/android/**/debug/
+**/android/**/profile/
+**/android/**/gradle-app.setting
+**/android/**/.cxx/
+
+# Signing / Play artifacts
+**/android/key.properties
+**/android/app/*.jks
+**/android/app/release/*.apk
+**/android/app/release/*.aab
+**/android/app/outputs/
+
+# =========================
+# iOS
+# =========================
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/Flutter.framework/
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/App.framework/
+**/ios/.generated/
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/build/
+**/ios/DerivedData/
+**/ios/*.mode1v3
+**/ios/*.mode2v3
+**/ios/*.perspectivev3
+**/ios/*sync/
+**/ios/.DS_Store
+**/ios/*.moved-aside
+**/ios/*.pbxuser
+**/ios/*.xccheckout
+**/ios/*.xcscmblueprint
+**/ios/*.xcuserstate
+**/ios/xcodeproj/*.xcworkspace/xcuserdata/
+**/ios/Runner.xcworkspace/xcuserdata/
+**/ios/Runner.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+
+# CocoaPods lock (optional: remove to commit lockfile)
+**/ios/Podfile.lock
+
+# =========================
+# macOS
+# =========================
+**/macos/Pods/
+**/macos/.symlinks/
+**/macos/Flutter/ephemeral/
+**/macos/Flutter/Flutter-Debug.xcconfig
+**/macos/Flutter/Flutter-Release.xcconfig
+**/macos/build/
+**/macos/DerivedData/
+**/macos/*.xcuserstate
+**/macos/*.xcworkspace/xcuserdata/
+
+# =========================
+# Windows
+# =========================
+**/windows/flutter/ephemeral/
+**/windows/**/CMakeFiles/
+**/windows/**/CMakeCache.txt
+**/windows/**/cmake_install.cmake
+**/windows/**/Makefile
+**/windows/**/*.user
+**/windows/**/build/
+
+# =========================
+# Linux
+# =========================
+**/linux/flutter/ephemeral/
+**/linux/**/CMakeFiles/
+**/linux/**/CMakeCache.txt
+**/linux/**/cmake_install.cmake
+**/linux/**/Makefile
+**/linux/**/build/
+
+# =========================
+# Web
+# =========================
+**/web/.firebase/
+**/web/.dart_tool/
+**/web/build/
+
+# =========================
+# IDE / Editors
+# =========================
+# Android Studio / IntelliJ
+*.iml
+.idea/
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/gradle.xml
+.idea/**/libraries/
+.idea/**/caches/
+.idea/**/assetWizardSettings.xml
+.idea/**/dictionaries
+.idea/**/shelf/
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+.history/
+
+# Xcode
+*.xcuserdatad/
+*.xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# macOS / General OS noise
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
