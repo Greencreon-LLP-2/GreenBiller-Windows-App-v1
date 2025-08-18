@@ -47,13 +47,19 @@ class PurchaseReturnPage extends HookConsumerWidget {
     }, [itemsList.value]);
 
     void getItemDataById() async {
-      isLoadingDate.value = true;
-      currentPurchaseData.value = await PurchaseViewService()
-          .getPurchaseViewByIdService(accessToken!, purcahseId);
-      if (currentPurchaseData.value != null) {
-        itemsList.value = currentPurchaseData.value!.items;
+      try {
+        isLoadingDate.value = true;
+        currentPurchaseData.value = await PurchaseViewService()
+            .getPurchaseViewByIdService(accessToken!, purcahseId);
+        if (currentPurchaseData.value != null) {
+          itemsList.value = currentPurchaseData.value!.items;
+          print(currentPurchaseData.value!.items.length);
+        }
+      } catch (e) {
+        print(e);
+      } finally {
+        isLoadingDate.value = false;
       }
-      isLoadingDate.value = false;
     }
 
     useEffect(() {

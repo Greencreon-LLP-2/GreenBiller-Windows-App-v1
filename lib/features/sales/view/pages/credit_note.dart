@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
-import 'package:green_biller/features/item/model/credit_note_model.dart';
+import 'package:green_biller/features/item/model/credit_note/credit_note_model.dart';
 import 'package:green_biller/features/item/view/pages/add_credit_note_items_page.dart';
 import 'package:green_biller/features/store/controllers/view_parties_controller.dart';
 import 'package:green_biller/features/store/controllers/view_store_controller.dart';

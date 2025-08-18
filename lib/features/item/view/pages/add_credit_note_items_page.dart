@@ -3,7 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
 import 'package:green_biller/features/item/controller/view_all_items_controller.dart';
-import 'package:green_biller/features/item/model/credit_note_model.dart';
+import 'package:green_biller/features/item/model/credit_note/credit_note_model.dart';
 import 'package:green_biller/features/item/model/item/item_model.dart';
 import 'package:green_biller/features/sales/view/pages/credit_note.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

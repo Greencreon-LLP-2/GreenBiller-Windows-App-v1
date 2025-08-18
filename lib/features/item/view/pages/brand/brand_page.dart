@@ -59,19 +59,6 @@ class BrandPage extends HookConsumerWidget {
       return null;
     }, [accessToken]);
 
-    final brands = useState<List<String>>([
-      // 'Nike',
-      // 'Adidas',
-      // 'Apple',
-      // 'Samsung',
-      // 'Sony',
-      // 'LG',
-      // 'Dell',
-      // 'HP',
-      // 'Lenovo',
-      // 'Asus',
-    ]);
-
     final isDesktop = MediaQuery.of(context).size.width > 1024;
     final isTablet = MediaQuery.of(context).size.width > 600;
 

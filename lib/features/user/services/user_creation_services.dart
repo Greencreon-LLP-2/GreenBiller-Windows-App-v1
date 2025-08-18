@@ -67,9 +67,11 @@ class UserCreationServices {
         final json = jsonDecode(response.body);
         return StoreUsersResponse.fromJson(json);
       } else {
+        print(response.body);
         throw Exception('Failed to fetch store users: ${response.statusCode}');
       }
-    } catch (e) {
+    } catch (e,stack) {
+      print(stack);
       throw Exception('Error fetching store users: $e');
     }
   }

@@ -1,7 +1,7 @@
 # Make file names absolute:
 #
-get_filename_component(filename "/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-linux-x64.tgz" ABSOLUTE)
-get_filename_component(directory "/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-src" ABSOLUTE)
+get_filename_component(filename "/home/hp/Documents/GitHub/GreenBiller-Windows-App-v1/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-linux-x64.tgz" ABSOLUTE)
+get_filename_component(directory "/home/hp/Documents/GitHub/GreenBiller-Windows-App-v1/build/linux/x64/debug/pdfium-src" ABSOLUTE)
 
 message(STATUS "extracting...
      src='${filename}'

@@ -54,35 +54,37 @@ class PurcahseSingleAllDeatils {
   });
 
   factory PurcahseSingleAllDeatils.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] ?? json; // handle both wrapped and direct
+
     return PurcahseSingleAllDeatils(
-      id: json['id'] ?? 0,
-      userId: json['user_id']?.toString(),
-      storeId: json['store_id']?.toString(),
-      warehouseId: json['warehouse_id']?.toString(),
-      purchaseCode: json['purchase_code']?.toString(),
-      referenceNo: json['reference_no']?.toString(),
-      purchaseDate: json['purchase_date']?.toString(),
-      supplierId: json['supplier_id']?.toString(),
-      subtotal: json['subtotal']?.toString(),
-      roundOff: json['round_off']?.toString(),
-      grandTotal: json['grand_total']?.toString(),
-      purchaseNote: json['purchase_note']?.toString(),
-      paymentStatus: json['payment_status']?.toString(),
-      paidAmount: json['paid_amount']?.toString() ?? '0',
-      companyId: json['company_id']?.toString(),
-      status: json['status']?.toString(),
-      returnBit: json['return_bit']?.toString(),
-      createdBy: json['created_by']?.toString(),
-      createdAt: json['created_at']?.toString(),
-      updatedAt: json['updated_at']?.toString(),
-      supplierName: json['supplier']?['supplier_name']?.toString(),
-      warehouseName: json['warehouse']?['warehouse_name']?.toString(),
-      storeName: json['store']?['store_name']?.toString(),
-      items: (json['items'] as List?)
+      id: data['id'] ?? 0,
+      userId: data['user_id']?.toString(),
+      storeId: data['store_id']?.toString(),
+      warehouseId: data['warehouse_id']?.toString(),
+      purchaseCode: data['purchase_code']?.toString(),
+      referenceNo: data['reference_no']?.toString(),
+      purchaseDate: data['purchase_date']?.toString(),
+      supplierId: data['supplier_id']?.toString(),
+      subtotal: data['subtotal']?.toString(),
+      roundOff: data['round_off']?.toString(),
+      grandTotal: data['grand_total']?.toString(),
+      purchaseNote: data['purchase_note']?.toString(),
+      paymentStatus: data['payment_status']?.toString(),
+      paidAmount: data['paid_amount']?.toString() ?? '0',
+      companyId: data['company_id']?.toString(),
+      status: data['status']?.toString(),
+      returnBit: data['return_bit']?.toString(),
+      createdBy: data['created_by']?.toString(),
+      createdAt: data['created_at']?.toString(),
+      updatedAt: data['updated_at']?.toString(),
+      supplierName: data['supplier']?['supplier_name']?.toString(),
+      warehouseName: data['warehouse']?['warehouse_name']?.toString(),
+      storeName: data['store']?['store_name']?.toString(),
+      items: (data['items'] as List?)
               ?.map((item) => PurchaseItem.fromJson(item))
               .toList() ??
           [],
-      payments: (json['payments'] as List?)
+      payments: (data['payments'] as List?)
               ?.map((payment) => PurchasePayment.fromJson(payment))
               .toList() ??
           [],

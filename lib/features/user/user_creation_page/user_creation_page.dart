@@ -5,7 +5,7 @@ import 'package:green_biller/core/constants/gloabl_utils.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
 import 'package:green_biller/features/item/controller/add_category_controller.dart';
 import 'package:green_biller/features/user/services/user_creation_services.dart';
-import 'package:green_biller/features/user/store_user_provider.dart';
+import 'package:green_biller/core/global_providers/store_user_provider.dart';
 import 'package:green_biller/utils/custom_appbar.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -115,7 +115,6 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
   @override
   Widget build(BuildContext context) {
     final usersAsync = ref.watch(storeUsersProvider);
-    print(usersAsync.value?.total);
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: GradientAppBar(
@@ -866,6 +865,7 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
     // ========== RESPONSE HANDLING ==========
 
     if (response == "sucess") {
+      ref.refresh(storeUsersProvider);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('New user created successfully'),

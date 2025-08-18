@@ -1,8 +1,8 @@
-# Install script for directory: /home/hp/Documents/GitHub/GreenBiller_Windows_v1/linux/flutter/ephemeral/.plugin_symlinks/url_launcher_linux/linux
+# Install script for directory: /home/hp/Documents/GitHub/GreenBiller-Windows-App-v1/linux/flutter/ephemeral/.plugin_symlinks/url_launcher_linux/linux
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/bundle")
+  set(CMAKE_INSTALL_PREFIX "/home/hp/Documents/GitHub/GreenBiller-Windows-App-v1/build/linux/x64/debug/bundle")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

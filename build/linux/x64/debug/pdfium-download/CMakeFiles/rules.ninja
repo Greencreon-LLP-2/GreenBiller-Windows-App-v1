@@ -23,7 +23,7 @@ rule CUSTOM_COMMAND
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = /usr/bin/cmake --regenerate-during-build -S/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download -B/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download
+  command = /usr/bin/cmake --regenerate-during-build -S/home/hp/Documents/GitHub/GreenBiller-Windows-App-v1/build/linux/x64/debug/pdfium-download -B/home/hp/Documents/GitHub/GreenBiller-Windows-App-v1/build/linux/x64/debug/pdfium-download
   description = Re-running CMake...
   generator = 1
 

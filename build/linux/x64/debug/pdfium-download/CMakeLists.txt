@@ -13,8 +13,8 @@ endif()
 
 ExternalProject_Add(pdfium-download
                     URL;https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/5200/pdfium-linux-x64.tgz
-                    SOURCE_DIR          "/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-src"
-                    BINARY_DIR          "/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-build"
+                    SOURCE_DIR          "/home/hp/Documents/GitHub/GreenBiller-Windows-App-v1/build/linux/x64/debug/pdfium-src"
+                    BINARY_DIR          "/home/hp/Documents/GitHub/GreenBiller-Windows-App-v1/build/linux/x64/debug/pdfium-build"
                     CONFIGURE_COMMAND   ""
                     BUILD_COMMAND       ""
                     INSTALL_COMMAND     ""

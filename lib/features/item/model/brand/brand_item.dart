@@ -35,29 +35,22 @@ class BrandItem {
 class ViewBrandController {
   final String accessToken;
   ViewBrandController({required this.accessToken});
-
   Future<List<BrandItem>> viewBrandController() async {
     try {
       final viewBrandService = ViewBrandService(accessToken: accessToken);
       final brandModel = await viewBrandService.viewBrand();
       final List<BrandItem> brandList = [];
-
       if (brandModel.data != null) {
         for (var brand in brandModel.data!) {
-          if (brand.id != null &&
-              brand.brandName != null &&
-              brand.storeId != null) {
-            brandList.add(BrandItem(
-              id: brand.id!,
-              brandName: brand.brandName!,
-              storeId: brand.storeId!,
-            ));
-          }
+          brandList.add(BrandItem(
+            id: brand.id ?? 0,
+            brandName: brand.brandName ?? '',
+            storeId: brand.storeId ?? '',
+          ));
         }
       }
       return brandList;
     } catch (e) {
-      print('Error in viewBrandController: $e');
       throw Exception('Failed to load brands: $e');
     }
   }

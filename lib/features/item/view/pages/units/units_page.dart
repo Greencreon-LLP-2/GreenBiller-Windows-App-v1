@@ -11,6 +11,8 @@ import 'package:green_biller/features/store/model/store_model/store_model.dart'
     as store_model;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+final refreshTriggerProvider = StateProvider<int>((ref) => 0);
+
 class UnitsPage extends HookConsumerWidget {
   const UnitsPage({super.key});
 
@@ -19,6 +21,7 @@ class UnitsPage extends HookConsumerWidget {
     final user = ref.watch(userProvider);
     final accessToken = user?.accessToken;
     final isLoading = useState(false);
+
     if (accessToken == null) {
       return const Scaffold(
         body: Center(
@@ -187,271 +190,286 @@ class UnitsPage extends HookConsumerWidget {
 
                     // Table Content
                     Expanded(
-                      child: FutureBuilder<UnitModel>(
-                        future: viewUnitController.getUnitData(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                              child: CircularProgressIndicator(
-                                color: accentColor,
-                              ),
-                            );
-                          }
-
-                          if (snapshot.hasError) {
-                            return Center(
-                              child: Text(
-                                'Error: ${snapshot.error}',
-                                style: const TextStyle(color: Colors.red),
-                              ),
-                            );
-                          }
-
-                          if (!snapshot.hasData ||
-                              snapshot.data?.data == null ||
-                              snapshot.data!.data!.isEmpty) {
-                            return const Center(
-                              child: Text(
-                                'No units found',
-                                style: TextStyle(
-                                  color: textSecondaryColor,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            );
-                          }
-
-                          return ListView.builder(
-                            itemCount: snapshot.data!.data!.length,
-                            itemBuilder: (context, index) {
-                              final unit = snapshot.data!.data![index];
-                              const unitStatus = true;
-                              return Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: const BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: textLightColor,
-                                      width: 1,
-                                    ),
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            textPrimaryColor.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Icon(
-                                        Icons.straighten,
-                                        color: accentColor,
-                                        size: 24,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      flex: 2,
-                                      child: Text(
-                                        unit.unitName ?? 'N/A',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500,
-                                          color: textPrimaryColor,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      flex: 2,
-                                      child: Text(
-                                        unit.unitValue ?? 'N/A',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500,
-                                          color: textPrimaryColor,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      flex: 3,
-                                      child: Text(
-                                        unit.description ??
-                                            'No description available',
-                                        style: const TextStyle(
-                                          color: textSecondaryColor,
-                                          fontSize: 14,
-                                        ),
-                                        textAlign: TextAlign.start,
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Status container
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: unit.status == '1'
-                                                ? Colors.green.withOpacity(0.1)
-                                                : Colors.red.withOpacity(0.1),
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Container(
-                                                height: 6,
-                                                width: 6,
-                                                decoration: BoxDecoration(
-                                                  color: unitStatus == true
-                                                      ? Colors.green
-                                                      : Colors.red,
-                                                  borderRadius:
-                                                      BorderRadius.circular(3),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                unitStatus == true
-                                                    ? 'Active'
-                                                    : 'Inactive',
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: unitStatus == true
-                                                      ? Colors.green.shade700
-                                                      : Colors.red.shade700,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          width: 20,
-                                        ),
-                                        // Action Buttons
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.red.withOpacity(0.1),
-                                            borderRadius:
-                                                BorderRadius.circular(50),
-                                          ),
-                                          child: IconButton(
-                                            tooltip: 'Delete',
-                                            icon: const Icon(
-                                                Icons.delete_outline,
-                                                size: 20,
-                                                color: Colors.red),
-                                            onPressed: () async {
-                                              // Show confirmation dialog
-                                              final shouldDelete =
-                                                  await showDialog<bool>(
-                                                context: context,
-                                                builder: (context) =>
-                                                    AlertDialog(
-                                                  shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              16)),
-                                                  title: const Text(
-                                                      'Delete Store'),
-                                                  content: Text(
-                                                      'Are you sure you want to delete "${unit.unitName}"?'),
-                                                  actions: [
-                                                    TextButton(
-                                                      onPressed: () =>
-                                                          Navigator.of(context)
-                                                              .pop(false),
-                                                      child:
-                                                          const Text('Cancel'),
-                                                    ),
-                                                    FilledButton(
-                                                      onPressed: () =>
-                                                          Navigator.of(context)
-                                                              .pop(true),
-                                                      style: FilledButton
-                                                          .styleFrom(
-                                                              backgroundColor:
-                                                                  Colors.red),
-                                                      child:
-                                                          const Text('Delete'),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-
-                                              if (shouldDelete == true) {
-                                                isLoading.value = true;
-                                                final viewUnitService =
-                                                    ViewUnitService(
-                                                        accessToken:
-                                                            accessToken);
-                                                final response =
-                                                    await viewUnitService
-                                                        .deleteUnitSerivce(
-                                                            unit.id!);
-                                                if (response == 200) {
-                                                  isLoading.value = false;
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                    SnackBar(
-                                                      content: const Text(
-                                                          "Store deleted successfully"),
-                                                      backgroundColor:
-                                                          Colors.green,
-                                                      behavior: SnackBarBehavior
-                                                          .floating,
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          10)),
-                                                    ),
-                                                  );
-                                                  Future.delayed(
-                                                      const Duration(
-                                                          seconds: 3), () {
-                                                    ref.refresh(storesProvider);
-                                                  });
-                                                } else {
-                                                  isLoading.value = false;
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                    SnackBar(
-                                                      content: const Text(
-                                                          "Failed to delete store"),
-                                                      backgroundColor:
-                                                          Colors.red,
-                                                      behavior: SnackBarBehavior
-                                                          .floating,
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          10)),
-                                                    ),
-                                                  );
-                                                }
-                                              }
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                      child: Consumer(builder: (context, ref, _) {
+                        final refreshTrigger =
+                            ref.watch(refreshTriggerProvider);
+                        return FutureBuilder<UnitModel>(
+                          future: viewUnitController.getUnitData(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: accentColor,
                                 ),
                               );
-                            },
-                          );
-                        },
-                      ),
+                            }
+
+                            if (snapshot.hasError) {
+                              return Center(
+                                child: Text(
+                                  'Error: ${snapshot.error}',
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              );
+                            }
+
+                            if (!snapshot.hasData ||
+                                snapshot.data?.data == null ||
+                                snapshot.data!.data!.isEmpty) {
+                              return const Center(
+                                child: Text(
+                                  'No units found',
+                                  style: TextStyle(
+                                    color: textSecondaryColor,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return ListView.builder(
+                              itemCount: snapshot.data!.data!.length,
+                              itemBuilder: (context, index) {
+                                final unit = snapshot.data!.data![index];
+                                const unitStatus = true;
+                                return Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: const BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: textLightColor,
+                                        width: 1,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              textPrimaryColor.withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: const Icon(
+                                          Icons.straighten,
+                                          color: accentColor,
+                                          size: 24,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          unit.unitName ?? 'N/A',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                            color: textPrimaryColor,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          unit.unitValue ?? 'N/A',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                            color: textPrimaryColor,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                          unit.description ??
+                                              'No description available',
+                                          style: const TextStyle(
+                                            color: textSecondaryColor,
+                                            fontSize: 14,
+                                          ),
+                                          textAlign: TextAlign.start,
+                                        ),
+                                      ),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          // Status container
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: unit.status == '1'
+                                                  ? Colors.green
+                                                      .withOpacity(0.1)
+                                                  : Colors.red.withOpacity(0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Container(
+                                                  height: 6,
+                                                  width: 6,
+                                                  decoration: BoxDecoration(
+                                                    color: unitStatus == true
+                                                        ? Colors.green
+                                                        : Colors.red,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            3),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  unitStatus == true
+                                                      ? 'Active'
+                                                      : 'Inactive',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: unitStatus == true
+                                                        ? Colors.green.shade700
+                                                        : Colors.red.shade700,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: 20,
+                                          ),
+                                          // Action Buttons
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  Colors.red.withOpacity(0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                            ),
+                                            child: IconButton(
+                                              tooltip: 'Delete',
+                                              icon: const Icon(
+                                                  Icons.delete_outline,
+                                                  size: 20,
+                                                  color: Colors.red),
+                                              onPressed: () async {
+                                                // Show confirmation dialog
+                                                final shouldDelete =
+                                                    await showDialog<bool>(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      AlertDialog(
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        16)),
+                                                    title: const Text(
+                                                        'Delete Store'),
+                                                    content: Text(
+                                                        'Are you sure you want to delete "${unit.unitName}"?'),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(false),
+                                                        child: const Text(
+                                                            'Cancel'),
+                                                      ),
+                                                      FilledButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(true),
+                                                        style: FilledButton
+                                                            .styleFrom(
+                                                                backgroundColor:
+                                                                    Colors.red),
+                                                        child: const Text(
+                                                            'Delete'),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+
+                                                if (shouldDelete == true) {
+                                                  isLoading.value = true;
+                                                  final viewUnitService =
+                                                      ViewUnitService(
+                                                          accessToken:
+                                                              accessToken);
+                                                  final response =
+                                                      await viewUnitService
+                                                          .deleteUnitSerivce(
+                                                              unit.id!);
+                                                  if (response == 200) {
+                                                    isLoading.value = false;
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      SnackBar(
+                                                        content: const Text(
+                                                            "Store deleted successfully"),
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                        behavior:
+                                                            SnackBarBehavior
+                                                                .floating,
+                                                        shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10)),
+                                                      ),
+                                                    );
+                                                    Future.delayed(
+                                                        const Duration(
+                                                            seconds: 3), () {
+                                                      ref.refresh(
+                                                          storesProvider);
+                                                    });
+                                                  } else {
+                                                    isLoading.value = false;
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      SnackBar(
+                                                        content: const Text(
+                                                            "Failed to delete store"),
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                        behavior:
+                                                            SnackBarBehavior
+                                                                .floating,
+                                                        shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10)),
+                                                      ),
+                                                    );
+                                                  }
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        );
+                      }),
                     ),
                   ],
                 ),
@@ -486,7 +504,6 @@ class UnitsPage extends HookConsumerWidget {
     }
 
     final service = ViewUnitService(accessToken: accessToken);
-
     final formKey = GlobalKey<FormState>();
 
     showDialog(
@@ -660,6 +677,7 @@ class UnitsPage extends HookConsumerWidget {
                               isLoading.value = false;
                               if (response ==
                                   "Units Detail Created Successfully") {
+                                ref.read(refreshTriggerProvider.notifier).state++;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Unit added successfully'),

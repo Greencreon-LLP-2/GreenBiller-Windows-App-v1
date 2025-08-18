@@ -118,7 +118,7 @@ rule CXX_SHARED_LIBRARY_LINKER__url_launcher_linux_plugin_Debug
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = /usr/bin/cmake --regenerate-during-build -S/home/hp/Documents/GitHub/GreenBiller_Windows_v1/linux -B/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug
+  command = /usr/bin/cmake --regenerate-during-build -S/home/hp/Documents/GitHub/GreenBiller-Windows-App-v1/linux -B/home/hp/Documents/GitHub/GreenBiller-Windows-App-v1/build/linux/x64/debug
   description = Re-running CMake...
   generator = 1
 
