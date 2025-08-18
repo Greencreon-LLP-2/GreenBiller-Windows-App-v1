@@ -1,0 +1,76 @@
+import 'dart:convert';
+
+import 'package:green_biller/core/constants/api_constants.dart';
+import 'package:green_biller/features/user/models/store_users.dart';
+import 'package:http/http.dart' as http;
+
+class UserCreationServices {
+  Future<String> signUpApi(
+    String userlevel,
+    String name,
+    String email,
+    String countryCode,
+    String phone,
+    String password,
+    String storeId,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse(signUpUrl),
+        body: {
+          'user_level': userlevel,
+          'name': name,
+          'email': email,
+          'country_code': countryCode,
+          'mobile': phone,
+          'password': password,
+          'password_confirmation': password,
+          "store_id": storeId,
+        },
+      );
+
+      final decodedData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return "sucess";
+      } else {
+        // Handle API validation errors
+        if (decodedData is Map && decodedData.containsKey('errors')) {
+          final errors = decodedData['errors'] as Map<String, dynamic>;
+          final messages = errors.values
+              .expand((e) => e) // flatten list of error messages
+              .join('\n'); // separate messages with new lines
+          return messages;
+        }
+
+        return decodedData["message"] ?? 'Signup failed. Please try again.';
+      }
+    } catch (e) {
+      return 'Signup failed: ${e.toString()}';
+    }
+  }
+
+  Future<StoreUsersResponse> getStoreUsersList(
+      String accessToken, String? storeId) async {
+    final url = storeId != null ? '$storeusersUrl/$storeId' : storeusersUrl;
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        return StoreUsersResponse.fromJson(json);
+      } else {
+        throw Exception('Failed to fetch store users: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching store users: $e');
+    }
+  }
+}

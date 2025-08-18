@@ -1,0 +1,14 @@
+# Target labels
+ pdfium-download
+# Source files and their labels
+X:/Green_Creon/greenbillerapp/windows/out/build/x64-Debug/pdfium-download/CMakeFiles/pdfium-download
+X:/Green_Creon/greenbillerapp/windows/out/build/x64-Debug/pdfium-download/CMakeFiles/pdfium-download.rule
+X:/Green_Creon/greenbillerapp/windows/out/build/x64-Debug/pdfium-download/CMakeFiles/pdfium-download-complete.rule
+X:/Green_Creon/greenbillerapp/windows/out/build/x64-Debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-build.rule
+X:/Green_Creon/greenbillerapp/windows/out/build/x64-Debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-configure.rule
+X:/Green_Creon/greenbillerapp/windows/out/build/x64-Debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-download.rule
+X:/Green_Creon/greenbillerapp/windows/out/build/x64-Debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-install.rule
+X:/Green_Creon/greenbillerapp/windows/out/build/x64-Debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-mkdir.rule
+X:/Green_Creon/greenbillerapp/windows/out/build/x64-Debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-patch.rule
+X:/Green_Creon/greenbillerapp/windows/out/build/x64-Debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-test.rule
+X:/Green_Creon/greenbillerapp/windows/out/build/x64-Debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-update.rule

@@ -1,0 +1,21 @@
+# ninja log v5
+0	131	1755537753399820998	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-mkdir	ecaa490b6e4b3076
+0	131	1755537753399820998	/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-mkdir	ecaa490b6e4b3076
+132	2337	1755537755602824552	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-download	2d4f84b0426c2749
+132	2337	1755537755602824552	/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-download	2d4f84b0426c2749
+2338	2383	1755537755649824628	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-update	8745cc05642649c4
+2338	2383	1755537755649824628	/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-update	8745cc05642649c4
+2384	2451	1755537755718824740	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-patch	d1df7ae331266f50
+2384	2451	1755537755718824740	/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-patch	d1df7ae331266f50
+2452	2510	1755537755772824828	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-configure	f0473858cbc560e1
+2452	2510	1755537755772824828	/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-configure	f0473858cbc560e1
+2511	2584	1755537755851824956	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-build	9d0f322c25f571f3
+2511	2584	1755537755851824956	/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-build	9d0f322c25f571f3
+2584	2625	1755537755892825023	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-install	6d7ee21594ba58dc
+2584	2625	1755537755892825023	/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-install	6d7ee21594ba58dc
+2625	2667	1755537755934825091	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-test	6a6998b850914ead
+2625	2667	1755537755934825091	/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-test	6a6998b850914ead
+2671	2730	1755537755997825193	CMakeFiles/pdfium-download-complete	aacc79fd122432a6
+2671	2730	1755537755997825193	pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-done	aacc79fd122432a6
+2671	2730	1755537755997825193	/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download/CMakeFiles/pdfium-download-complete	aacc79fd122432a6
+2671	2730	1755537755997825193	/home/hp/Documents/GitHub/GreenBiller_Windows_v1/build/linux/x64/debug/pdfium-download/pdfium-download-prefix/src/pdfium-download-stamp/pdfium-download-done	aacc79fd122432a6
