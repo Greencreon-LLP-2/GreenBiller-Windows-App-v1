@@ -6,6 +6,7 @@ import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
 import 'package:green_biller/features/sales/controllers/sales_view_controller.dart';
 import 'package:green_biller/features/sales/models/sales_view_model.dart';
+import 'package:green_biller/features/sales/view/pages/POS/pos_billing_page.dart';
 import 'package:green_biller/features/sales/view/pages/credit_note.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -533,7 +534,17 @@ class _SalesListContentState extends ConsumerState<_SalesListContent>
                       'POS',
                       Icons.point_of_sale,
                       accentColor,
-                      () => _showCreatePOSDialog(context),
+
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => POSBillingPage(),
+                          ),
+                        );
+                      },
+
+                      //_showCreatePOSDialog(context),
                     ),
                   ],
                 ),
