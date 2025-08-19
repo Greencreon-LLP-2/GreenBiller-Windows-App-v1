@@ -8,7 +8,7 @@ class SalesPaymentCreateService {
 
   Future<bool> salesPaymentCreateService({
     required String accessToken,
-    required String userId,
+  
     required String storeId,
     required String salesId,
     required String customerId,

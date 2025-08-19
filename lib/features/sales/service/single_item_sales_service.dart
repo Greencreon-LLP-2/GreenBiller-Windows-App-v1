@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 class SingleItemSaleService {
   Future<bool> singleItemSalesService({
     required String accessToken,
-    required String userId,
+   
     required String storeId,
     required String salesId,
     required String customerId,

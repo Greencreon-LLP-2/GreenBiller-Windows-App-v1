@@ -7,7 +7,7 @@ class SalesPaymentCreateController {
 
   Future<bool> salesPaymentCreateController({
     required String accessToken,
-    required String userId,
+  
     required String storeId,
     required String salesId,
     required String customerId,
@@ -21,7 +21,7 @@ class SalesPaymentCreateController {
       final response =
           await SalesPaymentCreateService().salesPaymentCreateService(
         accessToken: accessToken,
-        userId: userId,
+       
         storeId: storeId,
         salesId: salesId,
         customerId: customerId,

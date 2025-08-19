@@ -10,6 +10,7 @@
 .flutter-versions
 .pub-cache/
 .pub/
+
 build/
 coverage/
 flutter_*.png
