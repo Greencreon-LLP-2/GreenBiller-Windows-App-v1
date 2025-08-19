@@ -13,7 +13,10 @@ class CustomTextFieldWidget extends HookWidget {
   final ValueChanged<String>? onChanged;
   final TextInputType? keyboardType;
   final bool readOnly;
+  final String selectedCountryCode; 
+   final bool showCountryPicker;
   final String hintText;
+  final ValueChanged<String>? onCountryCodeChanged;
   final String? Function(String?)? validator;
 
   const CustomTextFieldWidget({
@@ -29,6 +32,9 @@ class CustomTextFieldWidget extends HookWidget {
     this.keyboardType,
     this.readOnly = false,
     this.validator,
+    this.showCountryPicker = true,
+    this.selectedCountryCode = '+91',
+    this.onCountryCodeChanged,
   });
 
   @override

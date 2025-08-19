@@ -12,6 +12,7 @@ import 'package:green_biller/features/auth/login/services/sign_in_service.dart';
 import 'package:green_biller/features/auth/login/view/widgets/action_button_widget.dart';
 import 'package:green_biller/features/auth/login/view/widgets/custom_text_field_widget.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:country_picker/country_picker.dart';
 
 class LoginFormContentWidget extends HookConsumerWidget {
   final Function(String phoneNumber) onSwitchToSignup;
@@ -33,6 +34,14 @@ class LoginFormContentWidget extends HookConsumerWidget {
     final isPasswordLogin = useState(false);
     final selectedCountryCode =
         useState<String>('+91'); // Default to India's code
+    final selectedCountry = useState<Country?>(null);
+
+    // Initialize with India
+    useEffect(() {
+      final india = getCountryByPhoneCode('+91');
+      selectedCountry.value = india;
+      return null;
+    }, []);
 
     // Animation for login button
     final animationController = useAnimationController(
@@ -66,61 +75,90 @@ class LoginFormContentWidget extends HookConsumerWidget {
           Row(
             children: [
               Container(
-                width: 70,
+                width: 60,
                 height: 50,
                 decoration: BoxDecoration(
-                  // color: Colors.red,
-                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                //!=================================================================Country Code Management- api call
-                child: Consumer(
-                  builder: (context, ref, child) {
-                    final countryCodesAsync = ref.watch(countryCodesProvider);
-
-                    return countryCodesAsync.when(
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (error, stack) => const Icon(Icons.error),
-                      data: (formattedCodes) {
-                        // Format country codes to ensure consistency
-                        final codes = formattedCodes
-                            .map((code) {
-                              // Remove any existing + and add it back
-                              return '+${code.replaceAll('+', '')}';
-                            })
-                            .toSet()
-                            .toList(); // Convert to Set to remove duplicates, then back to List
-
-                        // Ensure selected value exists in the list
-                        if (!codes.contains(selectedCountryCode.value)) {
-                          selectedCountryCode.value = codes.first;
-                        }
-
-                        log('Available codes: $codes');
-                        log('Selected code: ${selectedCountryCode.value}');
-
-                        return DropdownButton<String>(
-                          value: selectedCountryCode.value,
-                          items: codes.map((String code) {
-                            return DropdownMenuItem<String>(
-                              value: code,
-                              child: Text(code),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              selectedCountryCode.value = value;
-                            }
-                          },
-                          underline: Container(),
-                          isExpanded: true,
-                          icon: const Icon(Icons.arrow_drop_down),
-                        );
+                child: InkWell(
+                  onTap: () {
+                    showCountryPicker(
+                      context: context,
+                      showPhoneCode: true,
+                      onSelect: (Country country) {
+                        selectedCountryCode.value = '+${country.phoneCode}';
+                        selectedCountry.value = country;
                       },
+                      countryListTheme: CountryListThemeData(
+                        flagSize: 25,
+                        backgroundColor: Colors.white,
+                        textStyle: const TextStyle(fontSize: 16, color: Colors.blueGrey),
+                        bottomSheetHeight: 500,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(20.0),
+                          topRight: Radius.circular(20.0),
+                        ),
+                        inputDecoration: InputDecoration(
+                          labelText: 'Search Country',
+                          hintText: 'Type country name or code',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: const Color(0xFF8C98A8).withOpacity(0.2),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        searchTextStyle: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                        ),
+                      ),
                     );
                   },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              // Country flag
+                             /* Text(
+                                selectedCountry.value?.flagEmoji ?? '🇮🇳',
+                                style: const TextStyle(fontSize: 18),
+                              ),
+                              const SizedBox(width: 4),*/
+                              // Country code
+                              Expanded(
+                                child: Text(
+                                  selectedCountryCode.value,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_drop_down, size: 16),
+                      ],
+                    ),
+                  ),
                 ),
               ),
+             const SizedBox(width: 12,),
               Expanded(
                 child: CustomTextFieldWidget(
                   hintText: "9876543210",
@@ -160,34 +198,39 @@ class LoginFormContentWidget extends HookConsumerWidget {
 
           const SizedBox(height: 16),
           // Remember Me & Forgot Password
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextButton(
-                onPressed: () {
-                  isPasswordLogin.value = !isPasswordLogin.value;
-                },
-                child: Text(
-                  isPasswordLogin.value
-                      ? 'Sign In with Phone'
-                      : 'Sign In with Password',
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: accentColor,
-                  ),
-                ),
-              ),
-              // if (true)
-              TextButton(
-                onPressed: onForgotPassword,
-                child: Text(
-                  'Forgot Password?',
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: accentColor,
-                  ),
-                ),
-              ),
-            ],
+         Row(
+         
+           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+           children: [
+             TextButton(
+               onPressed: () {
+                 isPasswordLogin.value = !isPasswordLogin.value;
+               },
+               child: Text(
+                 isPasswordLogin.value
+                     ? 'Sign In with Phone'
+                     : 'Sign In with Password',
+                 style: AppTextStyles.labelMedium.copyWith(
+                   color: accentColor,
+                 ),
+                  overflow: TextOverflow.ellipsis,
+               ),
+             ),
+             // if (true)
+           Flexible(
+      child: TextButton(
+        onPressed: onForgotPassword,
+        child: Text(
+          'Forgot Password?',
+          style: AppTextStyles.labelMedium.copyWith(
+            color: accentColor,
           ),
+          overflow: TextOverflow.ellipsis, 
+        ),
+      ),
+    ),
+           ],
+         ),
           const SizedBox(height: 24),
           // Login Button
           MouseRegion(

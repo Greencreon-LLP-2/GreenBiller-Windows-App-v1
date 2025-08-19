@@ -16,7 +16,8 @@ class LoginFormWidget extends HookWidget {
     final pageController = usePageController(initialPage: 0);
     final currentPage = useState(0);
     final phoneForOtp = useState<int>(0);
-    final countryCodeForOtp = useState<String>('');
+    final countryCodeForOtp = useState<String>('+91');
+
 
     // Define animation hooks for form appearance
     final animationController = useAnimationController(
