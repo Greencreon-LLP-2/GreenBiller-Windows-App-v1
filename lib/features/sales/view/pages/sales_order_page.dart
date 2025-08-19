@@ -424,7 +424,7 @@ class SalesOrderPage extends HookWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const AddSaleOrderPage()),
+                              builder: (context) =>  AddSaleOrderPage()),
                         );
                       },
                     ),
