@@ -30,6 +30,7 @@ import 'package:green_biller/features/reports/sales_report/view/pages/sales_summ
 import 'package:green_biller/features/reports/stock_report/low_stock_alert_page.dart';
 import 'package:green_biller/features/reports/stock_report/stock_movement_page.dart';
 import 'package:green_biller/features/reports/stock_report/stock_summary_page.dart';
+import 'package:green_biller/features/sales/view/pages/add_credit_note_items_page.dart';
 import 'package:green_biller/features/sales/view/pages/add_sale_page/new_sale_page.dart';
 import 'package:green_biller/features/sales/view/pages/add_sale_page/sales%20LIst/sales_list.dart';
 import 'package:green_biller/features/sales/view/pages/sales_order_page.dart';
@@ -91,8 +92,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       //   return '/';
       // }
       // 2. Check for forced update
-      print(AppConfig.version.toString());
-      print(appStatus.settings?.appVersion);
+
       if (appStatus.settings?.appVersion.toString() !=
               AppConfig.version.toString() &&
           !isUpdateRoute) {
@@ -173,6 +173,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return PurchaseReturnPage(purcahseId: id!);
         },
       ),
+     
       GoRoute(
         path: '/purchase-returns-view',
         builder: (context, state) => PurchaseReturnViewPage(),
@@ -204,6 +205,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/sales-by-customer',
         builder: (context, state) => const SalesByCustomerPage(),
+      ),
+       GoRoute(
+        path: '/add-credit-note-items/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']?? ''; // Get the ID
+          return AddCreditNoteItemsPage(storeId: id);
+        },
       ),
       GoRoute(
         path: '/payment-out',

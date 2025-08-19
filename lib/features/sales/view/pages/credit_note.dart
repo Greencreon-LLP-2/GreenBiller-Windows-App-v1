@@ -7,7 +7,7 @@ import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/core/widgets/card_container.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
 import 'package:green_biller/features/item/model/credit_note/credit_note_model.dart';
-import 'package:green_biller/features/item/view/pages/add_credit_note_items_page.dart';
+import 'package:green_biller/features/sales/view/pages/add_credit_note_items_page.dart';
 import 'package:green_biller/features/store/controllers/view_parties_controller.dart';
 import 'package:green_biller/features/store/controllers/view_store_controller.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -829,8 +829,8 @@ class CreditNotePage extends HookConsumerWidget {
   Widget _buildAddItemsButton(BuildContext context, String? selectedStore) {
     return GestureDetector(
       onTap: () {
-        context
-            .push('/add-credit-note-items', extra: {'storeId': selectedStore});
+           
+         context.go('/add-credit-note-items/${selectedStore}');
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),

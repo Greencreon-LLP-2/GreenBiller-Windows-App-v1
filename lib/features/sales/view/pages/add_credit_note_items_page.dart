@@ -31,6 +31,7 @@ class AddCreditNoteItemsPage extends HookConsumerWidget {
     final filteredItems = useState<List<Item>>([]);
 
     useEffect(() {
+      print(storeId);
       if (accessToken != null) {
         ViewAllItemsController(accessToken: accessToken)
             .getAllItems(storeId)
