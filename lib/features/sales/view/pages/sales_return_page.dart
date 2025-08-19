@@ -446,7 +446,7 @@ class SalesReturnPage extends HookWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const CreditNotePage()),
+                              builder: (context) =>  CreditNotePage()),
                         );
                       },
                     ),

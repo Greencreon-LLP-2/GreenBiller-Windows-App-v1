@@ -240,115 +240,123 @@ class AllItemsPage extends HookConsumerWidget {
 
   Widget _buildGridView(BuildContext context, String accessToken,
       String? storeId, String userId, int refreshKey, WidgetRef ref) {
-    return FutureBuilder(
-        future: ViewAllItemsController(accessToken: accessToken)
-            .getAllItems(storeId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.data != null &&
-              snapshot.data!.status == 0) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.inventory_2_outlined,
-                    size: 80,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    "No items found",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    "No items available for the selected store.\nPlease add some items to get started.",
-                    style: TextStyle(
-                      fontSize: 16,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double screenWidth = constraints.maxWidth;
+        const double minCardWidth = 200;
+        int crossAxisCount = (screenWidth / minCardWidth).floor().clamp(1, 5);
+
+        return FutureBuilder(
+          future: ViewAllItemsController(accessToken: accessToken)
+              .getAllItems(storeId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.connectionState == ConnectionState.done &&
+                snapshot.data != null &&
+                snapshot.data!.status == 0) {
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.inventory_2_outlined,
+                      size: 80,
                       color: Colors.grey,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            );
-          }
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 5,
-              childAspectRatio: 1,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: snapshot.data?.data.length ?? 5,
-            itemBuilder: (context, index) {
-              final itemId = snapshot.data?.data[index].id.toString() ?? '';
-              final itemName = snapshot.data?.data[index].itemName ?? '';
-              final category = snapshot.data?.data[index].categoryId ?? 0;
-              final stock = snapshot.data?.data[index].openingStock ?? 0;
-              final price = snapshot.data?.data[index].salesPrice ?? 0;
-              final mrp = snapshot.data?.data[index].mrp ?? '00000';
-              final profitMargin = snapshot.data?.data[index].profitMargin ?? 0;
-              final taxRate = snapshot.data?.data[index].taxRate ?? 0;
-              final unit = snapshot.data?.data[index].unit ?? '11100';
-              final sku = snapshot.data?.data[index].sku ?? '11111';
-              final brand = snapshot.data?.data[index].brandId ?? 0;
-              final itemCode = snapshot.data?.data[index].itemCode ?? '000000';
-              final barcode = snapshot.data?.data[index].barcode ?? '000000';
-              final taxType = snapshot.data?.data[index].taxType ?? 'none';
-              final imageUrl = snapshot.data?.data[index].itemImage;
-              final categoryName =
-                  snapshot.data?.data[index].categoryName ?? '';
-              final brandName = snapshot.data?.data[index].brandName ?? '';
-              final storeName = snapshot.data?.data[index].storeName ?? '';
-              final storeId = snapshot.data?.data[index].storeId;
-              final discountType =
-                  snapshot.data?.data[index].discountType ?? '';
-              final discount = snapshot.data?.data[index].discount ?? '0';
-              // final warehouse = snapshot.data?.data[index].warehouse ?? '1';
-              final alertQuantity =
-                  snapshot.data?.data[index].alertQuantity ?? '0';
-              return ItemGridViewCardWidget(
-                accessToken: accessToken,
-                storeId: storeId.toString(),
-                userId: userId,
-                itemId: snapshot.data?.data[index].id.toString() ?? '',
-                stock: stock,
-                itemName: itemName,
-                itemCode: itemCode,
-                barcode: barcode,
-                category: category,
-                brand: brand,
-                price: price,
-                mrp: mrp,
-                unit: unit,
-                sku: sku,
-                profitMargin: profitMargin,
-                taxRate: taxRate,
-                taxType: taxType,
-                discountType: discountType,
-                discount: discount,
-                // warehouse: warehouse,
-                alertQuantity: alertQuantity,
-                onRefresh: () {
-                  // 🔁 Refresh page
-                  ref.read(refreshItemsProvider.notifier).state++;
-                },
-                brandName: brandName,
-                storeName: storeName,
-                categoryName: categoryName,
-                imageUrl: imageUrl,
+                    SizedBox(height: 20),
+                    Text(
+                      "No items found",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "No items available for the selected store.\nPlease add some items to get started.",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               );
-            },
-          );
-        });
+            }
+            return GridView.builder(
+              padding: const EdgeInsets.all(16),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: 1,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: snapshot.data?.data.length ?? 5,
+              itemBuilder: (context, index) {
+                final itemId = snapshot.data?.data[index].id.toString() ?? '';
+                final itemName = snapshot.data?.data[index].itemName ?? '';
+                final category = snapshot.data?.data[index].categoryId ?? 0;
+                final stock = snapshot.data?.data[index].openingStock ?? 0;
+                final price = snapshot.data?.data[index].salesPrice ?? 0;
+                final mrp = snapshot.data?.data[index].mrp ?? '00000';
+                final profitMargin =
+                    snapshot.data?.data[index].profitMargin ?? 0;
+                final taxRate = snapshot.data?.data[index].taxRate ?? 0;
+                final unit = snapshot.data?.data[index].unit ?? '11100';
+                final sku = snapshot.data?.data[index].sku ?? '11111';
+                final brand = snapshot.data?.data[index].brandId ?? 0;
+                final itemCode =
+                    snapshot.data?.data[index].itemCode ?? '000000';
+                final barcode = snapshot.data?.data[index].barcode ?? '000000';
+                final taxType = snapshot.data?.data[index].taxType ?? 'none';
+                final imageUrl = snapshot.data?.data[index].itemImage;
+                final categoryName =
+                    snapshot.data?.data[index].categoryName ?? '';
+                final brandName = snapshot.data?.data[index].brandName ?? '';
+                final storeName = snapshot.data?.data[index].storeName ?? '';
+                final storeId = snapshot.data?.data[index].storeId;
+                final discountType =
+                    snapshot.data?.data[index].discountType ?? '';
+                final discount = snapshot.data?.data[index].discount ?? '0';
+                final alertQuantity =
+                    snapshot.data?.data[index].alertQuantity ?? '0';
+                return ItemGridViewCardWidget(
+                  accessToken: accessToken,
+                  storeId: storeId.toString(),
+                  userId: userId,
+                  itemId: itemId,
+                  stock: stock,
+                  itemName: itemName,
+                  itemCode: itemCode,
+                  barcode: barcode,
+                  category: category,
+                  brand: brand,
+                  price: price,
+                  mrp: mrp,
+                  unit: unit,
+                  sku: sku,
+                  profitMargin: profitMargin,
+                  taxRate: taxRate,
+                  taxType: taxType,
+                  discountType: discountType,
+                  discount: discount,
+                  alertQuantity: alertQuantity,
+                  onRefresh: () {
+                    ref.read(refreshItemsProvider.notifier).state++;
+                  },
+                  brandName: brandName,
+                  storeName: storeName,
+                  categoryName: categoryName,
+                  imageUrl: imageUrl,
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 }
