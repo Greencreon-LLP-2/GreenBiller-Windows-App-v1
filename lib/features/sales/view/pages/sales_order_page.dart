@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:green_biller/core/constants/colors.dart';
-import 'package:green_biller/features/sales/view/pages/sale_order_page.dart';
+import 'package:green_biller/features/sales/view/pages/add_sale_order_page.dart';
+
 import 'package:intl/intl.dart';
 
 class SalesOrderPage extends HookWidget {
@@ -424,7 +425,7 @@ class SalesOrderPage extends HookWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>  AddSaleOrderPage()),
+                              builder: (context) =>  AddSalesOrderPage()),
                         );
                       },
                     ),

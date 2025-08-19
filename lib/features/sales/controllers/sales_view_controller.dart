@@ -5,7 +5,7 @@ class SalesViewController {
   Future<SalesViewModel> getSalesViewController(String accessToken) async {
     try {
       final response =
-          await SalesViewService().getSalesViewService(accessToken);
+          await SalesViewService(accessToken).getSalesViewService(accessToken);
       return response;
     } catch (e) {
       throw Exception(e);

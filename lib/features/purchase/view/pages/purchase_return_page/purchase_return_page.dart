@@ -115,7 +115,7 @@ class PurchaseReturnPage extends HookConsumerWidget {
               'store_id': purchase.storeId,
               'purchase_id': purchase.id,
               'item_id': item.itemId,
-              'return_qty': returnQty,
+              'return_qty': returnQty.toString(),
               'price_per_unit': item.unitSalesPrice,
               'tax_type': item.taxType,
               'tax_id': item.taxId,
@@ -205,11 +205,12 @@ class PurchaseReturnPage extends HookConsumerWidget {
             'payment_code': 'PAY-RTN-${DateTime.now().millisecondsSinceEpoch}',
             'payment_date': returnDateController.text,
             'payment_type': paymentType,
-            'payment': totalReturnAmount.toString(),
+            'payment': totalReturnAmount,
             'payment_note': 'Return payment for purchase #${purchase.id}',
             'status': 'completed',
             'supplier_id': purchase.supplierId,
             'created_by': userId,
+            'account_id': 0
           };
 
           try {
@@ -224,7 +225,13 @@ class PurchaseReturnPage extends HookConsumerWidget {
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Purchase return created successfully')),
+          const SnackBar(
+            content: Text(
+              'Purchase return created successfully',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
+          ),
         );
         Future.delayed(
             const Duration(seconds: 3), () => context.go('/homepage'));

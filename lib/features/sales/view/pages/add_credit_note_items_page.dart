@@ -227,7 +227,7 @@ class AddCreditNoteItemsPage extends HookConsumerWidget {
       );
 
       ref
-          .read(selectedItemsProvider.notifier)
+          .read(selectedCreditNoteItemsProvider.notifier)
           .update((state) => [...state, creditNoteItem]);
       context.pop();
     }
