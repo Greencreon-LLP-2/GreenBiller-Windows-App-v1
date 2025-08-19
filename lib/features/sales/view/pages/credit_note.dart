@@ -774,7 +774,7 @@ class CreditNotePage extends HookConsumerWidget {
         DropdownButtonFormField<String>(
           value: selectedStoreName.value,
           hint: const Text(
-            "Select Store (Optional)",
+            "Select Store (Required)",
             style: TextStyle(color: Color(0xFF94A3B8)),
           ),
           isExpanded: true,
@@ -829,8 +829,12 @@ class CreditNotePage extends HookConsumerWidget {
   Widget _buildAddItemsButton(BuildContext context, String? selectedStore) {
     return GestureDetector(
       onTap: () {
-           
-         context.go('/add-credit-note-items/${selectedStore}');
+        if (selectedStore == null) {
+          _showErrorSnackBar(
+              context, 'Please select a store before adding items.');
+          return;
+        }
+        context.push('/add-credit-note-items/$selectedStore');
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
