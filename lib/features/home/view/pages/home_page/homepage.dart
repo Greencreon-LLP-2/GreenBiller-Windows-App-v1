@@ -11,6 +11,7 @@ import 'package:green_biller/features/item/view/pages/items_page.dart';
 import 'package:green_biller/features/notifications/views/notification_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_page/purchase_page.dart';
 import 'package:green_biller/features/reports/report_page.dart';
+import 'package:green_biller/features/sales/view/pages/POS/pos_billing_page.dart';
 import 'package:green_biller/features/sales/view/pages/add_sale_page/new_sale_page.dart';
 import 'package:green_biller/features/sales/view/pages/add_sale_page/sales%20LIst/sales_list.dart';
 import 'package:green_biller/features/store/view/parties_page/parties_page.dart';
@@ -120,7 +121,7 @@ class HomePage extends HookConsumerWidget {
                               },
                             ),
                             _buildNavItem(
-                            'My Business',
+                              'My Business',
                               Icons.business,
                               Icons.business,
                               4,
@@ -226,7 +227,15 @@ class HomePage extends HookConsumerWidget {
                                   }
                                 }
                               },
-                            )
+                            ),
+                            _buildNavItem(
+                              'Pos',
+                              Icons.money,
+                              Icons.bar_chart,
+                              -1,
+                              selectedIndex.value,
+                              onTap: () => selectedIndex.value = 11,
+                            ),
                           ],
                         ),
                       ),
@@ -407,6 +416,7 @@ class HomePage extends HookConsumerWidget {
                           const PartiesPage(),
                           const ReportsPage(),
                           const UserCreationPage(),
+                          const POSBillingPage(),
                         ],
                       ),
                     ),
