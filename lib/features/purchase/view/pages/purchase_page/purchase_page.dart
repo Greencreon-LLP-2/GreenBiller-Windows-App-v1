@@ -1489,7 +1489,7 @@ class PurchasePage extends HookConsumerWidget {
                       String? storeAddress;
                       for (var store in storemodel.data!) {
                         if (store.id.toString() == storeId.value.toString()) {
-                          storeAddress = store.address;
+                          storeAddress = store.storeAddress ?? "Nill";
                         }
                       }
                       final file = await pdf2.pdfFormatSecond(

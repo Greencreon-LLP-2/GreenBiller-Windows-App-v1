@@ -162,12 +162,12 @@ class StoreDetailScreen extends HookConsumerWidget {
                   }
 
                   final storeName = store.storeName ?? 'Unnamed Store';
-                  final location = store.address ?? 'No address';
-                  final phone = store.phone ?? 'N/A';
-                  final email = store.email ?? 'N/A';
-                  final website = store.website ?? store.storeWebsite ?? '';
-                  final city = store.city ?? '';
-                  final country = store.country ?? '';
+                  final location = store.storeAddress ?? 'No address';
+                  final phone = store.storePhone ?? 'N/A';
+                  final email = store.storeEmail ?? 'N/A';
+                  final website = store.website ?? store.website ?? '';
+                  final city = store.storeCity ?? '';
+                  final country = store.storeCountry ?? '';
                   final status = store.status ?? 'unknown';
 
                   return CardContainer(
