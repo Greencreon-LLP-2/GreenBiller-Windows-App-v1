@@ -154,9 +154,17 @@ class AddSalesOrderPage extends HookConsumerWidget {
     );
   }
 
+  String _generateUniqueOrderId() {
+    final now = DateTime.now();
+    final random = Random().nextInt(9999).toString().padLeft(4, '0');
+    return 'ORD_${now.year}${now.month}${now.day}_$random';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedDate = useState(DateTime.now());
+    final selectedDueDate =
+        useState(DateTime.now().add(const Duration(days: 5)));
     final dateFormat = DateFormat('dd/MM/yyyy');
     final customerNameController = useTextEditingController();
     final phoneController = useTextEditingController();
@@ -169,6 +177,7 @@ class AddSalesOrderPage extends HookConsumerWidget {
     final selectedStoreName = useState<String?>(null);
     final selectedStoreId = useState<String?>(null);
     final selectedCustomerName = useState<String>('Walk-in Customer');
+    final totalAmountController = useTextEditingController();
     final customerList =
         useState<Map<String, String>>({'Walk-in Customer': ''});
     final storeList = useState<Map<String, String>>({});
@@ -224,6 +233,13 @@ class AddSalesOrderPage extends HookConsumerWidget {
     Future<void> saveSalesOrder(
         BuildContext context, String accessToken) async {
       final service = SalesViewService(accessToken);
+      final userModel = ref.read(userProvider);
+      final userId = userModel?.user?.id.toString() ?? '';
+      final customerId = customerList.value[selectedCustomerName.value];
+      // Generate unique order ID if not provided
+      final uniqueOrderId = orderNumberController.text.isEmpty
+          ? _generateUniqueOrderId()
+          : orderNumberController.text;
 
       final salesOrder = SaleOrderModel(
         customerName: selectedCustomerName.value == 'Walk-in Customer'
@@ -233,44 +249,66 @@ class AddSalesOrderPage extends HookConsumerWidget {
         orderDate: orderDateController.text.isNotEmpty
             ? DateFormat('dd/MM/yyyy').parse(orderDateController.text)
             : DateTime.now(),
-        orderNumber: orderNumberController.text,
+        orderNumber: uniqueOrderId,
         items: selectedItems,
         totalAmount: calculateTotal(),
         storeId: selectedStoreId.value ?? '',
         customerId: selectedCustomerName.value != 'Walk-in Customer'
             ? customerList.value[selectedCustomerName.value] ?? ''
             : null,
-        returnNumber: '',
       );
 
       try {
+        // 1. Create the main order
         final orderId = await service.createSalesOrder({
+          'unique_order_id': uniqueOrderId,
+          'orderstatus_id': '1', // Default status (e.g., "Pending")
           'store_id': salesOrder.storeId,
-          'order_code': salesOrder.orderNumber,
-          'grand_total': salesOrder.totalAmount,
-          'customer_id': salesOrder.customerId,
-          'order_date': DateFormat('yyyy-MM-dd').format(salesOrder.orderDate),
+          'user_id': userId,
+          'if_sales': '0', // Assuming not a sales order
+          'sales_id': '0', // No sales ID
+          'shipping_address_id': '0', // Default shipping address
+          'if_redeem': '0', // No redemption
+          'deliveryboy_id': '0', // No delivery boy assigned
+          'notifi_deliveryboy': '0', // No notification to delivery boy
+          'sub_total': salesOrder.totalAmount.toString(),
+          'order_totalamt': salesOrder.totalAmount.toString(),
+          'payment_mode': 'cash', // Default payment mode
         });
 
+        // 2. Create order items for each selected item
         for (final item in salesOrder.items) {
+          final itemTotal = item.quantity * item.rate;
+          final taxAmount = itemTotal * (item.taxRate / 100);
+
           await service.createSalesOrderItem({
+            'order_id': orderId.toString(),
+            'user_id': userId,
             'store_id': salesOrder.storeId,
-            'order_id': orderId,
-            'customer_id': salesOrder.customerId ?? 0,
-            'item_id': item.item.id,
-            'item_name': item.item.itemName,
-            'order_qty': item.quantity,
-            'price_per_unit': item.rate,
-            'total_cost': item.quantity * item.rate,
-            'unit': item.unit,
+            'item_id': item.item.id.toString(),
+            'selling_price': item.rate.toString(),
+            'qty': item.quantity.toString(),
+            'tax_rate': item.taxRate.toString(),
+            'tax_type': item.taxType,
+            'tax_amt': taxAmount.toString(),
+            'total_price': (itemTotal + taxAmount).toString(),
+            'if_offer': '0', // No offer
           });
         }
+
+        // 3. Create initial order status (optional - you might want to use existing statuses)
+        await service.createOrderStatus({
+          'name': 'Order Created',
+        });
 
         _showSuccessSnackBar(
           context,
           'Sales Order created successfully!',
           Icons.check_circle,
         );
+
+        // Optionally navigate back or clear form
+        context.pop();
       } catch (e) {
         print('Error saving Sales Order: $e');
         _showErrorSnackBar(context, 'Error: ${e.toString()}');
@@ -321,7 +359,12 @@ class AddSalesOrderPage extends HookConsumerWidget {
                   Icons.save,
                   accentColor,
                   () async {
-                    await saveSalesOrder(context, accessToken!);
+                    if (selectedItems.isEmpty) {
+                      _showErrorSnackBar(context, 'Please add ateleast 1 item');
+                      return;
+                    } else {
+                      await saveSalesOrder(context, accessToken!);
+                    }
                   },
                 ),
               ),
@@ -424,6 +467,35 @@ class AddSalesOrderPage extends HookConsumerWidget {
                           },
                         ),
                       ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildDropdownField(
+                          "Due Date",
+                          dateFormatter.format(selectedDueDate.value),
+                          onTap: () async {
+                            final DateTime? picked = await showDatePicker(
+                              context: context,
+                              initialDate: selectedDueDate.value,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2101),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                    colorScheme: const ColorScheme.light(
+                                      primary: accentColor,
+                                      onPrimary: Colors.white,
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+                            if (picked != null) {
+                              selectedDueDate.value = picked;
+                            }
+                          },
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -493,10 +565,32 @@ class AddSalesOrderPage extends HookConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildInputField(
-                    "Phone Number",
-                    controller: phoneController,
-                    keyboardType: TextInputType.phone,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildInputField(
+                          "Phone Number",
+                          controller: phoneController,
+                          keyboardType: TextInputType.phone,
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildInputField(
+                          "Paid Amount",
+                          isRequired: true,
+                          controller: totalAmountController,
+                          suffix: const Text(
+                            "₹",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF1E293B),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   Row(

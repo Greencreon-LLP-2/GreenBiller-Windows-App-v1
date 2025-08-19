@@ -11,25 +11,6 @@ import 'package:intl/intl.dart';
 class SalesReturnPage extends HookConsumerWidget {
   const SalesReturnPage({super.key});
 
-  void _showSuccessSnackBar(
-      BuildContext context, String message, IconData icon) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(icon, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: accentColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
-  }
-
   Widget _buildActionButton(
       String label, IconData icon, Color color, VoidCallback onPressed) {
     return Container(

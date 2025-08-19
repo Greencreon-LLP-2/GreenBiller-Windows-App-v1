@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:green_biller/core/constants/colors.dart';
+import 'package:green_biller/core/global_providers/sales_order_provider.dart';
+import 'package:green_biller/features/auth/login/model/user_model.dart';
+import 'package:green_biller/features/sales/models/sales_order_model.dart';
 import 'package:green_biller/features/sales/view/pages/add_sale_order_page.dart';
-
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
-class SalesOrderPage extends HookWidget {
+class SalesOrderPage extends HookConsumerWidget {
   const SalesOrderPage({super.key});
 
   void _showSuccessSnackBar(
@@ -97,8 +100,25 @@ class SalesOrderPage extends HookWidget {
     );
   }
 
+  String _getCustomerInitials(String? customerName) {
+    if (customerName == null || customerName.isEmpty) return 'NA';
+    final names = customerName.split(' ');
+    if (names.length >= 2) {
+      return '${names[0][0]}${names[1][0]}'.toUpperCase();
+    }
+    return names[0][0].toUpperCase();
+  }
+
+  String _getItemSummary(List<OrderItem> items) {
+    if (items.isEmpty) return 'No items';
+    if (items.length == 1) {
+      return '1 item: ${items.first.itemId}';
+    }
+    return '${items.length} items';
+  }
+
   Widget _buildOrderTable(
-      List<Map<String, String>> orders,
+      List<SaleOrderList> orders,
       BuildContext context,
       ValueNotifier<String> selectedFilter,
       TextEditingController searchController) {
@@ -122,30 +142,45 @@ class SalesOrderPage extends HookWidget {
             DataColumn(label: Text('Order Date')),
             DataColumn(label: Text('Order No')),
             DataColumn(label: Text('Customer')),
-            DataColumn(label: Text('Advance')),
-            DataColumn(label: Text('Balance')),
-            DataColumn(label: Text('Due Date')),
+            DataColumn(label: Text('Items')),
+            DataColumn(label: Text('Total Amount')),
+            DataColumn(label: Text('Payment Mode')),
             DataColumn(label: Text('Status')),
             DataColumn(label: Text('Actions')),
           ],
           rows: orders.asMap().entries.where((entry) {
             final order = entry.value;
-            if (selectedFilter.value != 'All' &&
-                !order["status"]!
-                    .contains(selectedFilter.value.split(" ")[0])) {
-              return false;
+            final orderStatus = order.orderstatusId;
+            
+            if (selectedFilter.value != 'All') {
+              if (selectedFilter.value == 'Open Orders' && orderStatus != '1') {
+                return false;
+              }
+              if (selectedFilter.value == 'Closed Orders' && orderStatus == '1') {
+                return false;
+              }
             }
-            if (searchController.text.isNotEmpty &&
-                !order["name"]!
-                    .toLowerCase()
-                    .contains(searchController.text.toLowerCase())) {
-              return false;
+            
+            if (searchController.text.isNotEmpty) {
+              final searchTerm = searchController.text.toLowerCase();
+              final matchesOrderId = order.uniqueOrderId.toLowerCase().contains(searchTerm);
+              final matchesCustomer = order.orderAddress?.toLowerCase().contains(searchTerm) ?? false;
+              final matchesItems = order.items.any((item) => 
+                  item.itemId.toLowerCase().contains(searchTerm));
+              
+              if (!matchesOrderId && !matchesCustomer && !matchesItems) {
+                return false;
+              }
             }
             return true;
           }).map<DataRow>((entry) {
             final index = entry.key;
             final order = entry.value;
             final isEven = index % 2 == 0;
+            final dateFormat = DateFormat('dd MMM yyyy');
+            final customerName = order.orderAddress ?? 'Walk-in Customer';
+            final statusText = order.orderstatusId == '1' ? 'OPEN' : 'CLOSED';
+            final statusColor = order.orderstatusId == '1' ? warningColor : successColor;
 
             return DataRow(
               color: MaterialStateProperty.all(
@@ -158,7 +193,7 @@ class SalesOrderPage extends HookWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        order["date"]!,
+                        dateFormat.format(order.createdAt),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -166,7 +201,7 @@ class SalesOrderPage extends HookWidget {
                         ),
                       ),
                       Text(
-                        'ID: ${order["number"]!}',
+                        'ID: ${order.id}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF64748B),
@@ -187,7 +222,7 @@ class SalesOrderPage extends HookWidget {
                       ),
                     ),
                     child: Text(
-                      order["number"]!,
+                      order.uniqueOrderId,
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -208,11 +243,7 @@ class SalesOrderPage extends HookWidget {
                         ),
                         child: Center(
                           child: Text(
-                            order["name"]!
-                                .split(' ')
-                                .map((n) => n[0])
-                                .take(2)
-                                .join(),
+                            _getCustomerInitials(customerName),
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -227,11 +258,18 @@ class SalesOrderPage extends HookWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            order["name"]!,
+                            customerName,
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          Text(
+                            '${order.items.length} items',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF64748B),
                             ),
                           ),
                         ],
@@ -240,32 +278,37 @@ class SalesOrderPage extends HookWidget {
                   ),
                 ),
                 DataCell(
+                  Tooltip(
+                    message: order.items.map((item) => '${item.itemId} (x${item.qty})').join('\n'),
+                    child: Text(
+                      _getItemSummary(order.items),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                  ),
+                ),
+                DataCell(
                   Text(
-                    '₹${order["advance"]!}',
+                    '₹${order.orderTotalamt}',
                     style: const TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       color: Color(0xFF10B981),
                     ),
                   ),
                 ),
                 DataCell(
                   Text(
-                    '₹${order["balance"]!}',
-                    style: const TextStyle(
+                    order.paymentMode.toUpperCase(),
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFFEF4444),
-                    ),
-                  ),
-                ),
-                DataCell(
-                  Text(
-                    order["dueDate"]!,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF1E293B),
+                      color: order.paymentMode == 'cash' 
+                          ? const Color(0xFF10B981) 
+                          : const Color(0xFF3B82F6),
                     ),
                   ),
                 ),
@@ -274,14 +317,10 @@ class SalesOrderPage extends HookWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: order["status"] == "OPEN"
-                          ? warningColor.withOpacity(0.1)
-                          : successColor.withOpacity(0.1),
+                      color: statusColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: order["status"] == "OPEN"
-                            ? warningColor.withOpacity(0.3)
-                            : successColor.withOpacity(0.3),
+                        color: statusColor.withOpacity(0.3),
                       ),
                     ),
                     child: Row(
@@ -291,19 +330,15 @@ class SalesOrderPage extends HookWidget {
                           width: 6,
                           height: 6,
                           decoration: BoxDecoration(
-                            color: order["status"] == "OPEN"
-                                ? warningColor
-                                : successColor,
+                            color: statusColor,
                             borderRadius: BorderRadius.circular(3),
                           ),
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          order["status"]!,
+                          statusText,
                           style: TextStyle(
-                            color: order["status"] == "OPEN"
-                                ? warningColor
-                                : successColor,
+                            color: statusColor,
                             fontWeight: FontWeight.w600,
                             fontSize: 12,
                           ),
@@ -319,15 +354,14 @@ class SalesOrderPage extends HookWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_forward, size: 20),
+                      icon: const Icon(Icons.visibility, size: 20),
                       color: accentColor,
-                      onPressed: order["status"] == "OPEN"
-                          ? () {
-                              _showSuccessSnackBar(context,
-                                  'Converting to sale...', Icons.arrow_forward);
-                            }
-                          : null,
-                      tooltip: 'Convert to Sale',
+                      onPressed: () {
+                        // View order details
+                        _showSuccessSnackBar(context,
+                            'Viewing order details...', Icons.visibility);
+                      },
+                      tooltip: 'View Details',
                     ),
                   ),
                 ),
@@ -340,31 +374,12 @@ class SalesOrderPage extends HookWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final selectedFilter = useState('All');
     final searchController = useTextEditingController();
-    final dateFormat = DateFormat('dd MMM yyyy');
-
-    final orders = [
-      {
-        "name": "vghhv",
-        "status": "OPEN",
-        "number": "#1",
-        "date": "01 Jan, 25",
-        "advance": "0.00",
-        "balance": "13,32,000.00",
-        "dueDate": "02 Jan, 25"
-      },
-      {
-        "name": "Test Order",
-        "status": "CLOSED",
-        "number": "#2",
-        "date": "02 Jan, 25",
-        "advance": "5,000.00",
-        "balance": "8,000.00",
-        "dueDate": "05 Jan, 25"
-      },
-    ];
+    final userModel = ref.watch(userProvider);
+    final accessToken = userModel?.accessToken;
+    final salesOrderAsync = ref.watch(salesOrderProvider(accessToken!));
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -412,8 +427,7 @@ class SalesOrderPage extends HookWidget {
                       Icons.refresh,
                       accentColor,
                       () {
-                        _showSuccessSnackBar(context,
-                            'Data refreshed successfully!', Icons.refresh);
+                        ref.refresh(salesOrderProvider(accessToken));
                       },
                     ),
                     const SizedBox(width: 12),
@@ -425,7 +439,7 @@ class SalesOrderPage extends HookWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>  AddSalesOrderPage()),
+                              builder: (context) => AddSalesOrderPage()),
                         );
                       },
                     ),
@@ -436,119 +450,145 @@ class SalesOrderPage extends HookWidget {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.all(20),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: searchController,
-                    style:
-                        const TextStyle(fontSize: 16, color: textPrimaryColor),
-                    decoration: InputDecoration(
-                      hintText: "Search Order",
-                      hintStyle: const TextStyle(
-                        color: textSecondaryColor,
-                        fontSize: 16,
-                      ),
-                      prefixIcon: const Icon(Icons.search, color: accentColor),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey.withOpacity(0.1),
-                    ),
-                    onChanged: (value) {
-                      // Trigger rebuild to filter orders
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                _buildFilterChip("All", selectedFilter),
-                const SizedBox(width: 8),
-                _buildFilterChip("Open Orders", selectedFilter),
-                const SizedBox(width: 8),
-                _buildFilterChip("Closed Orders", selectedFilter),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+      body: salesOrderAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator(color: accentColor)),
+        error: (error, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text(
+                'Error loading orders: $error',
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
               ),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(color: Color(0xFFF1F5F9)),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.refresh(salesOrderProvider(accessToken)),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+        data: (salesOrderModel) {
+          final orders = salesOrderModel.data;
+
+          return Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: searchController,
+                        style:
+                            const TextStyle(fontSize: 16, color: textPrimaryColor),
+                        decoration: InputDecoration(
+                          hintText: "Search by Order ID, Customer, or Item",
+                          hintStyle: const TextStyle(
+                            color: textSecondaryColor,
+                            fontSize: 16,
+                          ),
+                          prefixIcon: const Icon(Icons.search, color: accentColor),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.withOpacity(0.1),
+                        ),
+                        onChanged: (value) {
+                          // Trigger rebuild to filter orders
+                        },
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Sales Order Records',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[800],
+                    const SizedBox(width: 12),
+                    _buildFilterChip("All", selectedFilter),
+                    const SizedBox(width: 8),
+                    _buildFilterChip("Open Orders", selectedFilter),
+                    const SizedBox(width: 8),
+                    _buildFilterChip("Closed Orders", selectedFilter),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: const BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: Color(0xFFF1F5F9)),
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: accentColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            '${orders.length} records',
-                            style: const TextStyle(
-                              color: accentColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Sales Order Records',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[800],
+                              ),
                             ),
-                          ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: accentColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                '${orders.length} records',
+                                style: const TextStyle(
+                                  color: accentColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      Expanded(
+                        child: _buildOrderTable(
+                            orders, context, selectedFilter, searchController),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: _buildOrderTable(
-                        orders, context, selectedFilter, searchController),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }

@@ -37,6 +37,8 @@ import 'package:green_biller/features/sales/view/pages/add_sale_page/sales%20LIs
 import 'package:green_biller/features/sales/view/pages/sales_order_page.dart';
 import 'package:green_biller/features/sales/view/pages/sales_return_page.dart';
 import 'package:green_biller/features/sales/view/pages/sales_view/sales_view_page.dart';
+import 'package:green_biller/features/sales/view/pages/stock_adjustment_item.dart';
+import 'package:green_biller/features/sales/view/pages/stock_transfer_item.dart';
 import 'package:green_biller/features/settings/view/pages/Activity%20Log/active_log_page.dart';
 import 'package:green_biller/features/settings/view/pages/account_settings_page.dart';
 import 'package:green_biller/features/settings/view/pages/business_setting/business_profile_page/business_profile_page.dart';
@@ -242,6 +244,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/stock-movement',
         builder: (context, state) => const StockMovementPage(),
+      ),
+      GoRoute(
+        path: '/stock-adjustment',
+        builder: (context, state) => StockAdjustmentItem(),
+      ),
+      GoRoute(
+        path: '/stock-transfer',
+        builder: (context, state) => StockTransferItem(),
       ),
       GoRoute(
         path: '/parties',
