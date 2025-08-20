@@ -418,6 +418,8 @@ class AddNewSalePage extends HookConsumerWidget {
     final isLoadingSave = useState<bool>(false);
     final isLoadingSavePrint = useState<bool>(false);
     final rowCount = useState<int>(1);
+    final itemInputFocusNode = useState<Map<int, FocusNode>>({});
+    final itemInputController = useRef(<int, TextEditingController>{});
 
     void onSalesTypeChanged(String? value) {
       salesType.value = value;
@@ -480,6 +482,12 @@ class AddNewSalePage extends HookConsumerWidget {
         for (var node in priceFocusNodes.value.values) {
           node.dispose();
         }
+        for (var node in itemInputFocusNode.value.values) {
+          node.dispose();
+        }
+        for (var controller in itemInputController.value.values) {
+          controller.dispose();
+        }
       };
     }, [accessToken]);
 
@@ -510,6 +518,9 @@ class AddNewSalePage extends HookConsumerWidget {
               text: rowFields.value[index]?['batchNo'] ?? ''));
       unitControllers.value[index].text = rowFields.value[index]?['unit'] ?? '';
       priceFocusNodes.value.putIfAbsent(index, () => FocusNode());
+      itemInputFocusNode.value.putIfAbsent(index, () => FocusNode());
+      itemInputController.value
+          .putIfAbsent(index, () => TextEditingController());
     }
 
     double recalculateGrandTotal() {
@@ -613,6 +624,15 @@ class AddNewSalePage extends HookConsumerWidget {
       };
       recalculateGrandTotal();
       recalculateTotalDiscount();
+
+      if (index < 9) {
+        rowCount.value = (index + 2).clamp(1, 10);
+        initControllers(index + 1);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          itemInputFocusNode.value[index + 1]?.requestFocus();
+          itemInputController.value[index]?.clear();
+        });
+      }
     }
 
     Widget input({required int rowIndex}) {
@@ -631,9 +651,11 @@ class AddNewSalePage extends HookConsumerWidget {
         displayStringForOption: (item_model.Item item) => item.itemName,
         onSelected: (item_model.Item item) => onItemSelected(item, rowIndex),
         fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+          itemInputController.value[rowIndex] = controller; 
+          itemInputFocusNode.value[rowIndex] = focusNode; 
           return TextField(
-            controller: controller,
-            focusNode: focusNode,
+            controller: controller, 
+            focusNode: focusNode, 
             style: const TextStyle(fontSize: 14),
             decoration: const InputDecoration(
               isDense: true,
@@ -903,6 +925,8 @@ class AddNewSalePage extends HookConsumerWidget {
                               rowCount.value,
                               (index) {
                                 initControllers(index);
+                                final itemName =
+                                    rowFields.value[index]?['itemName'] ?? '';
                                 return Container(
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -925,7 +949,19 @@ class AddNewSalePage extends HookConsumerWidget {
                                       ),
                                       DataCellWidget(
                                         width: itemColumnWidth,
-                                        child: input(rowIndex: index),
+                                        child: itemName.isNotEmpty
+                                            ? Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 9,
+                                                        vertical: 10),
+                                                child: Text(
+                                                  itemName,
+                                                  style: const TextStyle(
+                                                      fontSize: 14),
+                                                ),
+                                              )
+                                            : input(rowIndex: index),
                                       ),
                                       DataCellWidget(
                                         width: baseColumnWidth * 0.75,
