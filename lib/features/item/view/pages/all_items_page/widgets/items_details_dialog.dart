@@ -5,7 +5,7 @@ import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:green_biller/core/constants/colors.dart';
 
-class ItemDetailsDialog extends StatelessWidget {
+class ItemDetailsDialog extends StatefulWidget {
   final String itemId;
   final String itemName;
   final String itemCode;
@@ -49,39 +49,74 @@ class ItemDetailsDialog extends StatelessWidget {
     this.imageUrl,
   });
 
+  @override
+  _ItemDetailsDialogState createState() => _ItemDetailsDialogState();
+}
+
+class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
+  int _barcodeCount = 1;
+
   Future<void> _printBarcode() async {
     final pdf = pw.Document();
-    const double barcodeWidth = 30;
+    const double barcodeWidth = 50;
     const double barcodeHeight = 20;
-    const double padding = 10;
-    const int rows = 10;
+    const double padding = 0;
     const int columns = 2;
+    final int rows = (_barcodeCount / columns).ceil();
+
+    final pageFormat = PdfPageFormat(
+      2 * PdfPageFormat.inch,
+      1 * PdfPageFormat.inch * rows,
+      marginAll: 4,
+    );
 
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return pw.Padding(
+        pageFormat: pageFormat,
+        build: (context) {
+          return pw.GridView(
+            crossAxisCount: columns,
+            childAspectRatio: barcodeWidth / barcodeHeight,
             padding: const pw.EdgeInsets.all(padding),
-            child: pw.GridView(
-              crossAxisCount: columns,
-              crossAxisSpacing: padding,
-              mainAxisSpacing: padding,
-              childAspectRatio: barcodeWidth / barcodeHeight,
-              children: List.generate(rows * columns, (index) {
-                return pw.Container(
-                  decoration: pw.BoxDecoration(
-                    border: pw.Border.all(color: PdfColors.grey300, width: 1),
-                  ),
-                  child: pw.BarcodeWidget(
-                    barcode: pw.Barcode.code128(),
-                    data: barcode,
-                    drawText: true,
-                    textStyle: const pw.TextStyle(fontSize: 10),
-                  ),
-                );
-              }),
-            ),
+            children: List.generate(_barcodeCount, (index) {
+              return pw.Container(
+                alignment: pw.Alignment.center,
+                child: pw.Column(
+                  mainAxisAlignment: pw.MainAxisAlignment.center,
+                  children: [
+                    pw.Text(
+                      widget.storeName,
+                      style: pw.TextStyle(
+                          fontSize: 8, fontWeight: pw.FontWeight.bold),
+                      textAlign: pw.TextAlign.center,
+                    ),
+                    pw.SizedBox(height: 1),
+                    pw.Text(
+                      widget.itemName,
+                      style: const pw.TextStyle(
+                        fontSize: 6,
+                      ),
+                      textAlign: pw.TextAlign.center,
+                      maxLines: 1,
+                    ),
+                    pw.SizedBox(height: 1),
+                    pw.Text(
+                      'MRP: ${widget.price.toStringAsFixed(2)}',
+                      style: const pw.TextStyle(fontSize: 7),
+                      textAlign: pw.TextAlign.center,
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.BarcodeWidget(
+                      barcode: pw.Barcode.code128(),
+                      data: widget.barcode,
+                      width: barcodeWidth,
+                      height: barcodeHeight,
+                      drawText: false,
+                    ),
+                  ],
+                ),
+              );
+            }),
           );
         },
       ),
@@ -93,7 +128,7 @@ class ItemDetailsDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final safeAlertQty = int.tryParse(alertQuantity) ?? 0;
+    final safeAlertQty = int.tryParse(widget.alertQuantity) ?? 0;
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
@@ -119,6 +154,7 @@ class ItemDetailsDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Header remains unchanged
             Container(
               padding: const EdgeInsets.fromLTRB(24, 20, 16, 20),
               decoration: BoxDecoration(
@@ -179,6 +215,7 @@ class ItemDetailsDialog extends StatelessWidget {
                 ],
               ),
             ),
+            // Scrollable content with improved alignment
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
@@ -188,110 +225,164 @@ class ItemDetailsDialog extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 130,
-                          height: 130,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.grey.shade200,
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: imageUrl != null && imageUrl!.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: Image.network(
-                                    imageUrl!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Colors.grey.shade100,
-                                              Colors.grey.shade200,
-                                            ],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.image_not_supported_rounded,
-                                          size: 48,
-                                          color: Colors.grey,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                )
-                              : Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        primaryColor.withOpacity(0.1),
-                                        primaryColor.withOpacity(0.05),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: Icon(
-                                    Icons.inventory_2_rounded,
-                                    size: 48,
-                                    color: primaryColor.withOpacity(0.6),
-                                  ),
+                        // Image section with item name below
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 190,
+                              child: Text(
+                                widget.itemName,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: textPrimaryColor,
+                                  height: 1.2,
                                 ),
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              width: 190,
+                              height: 190,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.grey.shade200,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: widget.imageUrl != null &&
+                                      widget.imageUrl!.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(14),
+                                      child: Image.network(
+                                        widget.imageUrl!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Container(
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  Colors.grey.shade100,
+                                                  Colors.grey.shade200,
+                                                ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              Icons.image_not_supported_rounded,
+                                              size: 48,
+                                              color: Colors.grey,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    )
+                                  : Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            primaryColor.withOpacity(0.1),
+                                            primaryColor.withOpacity(0.05),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      child: Icon(
+                                        Icons.inventory_2_rounded,
+                                        size: 48,
+                                        color: primaryColor.withOpacity(0.6),
+                                      ),
+                                    ),
+                            ),
+                          ],
                         ),
                         const SizedBox(width: 20),
+                        // Right column with barcode, category, and stock
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              // Barcode section
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Expanded(
-                                    child: Text(
-                                      itemName,
-                                      style: const TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w800,
-                                        color: textPrimaryColor,
-                                        height: 1.2,
+                                  Container(
+                                    width: 120,
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.grey.shade300,
+                                        width: 1,
                                       ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Column(
-                                    children: [
-                                      Container(
-                                        width: 100,
-                                        height: 50,
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: Colors.grey.shade300,
-                                            width: 1,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.1),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 4),
                                         ),
-                                        child: barcode.isNotEmpty
+                                      ],
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          widget.storeName,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: textPrimaryColor,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          widget.itemName,
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.normal,
+                                            color: textPrimaryColor,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '₹${widget.price.toStringAsFixed(2)}',
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.normal,
+                                            color: textPrimaryColor,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        widget.barcode.isNotEmpty
                                             ? BarcodeWidget(
                                                 barcode: Barcode.code128(),
-                                                data: barcode,
+                                                data: widget.barcode,
                                                 drawText: false,
                                                 color: Colors.black,
+                                                height: 40,
                                                 padding:
                                                     const EdgeInsets.all(5),
                                               )
@@ -300,103 +391,158 @@ class ItemDetailsDialog extends StatelessWidget {
                                                 size: 40,
                                                 color: Colors.grey,
                                               ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  // Barcode input and print button
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        height: 40,
+                                        width: 80,
+                                        child: TextField(
+                                          keyboardType: TextInputType.number,
+                                          decoration: InputDecoration(
+                                            hintText: 'Count',
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey.shade500,
+                                              fontSize: 12,
+                                            ),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color: Colors.grey.shade300,
+                                              ),
+                                            ),
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 8,
+                                            ),
+                                          ),
+                                          style: const TextStyle(fontSize: 14),
+                                          textAlign: TextAlign.center,
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _barcodeCount =
+                                                  int.tryParse(value) ?? 1;
+                                              if (_barcodeCount < 1)
+                                                _barcodeCount = 1;
+                                            });
+                                          },
+                                        ),
                                       ),
-                                      const SizedBox(height: 8),
+                                      const SizedBox(width: 12),
                                       ElevatedButton.icon(
-                                        onPressed: barcode.isNotEmpty
+                                        onPressed: widget.barcode.isNotEmpty
                                             ? _printBarcode
                                             : null,
                                         icon: const Icon(Icons.print, size: 16),
-                                        label: const Text('Print Barcodes'),
+                                        label: const Text('Print',
+                                            style: TextStyle(fontSize: 12)),
                                         style: ElevatedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 8),
+                                            horizontal: 16,
+                                            vertical: 8,
+                                          ),
                                           backgroundColor: accentColor,
                                           foregroundColor: Colors.white,
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
-                                                BorderRadius.circular(8),
+                                                BorderRadius.circular(12),
                                           ),
+                                          elevation: 2,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      accentColor.withOpacity(0.1),
-                                      primaryColor.withOpacity(0.08),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: accentColor,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  categoryName,
-                                  style: const TextStyle(
-                                    color: textPrimaryColor,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                              ),
                               const SizedBox(height: 16),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: stock > safeAlertQty
-                                      ? Colors.green.withOpacity(0.1)
-                                      : Colors.orange.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: stock > safeAlertQty
-                                        ? Colors.green.withOpacity(0.3)
-                                        : Colors.orange.withOpacity(0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      stock > safeAlertQty
-                                          ? Icons.check_circle_rounded
-                                          : Icons.warning_rounded,
-                                      color: stock > safeAlertQty
-                                          ? Colors.green
-                                          : Colors.orange,
-                                      size: 16,
+                              // Category and Stock Alert in a Row
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  // Category Tag
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 10,
                                     ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      stock > safeAlertQty
-                                          ? 'In Stock'
-                                          : 'Low Stock',
-                                      style: TextStyle(
-                                        color: stock > safeAlertQty
-                                            ? Colors.green
-                                            : Colors.orange,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          accentColor.withOpacity(0.15),
+                                          primaryColor.withOpacity(0.1),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: accentColor.withOpacity(0.3),
+                                        width: 1.5,
                                       ),
                                     ),
-                                  ],
-                                ),
+                                    child: Text(
+                                      widget.categoryName,
+                                      style: const TextStyle(
+                                        color: textPrimaryColor,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  // Stock Alert
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: widget.stock > safeAlertQty
+                                          ? Colors.green.withOpacity(0.15)
+                                          : Colors.orange.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: widget.stock > safeAlertQty
+                                            ? Colors.green.withOpacity(0.3)
+                                            : Colors.orange.withOpacity(0.3),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          widget.stock > safeAlertQty
+                                              ? Icons.check_circle_rounded
+                                              : Icons.warning_rounded,
+                                          color: widget.stock > safeAlertQty
+                                              ? Colors.green
+                                              : Colors.orange,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          widget.stock > safeAlertQty
+                                              ? 'In Stock (${widget.stock})'
+                                              : 'Low Stock (${widget.stock})',
+                                          style: TextStyle(
+                                            color: widget.stock > safeAlertQty
+                                                ? Colors.green
+                                                : Colors.orange,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -404,6 +550,7 @@ class ItemDetailsDialog extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 28),
+                    // Remaining sections (Price Info, Product Information, Pricing & Tax)
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -426,15 +573,16 @@ class ItemDetailsDialog extends StatelessWidget {
                         children: [
                           _buildPriceInfo(
                               'Sales Price',
-                              '₹${price.toStringAsFixed(2)}',
+                              '₹${widget.price.toStringAsFixed(2)}',
                               textSecondaryColor),
                           _buildDivider(),
-                          _buildPriceInfo('MRP', '₹$mrp', textSecondaryColor),
+                          _buildPriceInfo(
+                              'MRP', '₹${widget.mrp}', textSecondaryColor),
                           _buildDivider(),
                           _buildPriceInfo(
                               'Stock',
-                              '$stock ',
-                              stock > safeAlertQty
+                              '${widget.stock}',
+                              widget.stock > safeAlertQty
                                   ? Colors.green
                                   : Colors.orange),
                         ],
@@ -445,13 +593,15 @@ class ItemDetailsDialog extends StatelessWidget {
                         'Product Information', Icons.info_rounded),
                     const SizedBox(height: 16),
                     _buildDetailsGrid([
-                      _buildDetailRow('Item Code', Icons.numbers, itemCode),
-                      _buildDetailRow('SKU', Icons.qr_code, sku),
-                      _buildDetailRow('Barcode', Icons.barcode_reader, barcode),
                       _buildDetailRow(
-                          'Brand', Icons.branding_watermark_rounded, brandName),
-                      _buildDetailRow('Store', Icons.store, storeName),
-                      _buildDetailRow('Unit', Icons.scale, unit),
+                          'Item Code', Icons.numbers, widget.itemCode),
+                      _buildDetailRow('SKU', Icons.qr_code, widget.sku),
+                      _buildDetailRow(
+                          'Barcode', Icons.barcode_reader, widget.barcode),
+                      _buildDetailRow('Brand', Icons.branding_watermark_rounded,
+                          widget.brandName),
+                      _buildDetailRow('Store', Icons.store, widget.storeName),
+                      _buildDetailRow('Unit', Icons.scale, widget.unit),
                     ]),
                     const SizedBox(height: 24),
                     _buildSectionTitle(
@@ -461,17 +611,27 @@ class ItemDetailsDialog extends StatelessWidget {
                       _buildDetailRow(
                           'Profit Margin',
                           Icons.trending_up_rounded,
-                          '${profitMargin.toStringAsFixed(1)}%'),
+                          '${widget.profitMargin.toStringAsFixed(1)}%'),
                       _buildDetailRow('Tax Rate', Icons.percent_rounded,
-                          '${taxRate.toStringAsFixed(1)}%'),
+                          '${widget.taxRate.toStringAsFixed(1)}%'),
                       _buildDetailRow('Tax Type', Icons.receipt_long_rounded,
-                          taxType.toUpperCase()),
-                      _buildDetailRow('Discount Type', Icons.discount_rounded,
-                          discountType.isEmpty ? 'None' : discountType),
-                      _buildDetailRow('Discount', Icons.percent_rounded,
-                          discount.isEmpty ? '0%' : '$discount%'),
-                      _buildDetailRow('Alert Quantity',
-                          Icons.notifications_active_rounded, alertQuantity),
+                          widget.taxType.toUpperCase()),
+                      _buildDetailRow(
+                          'Discount Type',
+                          Icons.discount_rounded,
+                          widget.discountType.isEmpty
+                              ? 'None'
+                              : widget.discountType),
+                      _buildDetailRow(
+                          'Discount',
+                          Icons.percent_rounded,
+                          widget.discount.isEmpty
+                              ? '0%'
+                              : '${widget.discount}%'),
+                      _buildDetailRow(
+                          'Alert Quantity',
+                          Icons.notifications_active_rounded,
+                          widget.alertQuantity),
                     ]),
                   ],
                 ),
