@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:barcode_widget/barcode_widget.dart';
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:green_biller/core/constants/colors.dart';
 
 class ItemDetailsDialog extends StatelessWidget {
@@ -45,6 +49,48 @@ class ItemDetailsDialog extends StatelessWidget {
     this.imageUrl,
   });
 
+  Future<void> _printBarcode() async {
+    final pdf = pw.Document();
+    const double barcodeWidth = 30;
+    const double barcodeHeight = 20;
+    const double padding = 10;
+    const int rows = 10;
+    const int columns = 2;
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Padding(
+            padding: const pw.EdgeInsets.all(padding),
+            child: pw.GridView(
+              crossAxisCount: columns,
+              crossAxisSpacing: padding,
+              mainAxisSpacing: padding,
+              childAspectRatio: barcodeWidth / barcodeHeight,
+              children: List.generate(rows * columns, (index) {
+                return pw.Container(
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.grey300, width: 1),
+                  ),
+                  child: pw.BarcodeWidget(
+                    barcode: pw.Barcode.code128(),
+                    data: barcode,
+                    drawText: true,
+                    textStyle: const pw.TextStyle(fontSize: 10),
+                  ),
+                );
+              }),
+            ),
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save());
+  }
+
   @override
   Widget build(BuildContext context) {
     final safeAlertQty = int.tryParse(alertQuantity) ?? 0;
@@ -73,7 +119,6 @@ class ItemDetailsDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Enhanced Header with gradient
             Container(
               padding: const EdgeInsets.fromLTRB(24, 20, 16, 20),
               decoration: BoxDecoration(
@@ -134,18 +179,15 @@ class ItemDetailsDialog extends StatelessWidget {
                 ],
               ),
             ),
-
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Enhanced Item Image and Basic Info
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Enhanced Item Image with shadow
                         Container(
                           width: 130,
                           height: 130,
@@ -211,19 +253,75 @@ class ItemDetailsDialog extends StatelessWidget {
                                 ),
                         ),
                         const SizedBox(width: 20),
-
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                itemName,
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w800,
-                                  color: textPrimaryColor,
-                                  height: 1.2,
-                                ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      itemName,
+                                      style: const TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w800,
+                                        color: textPrimaryColor,
+                                        height: 1.2,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Column(
+                                    children: [
+                                      Container(
+                                        width: 100,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: Colors.grey.shade300,
+                                            width: 1,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          color: Colors.white,
+                                        ),
+                                        child: barcode.isNotEmpty
+                                            ? BarcodeWidget(
+                                                barcode: Barcode.code128(),
+                                                data: barcode,
+                                                drawText: false,
+                                                color: Colors.black,
+                                                padding:
+                                                    const EdgeInsets.all(5),
+                                              )
+                                            : const Icon(
+                                                Icons.broken_image,
+                                                size: 40,
+                                                color: Colors.grey,
+                                              ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      ElevatedButton.icon(
+                                        onPressed: barcode.isNotEmpty
+                                            ? _printBarcode
+                                            : null,
+                                        icon: const Icon(Icons.print, size: 16),
+                                        label: const Text('Print Barcodes'),
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 8),
+                                          backgroundColor: accentColor,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 12),
                               Container(
@@ -305,9 +403,7 @@ class ItemDetailsDialog extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 28),
-
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -344,9 +440,7 @@ class ItemDetailsDialog extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 28),
-
                     _buildSectionTitle(
                         'Product Information', Icons.info_rounded),
                     const SizedBox(height: 16),
@@ -359,9 +453,7 @@ class ItemDetailsDialog extends StatelessWidget {
                       _buildDetailRow('Store', Icons.store, storeName),
                       _buildDetailRow('Unit', Icons.scale, unit),
                     ]),
-
                     const SizedBox(height: 24),
-
                     _buildSectionTitle(
                         'Pricing & Tax', Icons.attach_money_rounded),
                     const SizedBox(height: 16),
@@ -385,38 +477,6 @@ class ItemDetailsDialog extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Container(
-            //   padding: const EdgeInsets.all(10),
-            //   child: Row(
-            //     children: [
-            //       Expanded(
-            //         child: OutlinedButton.icon(
-            //           onPressed: () {
-            //             Navigator.of(context).pop();
-            //             // Add edit functionality here
-            //           },
-            //           icon: const Icon(Icons.edit_rounded, size: 18),
-            //           label: const Text(
-            //             'Edit Item',
-            //             style: TextStyle(
-            //               fontWeight: FontWeight.w600,
-            //               fontSize: 15,
-            //             ),
-            //           ),
-            //           style: OutlinedButton.styleFrom(
-            //             padding: const EdgeInsets.symmetric(vertical: 16),
-            //             side: const BorderSide(color: accentColor, width: 1.5),
-            //             foregroundColor: textPrimaryColor,
-            //             shape: RoundedRectangleBorder(
-            //               borderRadius: BorderRadius.circular(12),
-            //             ),
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
           ],
         ),
       ),
@@ -532,7 +592,6 @@ class ItemDetailsDialog extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // Icon container
                 Container(
                   width: 36,
                   height: 36,
@@ -547,8 +606,6 @@ class ItemDetailsDialog extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-
-                // Title and value
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

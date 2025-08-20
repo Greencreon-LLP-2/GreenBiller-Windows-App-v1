@@ -15,23 +15,25 @@ class MenuItemModel {
 class MenuPage extends ConsumerWidget {
   const MenuPage({super.key});
 
-
-
   static final List<MenuItemModel> salesItems = [
-    MenuItemModel("Sale Invoice", Icons.receipt_long, (context, ref) async {
-      context.push('/sales-view');
-      return;
-    }),
     MenuItemModel("Payment-In", Icons.payment, (context, ref) async {
-      context.push('/payment-in'); 
+      context.push('/payment-in');
       return;
     }),
     MenuItemModel("Sale Return", Icons.assignment_return, (context, ref) async {
-      context.push('/sales-return'); 
+      context.push('/sales-return');
       return;
     }),
     MenuItemModel("Sale Order", Icons.shopping_cart, (context, ref) async {
-      context.push('/sales-order'); 
+      context.push('/sales-order');
+      return;
+    }),
+    MenuItemModel("Stock Adjustment", Icons.receipt_long, (context, ref) async {
+      context.push('/stock-adjustment');
+      return;
+    }),
+    MenuItemModel("Stock Transfer", Icons.receipt_long, (context, ref) async {
+      context.push('/stock-transfer');
       return;
     }),
   ];

@@ -7,13 +7,13 @@ import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/core/widgets/card_container.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
 import 'package:green_biller/features/item/model/credit_note/credit_note_model.dart';
-import 'package:green_biller/features/sales/view/pages/add_credit_note_items_page.dart';
+import 'package:green_biller/features/sales/service/sales_view_service.dart';
 import 'package:green_biller/features/store/controllers/view_parties_controller.dart';
 import 'package:green_biller/features/store/controllers/view_store_controller.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
-final selectedItemsProvider = StateProvider<List<CreditNoteItem>>((ref) => []);
+final selectedCreditNoteItemsProvider = StateProvider<List<CreditNoteItem>>((ref) => []);
 
 class CreditNotePage extends HookConsumerWidget {
   CreditNotePage({super.key});
@@ -160,7 +160,7 @@ class CreditNotePage extends HookConsumerWidget {
     final phoneController = useTextEditingController();
     final invoiceDateController = useTextEditingController();
     final invoiceNumberController = useTextEditingController();
-    final selectedItems = ref.watch(selectedItemsProvider);
+    final selectedItems = ref.watch(selectedCreditNoteItemsProvider);
     final returnNumber = useState(_generateReturnNumber());
     final userModel = ref.watch(userProvider);
     final accessToken = userModel?.accessToken;
@@ -219,7 +219,10 @@ class CreditNotePage extends HookConsumerWidget {
       }
     }
 
-    void saveCreditNote() {
+    Future<void> saveCreditNote(
+        BuildContext context, String accessToken) async {
+      final service = SalesViewService(accessToken);
+
       final creditNote = CreditNote(
         returnNumber: returnNumber.value,
         returnDate: selectedDate.value,
@@ -229,7 +232,7 @@ class CreditNotePage extends HookConsumerWidget {
         phoneNumber: phoneController.text,
         invoiceDate: invoiceDateController.text.isNotEmpty
             ? DateFormat('dd/MM/yyyy').parse(invoiceDateController.text)
-            : null,
+            : DateTime.now(),
         invoiceNumber: invoiceNumberController.text,
         items: selectedItems,
         totalAmount: calculateTotal(),
@@ -238,9 +241,50 @@ class CreditNotePage extends HookConsumerWidget {
             ? customerList.value[selectedCustomerName.value] ?? ''
             : null,
       );
-      _printCreditNoteDetails(creditNote);
-      _showSuccessSnackBar(
-          context, 'Credit note saved successfully!', Icons.check_circle);
+
+      try {
+        final returnId = await service.createSalesReturn({
+          'store_id': creditNote.storeId,
+          'sales_id': creditNote.invoiceNumber,
+          'return_code': creditNote.returnNumber,
+          'grand_total': creditNote.totalAmount,
+        });
+
+        for (final item in creditNote.items) {
+          await service.createSalesItemReturn({
+            'store_id': creditNote.storeId,
+            'sales_id': creditNote.invoiceNumber,
+            'return_id': returnId,
+            'customer_id': creditNote.customerId ?? 0,
+            'item_id': item.item.id,
+            'item_name': item.item.itemName,
+            'sales_qty': item.quantity,
+            'price_per_unit': item.rate,
+            'total_cost': item.quantity * item.rate,
+          });
+        }
+
+        await service.createSalesPaymentReturn({
+          'store_id': creditNote.storeId,
+          'return_id': returnId,
+          'customer_id': creditNote.customerId ?? 0,
+          'payment_date':
+              DateFormat('yyyy-MM-dd').format(creditNote.returnDate),
+          'payment_type': 'cash',
+          'payment': creditNote.totalAmount,
+          'account_id': 1,
+          'payment_note': 'Credit note refund for Sales Return #$returnId',
+        });
+
+        _showSuccessSnackBar(
+          context,
+          'Credit note saved & refund processed successfully!',
+          Icons.check_circle,
+        );
+      } catch (e) {
+        print('Error saving Credit Note: $e');
+        _showErrorSnackBar(context, 'Error: ${e.toString()}');
+      }
     }
 
     return Scaffold(
@@ -286,7 +330,9 @@ class CreditNotePage extends HookConsumerWidget {
                   'Save',
                   Icons.save,
                   accentColor,
-                  saveCreditNote,
+                  () async {
+                    await saveCreditNote(context, accessToken!);
+                  },
                 ),
               ),
             ],
@@ -619,33 +665,6 @@ class CreditNotePage extends HookConsumerWidget {
     final randomString =
         List.generate(8, (index) => chars[random.nextInt(chars.length)]).join();
     return 'RT_ITEM_$randomString';
-  }
-
-  void _printCreditNoteDetails(CreditNote creditNote) {
-    final dateFormat = DateFormat('dd/MM/yyyy');
-
-    print('--- Credit Note Details ---');
-    print('Return Number: ${creditNote.returnNumber}');
-    print('Date: ${dateFormat.format(creditNote.returnDate)}');
-    print('Store ID: ${creditNote.storeId}');
-    print('Customer: ${creditNote.customerName}');
-    print('Customer ID: ${creditNote.customerId ?? "Walk-in Customer"}');
-    if (creditNote.phoneNumber != null) {
-      print('Phone: ${creditNote.phoneNumber}');
-    }
-    if (creditNote.invoiceDate != null) {
-      print('Invoice Date: ${dateFormat.format(creditNote.invoiceDate!)}');
-    }
-    if (creditNote.invoiceNumber != null) {
-      print('Invoice No: ${creditNote.invoiceNumber}');
-    }
-    print('\nItems:');
-    for (final item in creditNote.items) {
-      print(
-          '- ${item.item.itemName}: ${item.quantity} ${item.unit} @ ₹${item.rate}');
-    }
-    print('\nTotal Amount: ₹${creditNote.totalAmount.toStringAsFixed(2)}');
-    print('--------------------------');
   }
 
   Widget _buildDropdownField(String label, String value,

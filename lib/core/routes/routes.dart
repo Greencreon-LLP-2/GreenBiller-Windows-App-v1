@@ -32,11 +32,14 @@ import 'package:green_biller/features/reports/stock_report/stock_movement_page.d
 import 'package:green_biller/features/reports/stock_report/stock_summary_page.dart';
 import 'package:green_biller/features/sales/view/pages/POS/pos_billing_page.dart';
 import 'package:green_biller/features/sales/view/pages/add_credit_note_items_page.dart';
+import 'package:green_biller/features/sales/view/pages/add_sale_order_items_page.dart';
 import 'package:green_biller/features/sales/view/pages/add_sale_page/new_sale_page.dart';
 import 'package:green_biller/features/sales/view/pages/add_sale_page/sales%20LIst/sales_list.dart';
 import 'package:green_biller/features/sales/view/pages/sales_order_page.dart';
 import 'package:green_biller/features/sales/view/pages/sales_return_page.dart';
 import 'package:green_biller/features/sales/view/pages/sales_view/sales_view_page.dart';
+import 'package:green_biller/features/sales/view/pages/stock_adjustment_item.dart';
+import 'package:green_biller/features/sales/view/pages/stock_transfer_item.dart';
 import 'package:green_biller/features/settings/view/pages/Activity%20Log/active_log_page.dart';
 import 'package:green_biller/features/settings/view/pages/account_settings_page.dart';
 import 'package:green_biller/features/settings/view/pages/business_setting/business_profile_page/business_profile_page.dart';
@@ -214,6 +217,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/add-credit-note-items/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? ''; // Get the ID
+          return AddCreditNoteItemsPage(storeId: id);
+        },
+      ),
+      GoRoute(
+        path: '/add-sales-oder-items/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? ''; // Get the ID
+          return AddSaleOrderItemsPage(storeId: id);
+        },
+      ),
+      GoRoute(
         path: '/payment-out',
         builder: (context, state) => const PaymentOutPage(),
       ),
@@ -228,6 +245,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/stock-movement',
         builder: (context, state) => const StockMovementPage(),
+      ),
+      GoRoute(
+        path: '/stock-adjustment',
+        builder: (context, state) => StockAdjustmentItem(),
+      ),
+      GoRoute(
+        path: '/stock-transfer',
+        builder: (context, state) => StockTransferItem(),
       ),
       GoRoute(
         path: '/parties',
