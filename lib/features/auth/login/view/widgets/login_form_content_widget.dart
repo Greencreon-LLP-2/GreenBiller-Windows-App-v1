@@ -130,7 +130,7 @@ class LoginFormContentWidget extends HookConsumerWidget {
                   controller: mobileController,
                   keyboardType: TextInputType.phone,
                   onChanged: (value) {
-                    // Basic phone number validation (only allow digits)
+                  
                     if (value.isNotEmpty && !RegExp(r'^\d*$').hasMatch(value)) {
                       mobileController.text =
                           value.replaceAll(RegExp(r'[^\d]'), '');
@@ -145,7 +145,7 @@ class LoginFormContentWidget extends HookConsumerWidget {
           ),
           const SizedBox(height: 20),
 
-          // Password Field (shown when password login is active)
+     
           if (isPasswordLogin.value)
             CustomTextFieldWidget(
               hintText: "AbD12xxxxxxxx@67",
@@ -160,7 +160,7 @@ class LoginFormContentWidget extends HookConsumerWidget {
             ),
 
           const SizedBox(height: 16),
-          // Remember Me & Forgot Password
+  
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -178,7 +178,7 @@ class LoginFormContentWidget extends HookConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // if (true)
+            
               Flexible(
                 child: TextButton(
                   onPressed: onForgotPassword,
