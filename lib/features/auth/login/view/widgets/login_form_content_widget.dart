@@ -7,7 +7,6 @@ import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/core/theme/text_styles.dart';
 import 'package:green_biller/features/auth/login/controllers/otp_controller.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
-import 'package:green_biller/features/auth/login/services/country_code_service.dart';
 import 'package:green_biller/features/auth/login/services/sign_in_service.dart';
 import 'package:green_biller/features/auth/login/view/widgets/action_button_widget.dart';
 import 'package:green_biller/features/auth/login/view/widgets/custom_text_field_widget.dart';
@@ -34,14 +33,6 @@ class LoginFormContentWidget extends HookConsumerWidget {
     final isPasswordLogin = useState(false);
     final selectedCountryCode =
         useState<String>('+91'); // Default to India's code
-    final selectedCountry = useState<Country?>(null);
-
-    // Initialize with India
-    useEffect(() {
-      final india = getCountryByPhoneCode('+91');
-      selectedCountry.value = india;
-      return null;
-    }, []);
 
     // Animation for login button
     final animationController = useAnimationController(
@@ -75,90 +66,62 @@ class LoginFormContentWidget extends HookConsumerWidget {
           Row(
             children: [
               Container(
-                width: 60,
+                width: 90,
                 height: 50,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: InkWell(
-                  onTap: () {
-                    showCountryPicker(
-                      context: context,
-                      showPhoneCode: true,
-                      onSelect: (Country country) {
-                        selectedCountryCode.value = '+${country.phoneCode}';
-                        selectedCountry.value = country;
-                      },
-                      countryListTheme: CountryListThemeData(
-                        flagSize: 25,
-                        backgroundColor: Colors.white,
-                        textStyle: const TextStyle(fontSize: 16, color: Colors.blueGrey),
-                        bottomSheetHeight: 500,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20.0),
-                          topRight: Radius.circular(20.0),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: selectedCountryCode.value,
+                    isExpanded: true,
+                    icon: const Icon(Icons.arrow_drop_down, size: 20),
+                    items: CountryService()
+                        .getAll()
+                        .where((c) => c.phoneCode.isNotEmpty)
+                        .map((country) {
+                      return DropdownMenuItem<String>(
+                        value: '+${country.phoneCode}',
+                        child: Row(
+                          children: [
+                            Text(country.flagEmoji,
+                                style: const TextStyle(fontSize: 16)),
+                            const SizedBox(width: 6),
+                            Text('+${country.phoneCode}',
+                                style: const TextStyle(fontSize: 13)),
+                          ],
                         ),
-                        inputDecoration: InputDecoration(
-                          labelText: 'Search Country',
-                          hintText: 'Type country name or code',
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: const Color(0xFF8C98A8).withOpacity(0.2),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: Colors.green,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                        searchTextStyle: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              // Country flag
-                             /* Text(
-                                selectedCountry.value?.flagEmoji ?? '🇮🇳',
-                                style: const TextStyle(fontSize: 18),
-                              ),
-                              const SizedBox(width: 4),*/
-                              // Country code
-                              Expanded(
-                                child: Text(
-                                  selectedCountryCode.value,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.arrow_drop_down, size: 16),
-                      ],
-                    ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        selectedCountryCode.value = value;
+                      }
+                    },
+                    selectedItemBuilder: (context) {
+                      return CountryService()
+                          .getAll()
+                          .where((c) => c.phoneCode.isNotEmpty)
+                          .map((country) {
+                        return Row(
+                          children: [
+                            Text(country.flagEmoji,
+                                style: const TextStyle(fontSize: 16)),
+                            const SizedBox(width: 4),
+                            Text('+${country.phoneCode}',
+                                style: const TextStyle(fontSize: 13)),
+                          ],
+                        );
+                      }).toList();
+                    },
                   ),
                 ),
               ),
-             const SizedBox(width: 12,),
+              const SizedBox(
+                width: 12,
+              ),
               Expanded(
                 child: CustomTextFieldWidget(
                   hintText: "9876543210",
@@ -198,39 +161,38 @@ class LoginFormContentWidget extends HookConsumerWidget {
 
           const SizedBox(height: 16),
           // Remember Me & Forgot Password
-         Row(
-         
-           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-           children: [
-             TextButton(
-               onPressed: () {
-                 isPasswordLogin.value = !isPasswordLogin.value;
-               },
-               child: Text(
-                 isPasswordLogin.value
-                     ? 'Sign In with Phone'
-                     : 'Sign In with Password',
-                 style: AppTextStyles.labelMedium.copyWith(
-                   color: accentColor,
-                 ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextButton(
+                onPressed: () {
+                  isPasswordLogin.value = !isPasswordLogin.value;
+                },
+                child: Text(
+                  isPasswordLogin.value
+                      ? 'Sign In with Phone'
+                      : 'Sign In with Password',
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: accentColor,
+                  ),
                   overflow: TextOverflow.ellipsis,
-               ),
-             ),
-             // if (true)
-           Flexible(
-      child: TextButton(
-        onPressed: onForgotPassword,
-        child: Text(
-          'Forgot Password?',
-          style: AppTextStyles.labelMedium.copyWith(
-            color: accentColor,
+                ),
+              ),
+              // if (true)
+              Flexible(
+                child: TextButton(
+                  onPressed: onForgotPassword,
+                  child: Text(
+                    'Forgot Password?',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: accentColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
           ),
-          overflow: TextOverflow.ellipsis, 
-        ),
-      ),
-    ),
-           ],
-         ),
           const SizedBox(height: 24),
           // Login Button
           MouseRegion(
