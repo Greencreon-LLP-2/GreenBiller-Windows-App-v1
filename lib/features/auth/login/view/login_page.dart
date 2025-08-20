@@ -1,18 +1,14 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/core/theme/text_styles.dart';
 import 'package:green_biller/features/auth/login/view/widgets/login_form_widget.dart';
 import 'package:green_biller/features/auth/login/view/widgets/logo_header_widget.dart';
-
 class LoginPage extends HookWidget {
   const LoginPage({super.key});
-
   @override
   Widget build(BuildContext context) {
-    // Using hooks for any state management if needed in the future
     final pageController = usePageController();
 
     return Scaffold(
@@ -252,10 +248,9 @@ class HiddenCoreConfig extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    elevation: 0,
+                    elevation:0,
                   ),
-                  onPressed: () {
-                    // TODO: Save the base URL
+                  onPressed:(){
                     Navigator.of(context).pop();
                   },
                   child: Text(

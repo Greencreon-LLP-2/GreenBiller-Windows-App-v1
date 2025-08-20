@@ -46,6 +46,8 @@ dependencies:
   # Code generation annotations
   freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
+  #country code picker
+  country_picker: ^2.0.21
 
 
 dev_dependencies:

@@ -7,11 +7,11 @@ import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/core/theme/text_styles.dart';
 import 'package:green_biller/features/auth/login/controllers/otp_controller.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
-import 'package:green_biller/features/auth/login/services/country_code_service.dart';
 import 'package:green_biller/features/auth/login/services/sign_in_service.dart';
 import 'package:green_biller/features/auth/login/view/widgets/action_button_widget.dart';
 import 'package:green_biller/features/auth/login/view/widgets/custom_text_field_widget.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:country_picker/country_picker.dart';
 
 class LoginFormContentWidget extends HookConsumerWidget {
   final Function(String phoneNumber) onSwitchToSignup;
@@ -66,60 +66,61 @@ class LoginFormContentWidget extends HookConsumerWidget {
           Row(
             children: [
               Container(
-                width: 70,
+                width: 90,
                 height: 50,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  // color: Colors.red,
-                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                //!=================================================================Country Code Management- api call
-                child: Consumer(
-                  builder: (context, ref, child) {
-                    final countryCodesAsync = ref.watch(countryCodesProvider);
-
-                    return countryCodesAsync.when(
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (error, stack) => const Icon(Icons.error),
-                      data: (formattedCodes) {
-                        // Format country codes to ensure consistency
-                        final codes = formattedCodes
-                            .map((code) {
-                              // Remove any existing + and add it back
-                              return '+${code.replaceAll('+', '')}';
-                            })
-                            .toSet()
-                            .toList(); // Convert to Set to remove duplicates, then back to List
-
-                        // Ensure selected value exists in the list
-                        if (!codes.contains(selectedCountryCode.value)) {
-                          selectedCountryCode.value = codes.first;
-                        }
-
-                        log('Available codes: $codes');
-                        log('Selected code: ${selectedCountryCode.value}');
-
-                        return DropdownButton<String>(
-                          value: selectedCountryCode.value,
-                          items: codes.map((String code) {
-                            return DropdownMenuItem<String>(
-                              value: code,
-                              child: Text(code),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              selectedCountryCode.value = value;
-                            }
-                          },
-                          underline: Container(),
-                          isExpanded: true,
-                          icon: const Icon(Icons.arrow_drop_down),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: selectedCountryCode.value,
+                    isExpanded: true,
+                    icon: const Icon(Icons.arrow_drop_down, size: 20),
+                    items: CountryService()
+                        .getAll()
+                        .where((c) => c.phoneCode.isNotEmpty)
+                        .map((country) {
+                      return DropdownMenuItem<String>(
+                        value: '+${country.phoneCode}',
+                        child: Row(
+                          children: [
+                            Text(country.flagEmoji,
+                                style: const TextStyle(fontSize: 16)),
+                            const SizedBox(width: 6),
+                            Text('+${country.phoneCode}',
+                                style: const TextStyle(fontSize: 13)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        selectedCountryCode.value = value;
+                      }
+                    },
+                    selectedItemBuilder: (context) {
+                      return CountryService()
+                          .getAll()
+                          .where((c) => c.phoneCode.isNotEmpty)
+                          .map((country) {
+                        return Row(
+                          children: [
+                            Text(country.flagEmoji,
+                                style: const TextStyle(fontSize: 16)),
+                            const SizedBox(width: 4),
+                            Text('+${country.phoneCode}',
+                                style: const TextStyle(fontSize: 13)),
+                          ],
                         );
-                      },
-                    );
-                  },
+                      }).toList();
+                    },
+                  ),
                 ),
+              ),
+              const SizedBox(
+                width: 12,
               ),
               Expanded(
                 child: CustomTextFieldWidget(
@@ -129,7 +130,7 @@ class LoginFormContentWidget extends HookConsumerWidget {
                   controller: mobileController,
                   keyboardType: TextInputType.phone,
                   onChanged: (value) {
-                    // Basic phone number validation (only allow digits)
+                  
                     if (value.isNotEmpty && !RegExp(r'^\d*$').hasMatch(value)) {
                       mobileController.text =
                           value.replaceAll(RegExp(r'[^\d]'), '');
@@ -144,7 +145,7 @@ class LoginFormContentWidget extends HookConsumerWidget {
           ),
           const SizedBox(height: 20),
 
-          // Password Field (shown when password login is active)
+     
           if (isPasswordLogin.value)
             CustomTextFieldWidget(
               hintText: "AbD12xxxxxxxx@67",
@@ -159,7 +160,7 @@ class LoginFormContentWidget extends HookConsumerWidget {
             ),
 
           const SizedBox(height: 16),
-          // Remember Me & Forgot Password
+  
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -174,15 +175,19 @@ class LoginFormContentWidget extends HookConsumerWidget {
                   style: AppTextStyles.labelMedium.copyWith(
                     color: accentColor,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // if (true)
-              TextButton(
-                onPressed: onForgotPassword,
-                child: Text(
-                  'Forgot Password?',
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: accentColor,
+            
+              Flexible(
+                child: TextButton(
+                  onPressed: onForgotPassword,
+                  child: Text(
+                    'Forgot Password?',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: accentColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),

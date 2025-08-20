@@ -24,7 +24,7 @@ class SignUpService {
           'user_level': '2',
           'name': name,
           'email': email,
-          'country_code': "+91",
+          'country_code':countryCode,
           'mobile': phone,
           'password': password,
           'password_confirmation': password,
