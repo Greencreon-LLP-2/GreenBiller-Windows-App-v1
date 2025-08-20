@@ -30,6 +30,7 @@ import 'package:green_biller/features/reports/sales_report/view/pages/sales_summ
 import 'package:green_biller/features/reports/stock_report/low_stock_alert_page.dart';
 import 'package:green_biller/features/reports/stock_report/stock_movement_page.dart';
 import 'package:green_biller/features/reports/stock_report/stock_summary_page.dart';
+import 'package:green_biller/features/sales/view/pages/POS/pos_billing_page.dart';
 import 'package:green_biller/features/sales/view/pages/add_credit_note_items_page.dart';
 import 'package:green_biller/features/sales/view/pages/add_sale_order_items_page.dart';
 import 'package:green_biller/features/sales/view/pages/add_sale_page/new_sale_page.dart';
@@ -316,6 +317,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/sales-order',
         builder: (context, state) => const SalesOrderPage(),
+      ),
+      GoRoute(
+        path: '/pose-billing-page',
+        builder: (context, state) => const POSBillingPage(),
       ),
     ],
   );
