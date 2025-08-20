@@ -5,7 +5,7 @@ import 'package:green_biller/features/sales/service/single_item_sales_service.da
 
 class SingleItemSalesController {
   final String accessToken;
-  final String userId;
+
   final String storeId;
   final String salesId;
   final String customerId;
@@ -23,7 +23,7 @@ class SingleItemSalesController {
 
   SingleItemSalesController({
     required this.accessToken,
-    required this.userId,
+ 
     required this.storeId,
     required this.salesId,
     required this.customerId,
@@ -44,7 +44,7 @@ class SingleItemSalesController {
     try {
       final response = await SingleItemSaleService().singleItemSalesService(
         accessToken: accessToken,
-        userId: userId,
+     
         storeId: storeId,
         salesId: salesId,
         customerId: customerId,

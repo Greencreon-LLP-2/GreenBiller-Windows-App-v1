@@ -23,7 +23,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 class TempPurchaseItem {
-  final String userId;
+  final String customerId;
   final String purchaseId;
   final String itemId;
   final String purchaseQty;
@@ -40,7 +40,7 @@ class TempPurchaseItem {
   final String barcode;
 
   TempPurchaseItem({
-    required this.userId,
+    required this.customerId,
     required this.purchaseId,
     required this.itemId,
     required this.purchaseQty,
@@ -418,6 +418,8 @@ class AddNewSalePage extends HookConsumerWidget {
     final isLoadingSave = useState<bool>(false);
     final isLoadingSavePrint = useState<bool>(false);
     final rowCount = useState<int>(1);
+    final itemInputFocusNode = useState<Map<int, FocusNode>>({});
+    final itemInputController = useRef(<int, TextEditingController>{});
 
     void onSalesTypeChanged(String? value) {
       salesType.value = value;
@@ -427,6 +429,18 @@ class AddNewSalePage extends HookConsumerWidget {
     String salesCode(String storeId, String user) {
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       return 'G_B_${storeId}_${timestamp}_$user';
+    }
+
+    String getCurrentDateFormatted() {
+      final now = DateTime.now();
+      final month = now.month
+          .toString()
+          .padLeft(2, '0'); // Ensures 2 digits (e.g., 03 for March)
+      final day = now.day
+          .toString()
+          .padLeft(2, '0'); // Ensures 2 digits (e.g., 05 for the 5th)
+      final year = now.year.toString();
+      return '$month/$day/$year'; // Format: MM/DD/YYYY
     }
 
     useEffect(() {
@@ -468,6 +482,12 @@ class AddNewSalePage extends HookConsumerWidget {
         for (var node in priceFocusNodes.value.values) {
           node.dispose();
         }
+        for (var node in itemInputFocusNode.value.values) {
+          node.dispose();
+        }
+        for (var controller in itemInputController.value.values) {
+          controller.dispose();
+        }
       };
     }, [accessToken]);
 
@@ -498,6 +518,9 @@ class AddNewSalePage extends HookConsumerWidget {
               text: rowFields.value[index]?['batchNo'] ?? ''));
       unitControllers.value[index].text = rowFields.value[index]?['unit'] ?? '';
       priceFocusNodes.value.putIfAbsent(index, () => FocusNode());
+      itemInputFocusNode.value.putIfAbsent(index, () => FocusNode());
+      itemInputController.value
+          .putIfAbsent(index, () => TextEditingController());
     }
 
     double recalculateGrandTotal() {
@@ -601,6 +624,15 @@ class AddNewSalePage extends HookConsumerWidget {
       };
       recalculateGrandTotal();
       recalculateTotalDiscount();
+
+      if (index < 9) {
+        rowCount.value = (index + 2).clamp(1, 10);
+        initControllers(index + 1);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          itemInputFocusNode.value[index + 1]?.requestFocus();
+          itemInputController.value[index]?.clear();
+        });
+      }
     }
 
     Widget input({required int rowIndex}) {
@@ -619,9 +651,11 @@ class AddNewSalePage extends HookConsumerWidget {
         displayStringForOption: (item_model.Item item) => item.itemName,
         onSelected: (item_model.Item item) => onItemSelected(item, rowIndex),
         fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+          itemInputController.value[rowIndex] = controller; 
+          itemInputFocusNode.value[rowIndex] = focusNode; 
           return TextField(
-            controller: controller,
-            focusNode: focusNode,
+            controller: controller, 
+            focusNode: focusNode, 
             style: const TextStyle(fontSize: 14),
             decoration: const InputDecoration(
               isDense: true,
@@ -777,7 +811,7 @@ class AddNewSalePage extends HookConsumerWidget {
                                   SizedBox(
                                     width: baseColumnWidth * 0.5,
                                     child: HeaderCellWidget(
-                                        text: "S.No",
+                                        text: "#",
                                         width: baseColumnWidth * 0.5),
                                   ),
                                   SizedBox(
@@ -891,6 +925,8 @@ class AddNewSalePage extends HookConsumerWidget {
                               rowCount.value,
                               (index) {
                                 initControllers(index);
+                                final itemName =
+                                    rowFields.value[index]?['itemName'] ?? '';
                                 return Container(
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -913,7 +949,19 @@ class AddNewSalePage extends HookConsumerWidget {
                                       ),
                                       DataCellWidget(
                                         width: itemColumnWidth,
-                                        child: input(rowIndex: index),
+                                        child: itemName.isNotEmpty
+                                            ? Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 9,
+                                                        vertical: 10),
+                                                child: Text(
+                                                  itemName,
+                                                  style: const TextStyle(
+                                                      fontSize: 14),
+                                                ),
+                                              )
+                                            : input(rowIndex: index),
                                       ),
                                       DataCellWidget(
                                         width: baseColumnWidth * 0.75,
@@ -1439,6 +1487,21 @@ class AddNewSalePage extends HookConsumerWidget {
                   ),
                   onPressed: () async {
                     if (isLoadingSavePrint.value) return;
+                    if (storeId.value == null ||
+                        selectedWarehouse.value == null ||
+                        billNo.value == null ||
+                        salesType.value == null ||
+                        customerId.value == null ||
+                        tempSubTotal.value <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Please fill all required fields."),
+                          backgroundColor: Color.fromARGB(255, 255, 96, 4),
+                        ),
+                      );
+                      return;
+                    }
+
                     isLoadingSavePrint.value = true;
                     try {
                       tempPurchaseItems.value.clear();
@@ -1449,8 +1512,8 @@ class AddNewSalePage extends HookConsumerWidget {
                                 fields['quantity'] != null)) {
                           tempPurchaseItems.value.add(
                             TempPurchaseItem(
-                              userId: userId,
-                              purchaseId: '8',
+                              customerId: customerId.value!,
+                              purchaseId: '',
                               itemId: fields['itemId'] ?? '',
                               purchaseQty: fields['quantity'] ?? '',
                               pricePerUnit: fields['price'] ?? '',
@@ -1469,21 +1532,6 @@ class AddNewSalePage extends HookConsumerWidget {
                         }
                       }
 
-                      if (storeId.value == null ||
-                          selectedWarehouse.value == null ||
-                          billNo.value == null ||
-                          salesType.value == null ||
-                          customerId.value == null ||
-                          tempSubTotal.value <= 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Please fill all required fields."),
-                            backgroundColor: Color.fromARGB(255, 255, 96, 4),
-                          ),
-                        );
-                        return;
-                      }
-
                       final double otherChargesValue =
                           double.tryParse(otherChargesController.text) ?? 0;
                       final double grandTotal = tempSubTotal.value +
@@ -1493,11 +1541,12 @@ class AddNewSalePage extends HookConsumerWidget {
 
                       final saleId = await SalesCreateController(
                         accessToken: accessToken,
-                        storeId: storeId.value!,
-                        warehouseId: selectedWarehouse.value!,
+                        storeId: storeMap.value[storeId.value]!,
+                        warehouseId:
+                            warehouseMap.value[selectedWarehouse.value]!,
                         referenceNo: billNo.value!,
-                        salesDate: DateTime.now().toString(),
-                        customerId: customerId.value!,
+                        customerId: customerMap.value[customerId.value]!,
+                        salesDate: getCurrentDateFormatted(),
                         otherChargesAmt: otherChargesValue.toString(),
                         discountAmt: tempTotalDiscount.value.toString(),
                         subTotal: tempSubTotal.value.toString(),
@@ -1506,160 +1555,169 @@ class AddNewSalePage extends HookConsumerWidget {
                         paidAmount: paidAmountController.text,
                         orderId: salesCode(storeId.value!, userId),
                       ).createSalesController();
+                      if (saleId !=
+                          "Sales creation failed. Please try again.") {
+                        for (var item in tempPurchaseItems.value) {
+                          final response = await SingleItemSalesController(
+                            accessToken: accessToken,
+                            storeId: storeMap.value[storeId.value]!,
+                            salesId: saleId,
+                            itemId: item.itemId,
+                            salesQty: item.purchaseQty,
+                            pricePerUnit: item.pricePerUnit,
+                            taxName: item.taxName,
+                            taxId: item.taxId,
+                            taxAmount: item.taxAmount,
+                            discountType: item.discountType,
+                            discountAmount: item.discountAmount,
+                            totalCost: item.totalCost,
+                            customerId: customerMap.value[customerId.value]!,
+                            itemName: '',
+                            description: '',
+                          ).singleItemSalesController(context);
+                        }
 
-                      for (var item in tempPurchaseItems.value) {
-                        final response = await SingleItemSalesController(
+                        final paymentResponse =
+                            await SalesPaymentCreateController()
+                                .salesPaymentCreateController(
                           accessToken: accessToken,
-                          userId: userId,
-                          storeId: storeId.value!,
+                          storeId: storeMap.value[storeId.value]!,
                           salesId: saleId,
-                          itemId: item.itemId,
-                          salesQty: item.purchaseQty,
-                          pricePerUnit: item.pricePerUnit,
-                          taxName: item.taxName,
-                          taxId: item.taxId,
-                          taxAmount: item.taxAmount,
-                          discountType: item.discountType,
-                          discountAmount: item.discountAmount,
-                          totalCost: item.totalCost,
-                          customerId: customerId.value!,
-                          itemName: '',
-                          description: '',
-                        ).singleItemSalesController(context);
-                      }
+                          customerId: customerMap.value[customerId.value]!,
+                          paymentMethod: salesType.value ?? "Cash",
+                          paymentAmount: paidAmountController.text,
+                          paymentDate: getCurrentDateFormatted(),
+                          paymentNote: salesNoteController.text,
+                          accountId: "",
+                        );
 
-                      final paymentResponse =
-                          await SalesPaymentCreateController()
-                              .salesPaymentCreateController(
-                        accessToken: accessToken,
-                        userId: userId,
-                        storeId: storeId.value!,
-                        salesId: saleId,
-                        customerId: customerId.value!,
-                        paymentMethod: salesType.value ?? "Cash",
-                        paymentAmount: paidAmountController.text,
-                        paymentDate: "12/16/2025",
-                        paymentNote: salesNoteController.text,
-                        accountId: "1",
-                      );
+                        final customerName = customerMap.value.entries
+                            .firstWhere(
+                              (entry) => entry.value == customerId.value,
+                              orElse: () => const MapEntry('', ''),
+                            )
+                            .key;
 
-                      final customerName = customerMap.value.entries
-                          .firstWhere(
-                            (entry) => entry.value == customerId.value,
-                            orElse: () => const MapEntry('', ''),
-                          )
-                          .key;
+                        final storeName = storeMap.value.entries
+                            .firstWhere(
+                              (entry) => entry.value == storeId.value,
+                              orElse: () => const MapEntry('', ''),
+                            )
+                            .key;
 
-                      final storeName = storeMap.value.entries
-                          .firstWhere(
-                            (entry) => entry.value == storeId.value,
-                            orElse: () => const MapEntry('', ''),
-                          )
-                          .key;
+                        String storeAddress = "";
+                        // final storeService = ViewStoreService();
+                        // final storeModel = await storeService.viewStoreService(
+                        //   accessToken,
+                        //   storeId.value!,
+                        // );
+                        // storeAddress = storeModel?.data?.first.address ?? "";
 
-                      String storeAddress = "";
-                      // final storeService = ViewStoreService();
-                      // final storeModel = await storeService.viewStoreService(
-                      //   accessToken,
-                      //   storeId.value!,
-                      // );
-                      // storeAddress = storeModel?.data?.first.address ?? "";
+                        final pdfItems = tempPurchaseItems.value.map((item) {
+                          final actualItem = itemsList.value.firstWhere(
+                            (i) => i.id.toString() == item.itemId,
+                            orElse: () => item_model.Item(
+                              id: 0,
+                              itemName: 'Unknown Item',
+                              barcode: '',
+                              unit: '',
+                              salesPrice: '0',
+                              taxRate: '0',
+                              taxType: '',
+                              discount: '0',
+                              sku: '',
+                              userId: 0,
+                              itemImage: '',
+                              storeId: null,
+                              categoryId: 0,
+                              brandId: 0,
+                              hsnCode: '',
+                              itemCode: '',
+                              description: null,
+                              purchasePrice: '',
+                              mrp: '',
+                              discountType: '',
+                              profitMargin: '',
+                              warehouse: null,
+                              openingStock: null,
+                              alertQuantity: '',
+                              createdAt: DateTime.now(),
+                              updatedAt: DateTime.now(),
+                              storeName: '',
+                              categoryName: '',
+                              brandName: '',
+                            ),
+                          );
+                          return InvoiceItem(
+                            name: actualItem.itemName,
+                            qty: int.tryParse(item.purchaseQty) ?? 0,
+                            unit: item.unit,
+                            price: double.tryParse(item.pricePerUnit) ?? 0,
+                            total: (double.tryParse(item.totalCost) ?? 0) +
+                                (double.tryParse(item.taxAmount) ?? 0) -
+                                (double.tryParse(item.discountAmount) ?? 0),
+                            taxName: item.taxName,
+                            taxRate: double.tryParse(item.taxRate) ?? 0,
+                          );
+                        }).toList();
 
-                      final pdfItems = tempPurchaseItems.value.map((item) {
-                        final actualItem = itemsList.value.firstWhere(
-                          (i) => i.id.toString() == item.itemId,
-                          orElse: () => item_model.Item(
-                            id: 0,
-                            itemName: 'Unknown Item',
-                            barcode: '',
-                            unit: '',
-                            salesPrice: '0',
-                            taxRate: '0',
-                            taxType: '',
-                            discount: '0',
-                            sku: '',
-                            userId: 0,
-                            itemImage: '',
-                            storeId: null,
-                            categoryId: 0,
-                            brandId: 0,
-                            hsnCode: '',
-                            itemCode: '',
-                            description: null,
-                            purchasePrice: '',
-                            mrp: '',
-                            discountType: '',
-                            profitMargin: '',
-                            warehouse: null,
-                            openingStock: null,
-                            alertQuantity: '',
-                            createdAt: DateTime.now(),
-                            updatedAt: DateTime.now(),
-                            storeName: '',
-                            categoryName: '',
-                            brandName: '',
+                        final double calculatedSubTotal = tempSubTotal.value;
+                        final double calculatedGrandTotal = calculatedSubTotal +
+                            tempTotalTax.value +
+                            otherChargesValue -
+                            tempTotalDiscount.value;
+                        final double calculatedBalance = calculatedGrandTotal -
+                            (double.tryParse(paidAmountController.text) ?? 0);
+
+                        final pdfBytes = await generateRealisticInvoice(
+                          shopName: storeName,
+                          shopAddress: storeAddress,
+                          shopContact: userModel?.user?.mobile ?? "",
+                          shopEmail: userModel?.user?.email ?? "",
+                          invoiceNo: billNo.value!,
+                          invoiceDate:
+                              DateTime.parse(getCurrentDateFormatted()),
+                          website: "www.greenbiller.com",
+                          amountInWords: "",
+                          terms: salesNoteController.text,
+                          received:
+                              double.tryParse(paidAmountController.text) ?? 0,
+                          subtotal: calculatedSubTotal,
+                          total: calculatedGrandTotal,
+                          balance: calculatedBalance,
+                          customerName: customerName,
+                          paymentMode: salesType.value ?? "Cash",
+                          items: pdfItems,
+                          totalDiscount: tempTotalDiscount.value,
+                          otherCharges: otherChargesValue,
+                          totalTax: tempTotalTax.value,
+                        );
+
+                        try {
+                          await Printing.layoutPdf(
+                            onLayout: (format) => pdfBytes,
+                            name: 'Sale_Invoice_${billNo.value!}',
+                          );
+                        } catch (e) {
+                          logger.e("Error printing: $e");
+                        }
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content:
+                                Text("Sale saved and printed successfully"),
+                            backgroundColor: Colors.green,
                           ),
                         );
-                        return InvoiceItem(
-                          name: actualItem.itemName,
-                          qty: int.tryParse(item.purchaseQty) ?? 0,
-                          unit: item.unit,
-                          price: double.tryParse(item.pricePerUnit) ?? 0,
-                          total: (double.tryParse(item.totalCost) ?? 0) +
-                              (double.tryParse(item.taxAmount) ?? 0) -
-                              (double.tryParse(item.discountAmount) ?? 0),
-                          taxName: item.taxName,
-                          taxRate: double.tryParse(item.taxRate) ?? 0,
+                        context.pop();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(saleId),
+                            backgroundColor: Colors.red,
+                          ),
                         );
-                      }).toList();
-
-                      final double calculatedSubTotal = tempSubTotal.value;
-                      final double calculatedGrandTotal = calculatedSubTotal +
-                          tempTotalTax.value +
-                          otherChargesValue -
-                          tempTotalDiscount.value;
-                      final double calculatedBalance = calculatedGrandTotal -
-                          (double.tryParse(paidAmountController.text) ?? 0);
-
-                      final pdfBytes = await generateRealisticInvoice(
-                        shopName: storeName,
-                        shopAddress: storeAddress,
-                        shopContact: userModel?.user?.mobile ?? "",
-                        shopEmail: userModel?.user?.email ?? "",
-                        invoiceNo: billNo.value!,
-                        invoiceDate: DateTime.parse("12/16/2025"),
-                        website: "www.greenbiller.com",
-                        amountInWords: "",
-                        terms: salesNoteController.text,
-                        received:
-                            double.tryParse(paidAmountController.text) ?? 0,
-                        subtotal: calculatedSubTotal,
-                        total: calculatedGrandTotal,
-                        balance: calculatedBalance,
-                        customerName: customerName,
-                        paymentMode: salesType.value ?? "Cash",
-                        items: pdfItems,
-                        totalDiscount: tempTotalDiscount.value,
-                        otherCharges: otherChargesValue,
-                        totalTax: tempTotalTax.value,
-                      );
-
-                      try {
-                        await Printing.layoutPdf(
-                          onLayout: (format) => pdfBytes,
-                          name: 'Sale_Invoice_${billNo.value!}',
-                        );
-                      } catch (e) {
-                        logger.e("Error printing: $e");
                       }
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Sale saved and printed successfully"),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                      context.pop();
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -1702,6 +1760,20 @@ class AddNewSalePage extends HookConsumerWidget {
                   ),
                   onPressed: () async {
                     if (isLoadingSave.value) return;
+                    if (storeId.value == null ||
+                        selectedWarehouse.value == null ||
+                        billNo.value == null ||
+                        salesType.value == null ||
+                        customerId.value == null ||
+                        tempSubTotal.value <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Please fill all required fields."),
+                          backgroundColor: Color.fromARGB(255, 255, 96, 4),
+                        ),
+                      );
+                      return;
+                    }
                     isLoadingSave.value = true;
                     try {
                       tempPurchaseItems.value.clear();
@@ -1712,8 +1784,8 @@ class AddNewSalePage extends HookConsumerWidget {
                                 fields['quantity'] != null)) {
                           tempPurchaseItems.value.add(
                             TempPurchaseItem(
-                              userId: userId,
-                              purchaseId: '8',
+                              customerId: customerMap.value[customerId.value]!,
+                              purchaseId: '',
                               itemId: fields['itemId'] ?? '',
                               purchaseQty: fields['quantity'] ?? '',
                               pricePerUnit: fields['price'] ?? '',
@@ -1732,22 +1804,6 @@ class AddNewSalePage extends HookConsumerWidget {
                         }
                       }
 
-                      if (storeId.value == null ||
-                          selectedWarehouse.value == null ||
-                          billNo.value == null ||
-                          salesType.value == null ||
-                          "12/16/2025".isEmpty ||
-                          customerId.value == null ||
-                          tempSubTotal.value <= 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Please fill all required fields."),
-                            backgroundColor: Color.fromARGB(255, 255, 96, 4),
-                          ),
-                        );
-                        return;
-                      }
-
                       final double otherChargesValue =
                           double.tryParse(otherChargesController.text) ?? 0;
                       final double grandTotal = tempSubTotal.value +
@@ -1756,64 +1812,71 @@ class AddNewSalePage extends HookConsumerWidget {
                           tempTotalDiscount.value;
 
                       final saleId = await SalesCreateController(
-                        accessToken: accessToken,
-                        storeId: storeId.value!,
-                        warehouseId: selectedWarehouse.value!,
+                        storeId: storeMap.value[storeId.value]!,
+                        warehouseId:
+                            warehouseMap.value[selectedWarehouse.value]!,
                         referenceNo: billNo.value!,
-                        salesDate: "12/16/2025",
-                        customerId: customerId.value!,
+                        customerId: customerMap.value[customerId.value]!,
+                        salesDate: getCurrentDateFormatted(),
+                        accessToken: accessToken,
                         otherChargesAmt: otherChargesValue.toString(),
                         discountAmt: tempTotalDiscount.value.toString(),
                         subTotal: tempSubTotal.value.toString(),
                         grandTotal: grandTotal.toString(),
                         salesNote: salesNoteController.text,
                         paidAmount: paidAmountController.text,
-                        orderId: salesCode(storeId.value!, userId),
+                        orderId: '',
                       ).createSalesController();
+                      if (saleId !=
+                          "Sales creation failed. Please try again.") {
+                        for (var item in tempPurchaseItems.value) {
+                          final response = await SingleItemSalesController(
+                            accessToken: accessToken,
+                            storeId: storeMap.value[storeId.value]!,
+                            salesId: saleId,
+                            itemId: item.itemId,
+                            salesQty: item.purchaseQty,
+                            pricePerUnit: item.pricePerUnit,
+                            taxName: item.taxName,
+                            taxId: item.taxId,
+                            taxAmount: item.taxAmount,
+                            discountType: item.discountType,
+                            discountAmount: item.discountAmount,
+                            totalCost: item.totalCost,
+                            customerId: customerMap.value[customerId.value]!,
+                            itemName: '',
+                            description: '',
+                          ).singleItemSalesController(context);
+                        }
 
-                      for (var item in tempPurchaseItems.value) {
-                        final response = await SingleItemSalesController(
+                        final paymentResponse =
+                            await SalesPaymentCreateController()
+                                .salesPaymentCreateController(
                           accessToken: accessToken,
-                          userId: userId,
-                          storeId: storeId.value!,
+                          storeId: storeMap.value[storeId.value]!,
                           salesId: saleId,
-                          itemId: item.itemId,
-                          salesQty: item.purchaseQty,
-                          pricePerUnit: item.pricePerUnit,
-                          taxName: item.taxName,
-                          taxId: item.taxId,
-                          taxAmount: item.taxAmount,
-                          discountType: item.discountType,
-                          discountAmount: item.discountAmount,
-                          totalCost: item.totalCost,
-                          customerId: customerId.value!,
-                          itemName: '',
-                          description: '',
-                        ).singleItemSalesController(context);
+                          customerId: customerMap.value[customerId.value]!,
+                          paymentMethod: salesType.value ?? "Cash",
+                          paymentAmount: paidAmountController.text,
+                          paymentDate: getCurrentDateFormatted(),
+                          paymentNote: salesNoteController.text,
+                          accountId: "1",
+                        );
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Sale saved successfully"),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(saleId),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
                       }
-
-                      final paymentResponse =
-                          await SalesPaymentCreateController()
-                              .salesPaymentCreateController(
-                        accessToken: accessToken,
-                        userId: userId,
-                        storeId: storeId.value!,
-                        salesId: saleId,
-                        customerId: customerId.value!,
-                        paymentMethod: salesType.value ?? "Cash",
-                        paymentAmount: paidAmountController.text,
-                        paymentDate: "12/16/2025",
-                        paymentNote: salesNoteController.text,
-                        accountId: "1",
-                      );
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Sale saved successfully"),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                      context.pop();
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

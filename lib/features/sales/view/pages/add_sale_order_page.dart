@@ -6,17 +6,19 @@ import 'package:go_router/go_router.dart';
 import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/core/widgets/card_container.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
-import 'package:green_biller/features/item/model/credit_note/credit_note_model.dart';
+import 'package:green_biller/features/item/model/sale_order/sale_order_model.dart';
 import 'package:green_biller/features/sales/service/sales_view_service.dart';
+
 import 'package:green_biller/features/store/controllers/view_parties_controller.dart';
 import 'package:green_biller/features/store/controllers/view_store_controller.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
-final selectedCreditNoteItemsProvider = StateProvider<List<CreditNoteItem>>((ref) => []);
+final selectedSalesOrderItemsProvider =
+    StateProvider<List<SaleOrderModelItem>>((ref) => []);
 
-class CreditNotePage extends HookConsumerWidget {
-  CreditNotePage({super.key});
+class AddSalesOrderPage extends HookConsumerWidget {
+  AddSalesOrderPage({super.key});
 
   // Formatter for currency
   final currencyFormatter =
@@ -152,21 +154,30 @@ class CreditNotePage extends HookConsumerWidget {
     );
   }
 
+  String _generateUniqueOrderId() {
+    final now = DateTime.now();
+    final random = Random().nextInt(9999).toString().padLeft(4, '0');
+    return 'ORD_${now.year}${now.month}${now.day}_$random';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedDate = useState(DateTime.now());
+    final selectedDueDate =
+        useState(DateTime.now().add(const Duration(days: 5)));
     final dateFormat = DateFormat('dd/MM/yyyy');
     final customerNameController = useTextEditingController();
     final phoneController = useTextEditingController();
-    final invoiceDateController = useTextEditingController();
-    final invoiceNumberController = useTextEditingController();
-    final selectedItems = ref.watch(selectedCreditNoteItemsProvider);
-    final returnNumber = useState(_generateReturnNumber());
+    final orderDateController = useTextEditingController();
+    final orderNumberController = useTextEditingController();
+    final selectedItems = ref.watch(selectedSalesOrderItemsProvider);
+    final salesOrderNumber = useState(_generateSalesOrderNumber());
     final userModel = ref.watch(userProvider);
     final accessToken = userModel?.accessToken;
     final selectedStoreName = useState<String?>(null);
     final selectedStoreId = useState<String?>(null);
     final selectedCustomerName = useState<String>('Walk-in Customer');
+    final totalAmountController = useTextEditingController();
     final customerList =
         useState<Map<String, String>>({'Walk-in Customer': ''});
     final storeList = useState<Map<String, String>>({});
@@ -191,7 +202,7 @@ class CreditNotePage extends HookConsumerWidget {
 
     useEffect(() {
       if (accessToken == null) return null;
-      invoiceDateController.text =
+      orderDateController.text =
           DateFormat('dd/MM/yyyy').format(DateTime.now());
       fetchStores(accessToken);
       return null;
@@ -219,21 +230,26 @@ class CreditNotePage extends HookConsumerWidget {
       }
     }
 
-    Future<void> saveCreditNote(
+    Future<void> saveSalesOrder(
         BuildContext context, String accessToken) async {
       final service = SalesViewService(accessToken);
+      final userModel = ref.read(userProvider);
+      final userId = userModel?.user?.id.toString() ?? '';
+      final customerId = customerList.value[selectedCustomerName.value];
+      // Generate unique order ID if not provided
+      final uniqueOrderId = orderNumberController.text.isEmpty
+          ? _generateUniqueOrderId()
+          : orderNumberController.text;
 
-      final creditNote = CreditNote(
-        returnNumber: returnNumber.value,
-        returnDate: selectedDate.value,
+      final salesOrder = SaleOrderModel(
         customerName: selectedCustomerName.value == 'Walk-in Customer'
             ? 'Walk-in Customer'
             : customerNameController.text,
         phoneNumber: phoneController.text,
-        invoiceDate: invoiceDateController.text.isNotEmpty
-            ? DateFormat('dd/MM/yyyy').parse(invoiceDateController.text)
+        orderDate: orderDateController.text.isNotEmpty
+            ? DateFormat('dd/MM/yyyy').parse(orderDateController.text)
             : DateTime.now(),
-        invoiceNumber: invoiceNumberController.text,
+        orderNumber: uniqueOrderId,
         items: selectedItems,
         totalAmount: calculateTotal(),
         storeId: selectedStoreId.value ?? '',
@@ -243,46 +259,58 @@ class CreditNotePage extends HookConsumerWidget {
       );
 
       try {
-        final returnId = await service.createSalesReturn({
-          'store_id': creditNote.storeId,
-          'sales_id': creditNote.invoiceNumber,
-          'return_code': creditNote.returnNumber,
-          'grand_total': creditNote.totalAmount,
+        // 1. Create the main order
+        final orderId = await service.createSalesOrder({
+          'unique_order_id': uniqueOrderId,
+          'orderstatus_id': '1', // Default status (e.g., "Pending")
+          'store_id': salesOrder.storeId,
+          'user_id': userId,
+          'if_sales': '0', // Assuming not a sales order
+          'sales_id': '0', // No sales ID
+          'shipping_address_id': '0', // Default shipping address
+          'if_redeem': '0', // No redemption
+          'deliveryboy_id': '0', // No delivery boy assigned
+          'notifi_deliveryboy': '0', // No notification to delivery boy
+          'sub_total': salesOrder.totalAmount.toString(),
+          'order_totalamt': salesOrder.totalAmount.toString(),
+          'payment_mode': 'cash', // Default payment mode
         });
 
-        for (final item in creditNote.items) {
-          await service.createSalesItemReturn({
-            'store_id': creditNote.storeId,
-            'sales_id': creditNote.invoiceNumber,
-            'return_id': returnId,
-            'customer_id': creditNote.customerId ?? 0,
-            'item_id': item.item.id,
-            'item_name': item.item.itemName,
-            'sales_qty': item.quantity,
-            'price_per_unit': item.rate,
-            'total_cost': item.quantity * item.rate,
+        // 2. Create order items for each selected item
+        for (final item in salesOrder.items) {
+          final itemTotal = item.quantity * item.rate;
+          final taxAmount = itemTotal * (item.taxRate / 100);
+
+          await service.createSalesOrderItem({
+            'order_id': orderId.toString(),
+            'user_id': userId,
+            'store_id': salesOrder.storeId,
+            'item_id': item.item.id.toString(),
+            'selling_price': item.rate.toString(),
+            'qty': item.quantity.toString(),
+            'tax_rate': item.taxRate.toString(),
+            'tax_type': item.taxType,
+            'tax_amt': taxAmount.toString(),
+            'total_price': (itemTotal + taxAmount).toString(),
+            'if_offer': '0', // No offer
           });
         }
 
-        await service.createSalesPaymentReturn({
-          'store_id': creditNote.storeId,
-          'return_id': returnId,
-          'customer_id': creditNote.customerId ?? 0,
-          'payment_date':
-              DateFormat('yyyy-MM-dd').format(creditNote.returnDate),
-          'payment_type': 'cash',
-          'payment': creditNote.totalAmount,
-          'account_id': 1,
-          'payment_note': 'Credit note refund for Sales Return #$returnId',
+        // 3. Create initial order status (optional - you might want to use existing statuses)
+        await service.createOrderStatus({
+          'name': 'Order Created',
         });
 
         _showSuccessSnackBar(
           context,
-          'Credit note saved & refund processed successfully!',
+          'Sales Order created successfully!',
           Icons.check_circle,
         );
+
+        // Optionally navigate back or clear form
+        context.pop();
       } catch (e) {
-        print('Error saving Credit Note: $e');
+        print('Error saving Sales Order: $e');
         _showErrorSnackBar(context, 'Error: ${e.toString()}');
       }
     }
@@ -314,7 +342,7 @@ class CreditNotePage extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Credit Note',
+                  'Sales Order',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -331,7 +359,12 @@ class CreditNotePage extends HookConsumerWidget {
                   Icons.save,
                   accentColor,
                   () async {
-                    await saveCreditNote(context, accessToken!);
+                    if (selectedItems.isEmpty) {
+                      _showErrorSnackBar(context, 'Please add ateleast 1 item');
+                      return;
+                    } else {
+                      await saveSalesOrder(context, accessToken!);
+                    }
                   },
                 ),
               ),
@@ -383,7 +416,7 @@ class CreditNotePage extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Credit Note Details',
+                    'Sales Order Details',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -395,12 +428,13 @@ class CreditNotePage extends HookConsumerWidget {
                     children: [
                       Expanded(
                         child: _buildDropdownField(
-                          "Return No.",
-                          returnNumber.value,
+                          "Order No.",
+                          salesOrderNumber.value,
                           onTap: () {
-                            returnNumber.value = _generateReturnNumber();
+                            salesOrderNumber.value =
+                                _generateSalesOrderNumber();
                             _showSuccessSnackBar(context,
-                                'Return number refreshed!', Icons.refresh);
+                                'Order number refreshed!', Icons.refresh);
                           },
                         ),
                       ),
@@ -429,6 +463,35 @@ class CreditNotePage extends HookConsumerWidget {
                             );
                             if (picked != null) {
                               selectedDate.value = picked;
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildDropdownField(
+                          "Due Date",
+                          dateFormatter.format(selectedDueDate.value),
+                          onTap: () async {
+                            final DateTime? picked = await showDatePicker(
+                              context: context,
+                              initialDate: selectedDueDate.value,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2101),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                    colorScheme: const ColorScheme.light(
+                                      primary: accentColor,
+                                      onPrimary: Colors.white,
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+                            if (picked != null) {
+                              selectedDueDate.value = picked;
                             }
                           },
                         ),
@@ -502,20 +565,42 @@ class CreditNotePage extends HookConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildInputField(
-                    "Phone Number",
-                    controller: phoneController,
-                    keyboardType: TextInputType.phone,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildInputField(
+                          "Phone Number",
+                          controller: phoneController,
+                          keyboardType: TextInputType.phone,
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildInputField(
+                          "Paid Amount",
+                          isRequired: true,
+                          controller: totalAmountController,
+                          suffix: const Text(
+                            "₹",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF1E293B),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
                         child: TextFormField(
-                          controller: invoiceDateController,
+                          controller: orderDateController,
                           readOnly: true,
                           decoration: InputDecoration(
-                            labelText: "Invoice Date",
+                            labelText: "Order Date",
                             suffixIcon: const Icon(
                               Icons.calendar_today,
                               size: 20,
@@ -556,7 +641,7 @@ class CreditNotePage extends HookConsumerWidget {
                               },
                             );
                             if (picked != null) {
-                              invoiceDateController.text =
+                              orderDateController.text =
                                   dateFormatter.format(picked);
                             }
                           },
@@ -565,8 +650,8 @@ class CreditNotePage extends HookConsumerWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: _buildInputField(
-                          "Invoice No.",
-                          controller: invoiceNumberController,
+                          "Reference No.",
+                          controller: orderNumberController,
                         ),
                       ),
                     ],
@@ -574,7 +659,7 @@ class CreditNotePage extends HookConsumerWidget {
                   const SizedBox(height: 24),
                   if (selectedItems.isNotEmpty) ...[
                     const Text(
-                      'Selected Items',
+                      'Order Items',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -595,7 +680,7 @@ class CreditNotePage extends HookConsumerWidget {
     );
   }
 
-  Widget _buildModernItemCard(CreditNoteItem item) {
+  Widget _buildModernItemCard(SaleOrderModelItem item) {
     return CardContainer(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -659,12 +744,12 @@ class CreditNotePage extends HookConsumerWidget {
     );
   }
 
-  static String _generateReturnNumber() {
+  static String _generateSalesOrderNumber() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = Random();
     final randomString =
         List.generate(8, (index) => chars[random.nextInt(chars.length)]).join();
-    return 'RT_ITEM_$randomString';
+    return 'SO_$randomString';
   }
 
   Widget _buildDropdownField(String label, String value,
@@ -853,7 +938,7 @@ class CreditNotePage extends HookConsumerWidget {
               context, 'Please select a store before adding items.');
           return;
         }
-        context.push('/add-credit-note-items/$selectedStore');
+        context.push('/add-sales-oder-items/$selectedStore');
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),

@@ -334,13 +334,19 @@ class AdminStoresTab extends HookConsumerWidget {
   Widget _buildStoreListCard(dynamic store, String accessToken,
       BuildContext context, WidgetRef ref, ValueNotifier<bool> isLoading) {
     final storeName = store.storeName ?? 'Unnamed Store';
-    final warehouseCount = store.warehouseCount ?? 0;
-    final categoryCount = store.categoryCount ?? 0;
-    final location = store.address ?? 'No address';
-    final phone = store.phone ?? '';
-    final email = store.email ?? '';
-    final city = store.city ?? '';
-    final country = store.country ?? '';
+    final warehouseCount = store.warehousesCount;
+    final categoryCount = store.categoriesCount;
+    final customersCount = store.customersCount;
+    final purchasesCount = store.purchasesCount;
+    final suppliersCount = store.suppliersCount;
+    final salesCount = store.salesCount;
+    final salesReturnsCount = store.salesReturnsCount;
+
+    final location = store.storeAddress ?? 'No address';
+    final phone = store.storePhone ?? '';
+    final email = store.storeEmail ?? '';
+    final city = store.storeCity ?? '';
+    final country = store.storeCountry ?? '';
     final status = store.status;
     final storeId = store.id?.toString() ?? '';
     final logo = "$publicUrl/${store.storeLogo}";
