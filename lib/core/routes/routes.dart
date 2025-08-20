@@ -61,7 +61,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: true,
     navigatorKey: navigatorKey,
     redirect: (context, state) {
-      final user = ref.watch(userProvider);
+      final user = ref.read(userProvider);
       final appStatus = ref.watch(appStatusProvider);
 
       // Check if anything actually changed since last time
@@ -96,7 +96,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       //   return '/';
       // }
       // 2. Check for forced update
-
+      print(appStatus.settings?.appVersion.toString());
+      print(AppConfig.version.toString());
       if (appStatus.settings?.appVersion.toString() !=
               AppConfig.version.toString() &&
           !isUpdateRoute) {

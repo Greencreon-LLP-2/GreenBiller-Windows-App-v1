@@ -47,8 +47,9 @@ class StoreDropdown extends HookConsumerWidget {
         } catch (e) {
           debugPrint('Error loading stores: $e');
         } finally {
-          if (!isMounted()) {}
-          isLoading.value = false;
+          if (isMounted()) {
+            isLoading.value = false;
+          }
         }
       }
 

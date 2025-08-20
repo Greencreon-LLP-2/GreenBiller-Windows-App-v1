@@ -149,6 +149,7 @@ class AppStatusNotifier extends StateNotifier<AppStatusModel> {
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
+            'Accept': 'application/json',
         },
       );
       responseCode = response.statusCode;

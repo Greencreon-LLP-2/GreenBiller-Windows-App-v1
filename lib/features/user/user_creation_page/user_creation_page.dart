@@ -95,6 +95,7 @@ class _UserCreationPageState extends ConsumerState<UserCreationPage> {
         }
       }
     } catch (e) {
+       if (!mounted) return;
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

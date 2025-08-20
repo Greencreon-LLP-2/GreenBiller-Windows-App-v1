@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -81,7 +82,7 @@ class PurchasePage extends HookConsumerWidget {
     final purchaseType = useState<String?>(null);
     final isLoadingSave = useState<bool>(false);
     final isLoadingSavePrint = useState<bool>(false);
-
+    final cancelCompleter = useMemoized(() => Completer<void>(), const []);
     void onPurchaseTypeChanged(String? value) {
       purchaseType.value = value;
     }
@@ -158,11 +159,14 @@ class PurchasePage extends HookConsumerWidget {
           final map =
               await ViewStoreController(accessToken: accessToken, storeId: 0)
                   .getStoreList();
+          if (cancelCompleter.isCompleted) return;
           storeMap.value = map;
         } catch (e) {
           debugPrint('Error fetching stores: $e');
         } finally {
-          isLoadingStores.value = false;
+          if (!cancelCompleter.isCompleted) {
+            isLoading.value = false;
+          }
         }
       }
 

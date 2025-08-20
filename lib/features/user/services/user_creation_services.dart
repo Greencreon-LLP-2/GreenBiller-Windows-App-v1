@@ -52,7 +52,8 @@ class UserCreationServices {
 
   Future<StoreUsersResponse> getStoreUsersList(
       String accessToken, String? storeId) async {
-    final url = storeId != null ? '$storeusersUrl/$storeId' : storeusersUrl;
+    final url =
+        storeId != null ? '$storeusersUrl?store_id=$storeId' : storeusersUrl;
 
     try {
       final response = await http.get(
@@ -60,19 +61,42 @@ class UserCreationServices {
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
       );
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
-        return StoreUsersResponse.fromJson(json);
+        if (json['status'] != null && json['status'] == 1) {
+          return StoreUsersResponse.fromJson(json);
+        } else {
+          return StoreUsersResponse(
+            message: 'Failed to fetch store users',
+            data: [],
+            total: 0,
+            status: 0,
+          );
+        }
       } else {
-        print(response.body);
-        throw Exception('Failed to fetch store users: ${response.statusCode}');
+        // Gracefully return an "empty" response instead of throwing
+        return StoreUsersResponse(
+          message: 'Failed to fetch store users',
+          data: [],
+          total: 0,
+          status: 0,
+        );
       }
-    } catch (e,stack) {
+    } catch (e, stack) {
+      print('StoreUsers error: $e');
       print(stack);
-      throw Exception('Error fetching store users: $e');
+
+      // Gracefully handle unexpected exceptions
+      return StoreUsersResponse(
+        message: 'Unexpected error: $e',
+        data: [],
+        total: 0,
+        status: 0,
+      );
     }
   }
 }

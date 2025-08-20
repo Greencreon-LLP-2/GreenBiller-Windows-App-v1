@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as dev;
 import 'dart:developer';
 
@@ -38,17 +39,18 @@ class CustomersTab extends HookConsumerWidget {
     final customerModel = useState<CustomerModel?>(null);
     final refresh = ref.watch(customerRefreshProvider);
     // Use useEffect to dispose of the ValueNotifiers when the widget is disposed
+   final cancelCompleter = useMemoized(() => Completer<void>(), const []);
     useEffect(() {
       return () {
         searchQuery.dispose();
         selectedFilter.dispose();
-        selectedStore.dispose();
-        selectedStoreId.dispose();
+         cancelCompleter.complete();
       };
     }, const []);
 
     // Load customers when store is selected
     useEffect(() {
+      bool active = true;
       Future<void> loadCustomers() async {
         if (accessToken == null || user?.id == null) return;
 
@@ -66,11 +68,13 @@ class CustomersTab extends HookConsumerWidget {
             accessToken,
             storeId, // Now properly null or valid ID
           );
+          if (cancelCompleter.isCompleted) return;
           customerModel.value = response;
           if (response.data != null) {
             customers.value = response.data!;
           }
         } catch (e) {
+           if (cancelCompleter.isCompleted) return;
           final errorString = e.toString();
           error.value = errorString.replaceAll('Exception:', '').trim();
           if (error.value!.startsWith('Exception')) {
@@ -78,7 +82,9 @@ class CustomersTab extends HookConsumerWidget {
           }
           dev.log('Error loading customers: $e', error: e);
         } finally {
-          isLoading.value = false;
+          if (!cancelCompleter.isCompleted) {
+            isLoading.value = false;
+          }
         }
       }
 
@@ -283,10 +289,24 @@ class CustomersTab extends HookConsumerWidget {
             )
           : null,
       onTap: () {
+        if (!selectedFilter.hasListeners) return;
         selectedFilter.value = option;
         Navigator.of(context).pop();
       },
     );
+  }
+
+// Add this custom hook to check if component is mounted
+  bool useIsMounted() {
+    final isMounted = useRef(true);
+
+    useEffect(() {
+      return () {
+        isMounted.value = false;
+      };
+    }, []);
+
+    return isMounted.value;
   }
 }
 
@@ -662,78 +682,5 @@ class CustomerCard extends HookWidget {
         );
       }
     }
-  }
-
-  Widget _buildSection(BuildContext context, String title, IconData icon,
-      List<Widget> children) {
-    return Card(
-      elevation: 0,
-      color: const Color.fromARGB(255, 200, 255, 223),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon,
-                    size: 20, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ...children,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-    BuildContext context,
-    String label,
-    IconData icon,
-    TextEditingController controller, {
-    TextInputType? keyboardType,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, size: 20),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outline,
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.primary,
-            width: 2,
-          ),
-        ),
-        filled: true,
-        fillColor: Theme.of(context).colorScheme.surface,
-      ),
-    );
   }
 }

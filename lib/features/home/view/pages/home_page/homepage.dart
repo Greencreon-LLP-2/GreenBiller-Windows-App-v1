@@ -3,6 +3,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
+import 'package:green_biller/features/auth/login/services/GoRouterNavigationService.dart';
+import 'package:green_biller/features/auth/login/services/snackbar_service.dart';
 import 'package:green_biller/features/home/view/pages/darshboard_page.dart';
 import 'package:green_biller/features/home/view/pages/home_page/utils/trail_version_container.dart';
 import 'package:green_biller/features/home/view/pages/home_page/widgets/build_home_content.dart';
@@ -16,6 +18,7 @@ import 'package:green_biller/features/sales/view/pages/add_sale_page/sales%20LIs
 import 'package:green_biller/features/store/view/parties_page/parties_page.dart';
 import 'package:green_biller/features/store/view/store_page/store_page.dart';
 import 'package:green_biller/features/user/user_creation_page/user_creation_page.dart';
+import 'package:green_biller/main.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -120,7 +123,7 @@ class HomePage extends HookConsumerWidget {
                               },
                             ),
                             _buildNavItem(
-                            'My Business',
+                              'My Business',
                               Icons.business,
                               Icons.business,
                               4,
@@ -199,31 +202,18 @@ class HomePage extends HookConsumerWidget {
                                       await SharedPreferences.getInstance();
                                   await prefs.clear();
 
-                                  final container =
-                                      ProviderScope.containerOf(context);
-                                  container.read(userProvider.notifier).state =
-                                      null; // or however you clear the user state
+                                  // Clear user state
+                                  ref.read(userProvider.notifier).state = null;
 
-                                  if (context.mounted) {
-                                    context.go('/');
-                                  }
+                                  // Use safe navigation service
+                                  GoRouterNavigationService.goWithDelay('/', replace: true);
 
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content:
-                                            Text('Successfully logged out'),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-                                  }
+                                  // Show success message
+                                  SnackBarService.showSuccess(
+                                      'Successfully logged out');
                                 } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content: Text('Logout failed: $e')),
-                                    );
-                                  }
+                                  SnackBarService.showError(
+                                      'Logout failed: $e');
                                 }
                               },
                             )

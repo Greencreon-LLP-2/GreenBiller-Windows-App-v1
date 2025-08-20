@@ -10,7 +10,8 @@ import 'package:logger/logger.dart';
 
 final logger = Logger();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = 
+    GlobalKey<ScaffoldMessengerState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -70,6 +71,7 @@ class _MyAppState extends ConsumerState<MyApp> {
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
+      scaffoldMessengerKey: scaffoldMessengerKey,
       title: 'Green Biller',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
