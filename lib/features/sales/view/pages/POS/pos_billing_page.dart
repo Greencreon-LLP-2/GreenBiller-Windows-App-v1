@@ -1259,16 +1259,16 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
           stock: int.tryParse(product['stock'].toString()) ?? 0,
           imageUrl: product['imageUrl'],
           onTap: () {
-            final stock = int.tryParse(product['stock'].toString()) ?? 0;
-            if (stock > 0) {
-              _addQuickItem(
-                product['itemName'],
-                double.tryParse(product['price'].toString()) ?? 100.0,
-                product['discount'].toString(),
-              );
-            } else {
-              _showErrorSnackBar('Item out of stock');
-            }
+            // final stock = int.tryParse(product['stock'].toString()) ?? 0;
+            // if (stock > 0) {
+            _addQuickItem(
+              product['itemName'],
+              double.tryParse(product['price'].toString()) ?? 100.0,
+              product['discount'].toString(),
+            );
+            // } else {
+            //   _showErrorSnackBar('Item out of stock');
+            // }
           },
         );
       },
@@ -1310,10 +1310,10 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
         stock = int.tryParse(product['stock'].toString()) ?? 0;
         discount = double.tryParse(product['discount'].toString()) ?? 0.0;
       }
-      if (stock <= 0) {
-        _showErrorSnackBar('Item out of stock');
-        return;
-      }
+      // if (stock <= 0) {
+      //   _showErrorSnackBar('Item out of stock');
+      //   return;
+      // }
       setState(() {
         cartItems.add(CartItem(
           name: itemName!,
@@ -1340,10 +1340,10 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
     final product = productData.firstWhere((p) => p['itemName'] == itemName);
     final stock = int.tryParse(product['stock'].toString()) ?? 0;
     final discountValue = double.tryParse(discount) ?? 0.0;
-    if (stock <= 0) {
-      _showErrorSnackBar('Item out of stock');
-      return;
-    }
+    // if (stock <= 0) {
+    //   _showErrorSnackBar('Item out of stock');
+    //   return;
+    // }
     setState(() {
       cartItems.add(CartItem(
         name: itemName,
