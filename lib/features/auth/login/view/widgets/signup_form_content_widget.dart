@@ -37,7 +37,7 @@ class SignupFormContentWidget extends HookConsumerWidget {
 
     // Animation for form appearance and signup button
     final animationController = useAnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 200),
     );
 
     final buttonAnimation = useAnimation(

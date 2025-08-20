@@ -34,6 +34,20 @@ class LoginFormContentWidget extends HookConsumerWidget {
     final selectedCountryCode =
         useState<String>('+91'); // Default to India's code
 
+    // Helper function to get unique countries by phone code
+    Map<String, Country> getUniqueCountries() {
+      final Map<String, Country> uniqueCountries = {};
+      for (final country in CountryService().getAll()) {
+        if (country.phoneCode.isNotEmpty) {
+          final phoneCode = '+${country.phoneCode}';
+          if (!uniqueCountries.containsKey(phoneCode)) {
+            uniqueCountries[phoneCode] = country;
+          }
+        }
+      }
+      return uniqueCountries;
+    }
+
     // Animation for login button
     final animationController = useAnimationController(
       duration: const Duration(milliseconds: 300),
@@ -66,7 +80,7 @@ class LoginFormContentWidget extends HookConsumerWidget {
           Row(
             children: [
               Container(
-                width: 90,
+                width: 100,
                 height: 50,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
@@ -78,39 +92,41 @@ class LoginFormContentWidget extends HookConsumerWidget {
                     value: selectedCountryCode.value,
                     isExpanded: true,
                     icon: const Icon(Icons.arrow_drop_down, size: 20),
-                    items: CountryService()
-                        .getAll()
-                        .where((c) => c.phoneCode.isNotEmpty)
-                        .map((country) {
-                      return DropdownMenuItem<String>(
-                        value: '+${country.phoneCode}',
-                        child: Row(
-                          children: [
-                            Text(country.flagEmoji,
-                                style: const TextStyle(fontSize: 16)),
-                            const SizedBox(width: 6),
-                            Text('+${country.phoneCode}',
-                                style: const TextStyle(fontSize: 13)),
-                          ],
-                        ),
-                      );
-                    }).toList(),
+                    items: () {
+                      final uniqueCountries = getUniqueCountries();
+                      return uniqueCountries.entries.map((entry) {
+                        final phoneCode = entry.key;
+                        final country = entry.value;
+                        return DropdownMenuItem<String>(
+                          value: phoneCode,
+                          child: Row(
+                            children: [
+                              Text(country.flagEmoji,
+                                  style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 6),
+                              Text(phoneCode,
+                                  style: const TextStyle(fontSize: 13)),
+                            ],
+                          ),
+                        );
+                      }).toList();
+                    }(),
                     onChanged: (value) {
                       if (value != null) {
                         selectedCountryCode.value = value;
                       }
                     },
                     selectedItemBuilder: (context) {
-                      return CountryService()
-                          .getAll()
-                          .where((c) => c.phoneCode.isNotEmpty)
-                          .map((country) {
+                      final uniqueCountries = getUniqueCountries();
+                      return uniqueCountries.entries.map((entry) {
+                        final phoneCode = entry.key;
+                        final country = entry.value;
                         return Row(
                           children: [
                             Text(country.flagEmoji,
                                 style: const TextStyle(fontSize: 16)),
                             const SizedBox(width: 4),
-                            Text('+${country.phoneCode}',
+                            Text(phoneCode,
                                 style: const TextStyle(fontSize: 13)),
                           ],
                         );
@@ -130,7 +146,6 @@ class LoginFormContentWidget extends HookConsumerWidget {
                   controller: mobileController,
                   keyboardType: TextInputType.phone,
                   onChanged: (value) {
-                  
                     if (value.isNotEmpty && !RegExp(r'^\d*$').hasMatch(value)) {
                       mobileController.text =
                           value.replaceAll(RegExp(r'[^\d]'), '');
@@ -145,7 +160,6 @@ class LoginFormContentWidget extends HookConsumerWidget {
           ),
           const SizedBox(height: 20),
 
-     
           if (isPasswordLogin.value)
             CustomTextFieldWidget(
               hintText: "AbD12xxxxxxxx@67",
@@ -160,7 +174,7 @@ class LoginFormContentWidget extends HookConsumerWidget {
             ),
 
           const SizedBox(height: 16),
-  
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -178,7 +192,6 @@ class LoginFormContentWidget extends HookConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-            
               Flexible(
                 child: TextButton(
                   onPressed: onForgotPassword,
