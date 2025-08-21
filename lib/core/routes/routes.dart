@@ -312,6 +312,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const PaymentIn(),
       ),
       GoRoute(
+        path: '/payment-out',
+        builder: (context, state) => const PaymentOutPage(),
+      ),
+      GoRoute(
         path: '/sales-return',
         builder: (context, state) => const SalesReturnPage(),
       ),
