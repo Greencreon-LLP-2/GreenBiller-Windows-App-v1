@@ -342,6 +342,25 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
     );
   }
 
+  Widget _buildTaxTable() {
+    return SingleChildScrollView(
+      child: DataTable(
+        columns: const [
+          DataColumn(label: Text('Item Name')),
+          DataColumn(label: Text('Tax Rate (%)')),
+        ],
+        rows: productData.map<DataRow>((product) {
+          return DataRow(
+            cells: [
+              DataCell(Text(product['itemName'] ?? 'Unknown')),
+              DataCell(Text('${product['taxRate'] ?? 0.0}%')),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildModernSummaryCard(
     String title,
     String value,
@@ -1004,8 +1023,8 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
   Widget _buildCartTable() {
     return SingleChildScrollView(
       child: DataTable(
-        columnSpacing: 50,
-        horizontalMargin: 20,
+        columnSpacing: 40, // Compact spacing for better fit
+        horizontalMargin: 10,
         headingRowHeight: 60,
         dataRowHeight: 90,
         decoration: const BoxDecoration(
@@ -1016,12 +1035,44 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
           fontWeight: FontWeight.w600,
           color: Color(0xFF475569),
         ),
+        dataTextStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF1E293B),
+        ),
+        border: TableBorder(
+          horizontalInside: BorderSide(
+            color: Colors.grey.withOpacity(0.1),
+            width: 1,
+          ),
+          verticalInside: BorderSide(
+            color: Colors.grey.withOpacity(0.1),
+            width: 1,
+          ),
+          top: BorderSide(
+            color: Colors.grey.withOpacity(0.1),
+            width: 1,
+          ),
+          bottom: BorderSide(
+            color: Colors.grey.withOpacity(0.1),
+            width: 1,
+          ),
+          left: BorderSide(
+            color: Colors.grey.withOpacity(0.1),
+            width: 1,
+          ),
+          right: BorderSide(
+            color: Colors.grey.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
         columns: const [
           DataColumn(label: Text('Image')),
           DataColumn(label: Text('Item Name')),
           DataColumn(label: Text('Qty')),
           DataColumn(label: Text('Price')),
           DataColumn(label: Text('Discount')),
+          DataColumn(label: Text('Tax (%)')),
           DataColumn(label: Text('Subtotal')),
           DataColumn(label: Text('')),
         ],
@@ -1034,7 +1085,8 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
             (p) => p['itemName'] == item.name,
             orElse: () => {
               'imageUrl':
-                  'https://via.placeholder.com/80x80/CCCCCC/FFFFFF?text=No+Image'
+                  'https://via.placeholder.com/80x80/CCCCCC/FFFFFF?text=No+Image',
+              'taxRate': 0.0,
             },
           );
 
@@ -1078,17 +1130,24 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
                 ),
               ),
               DataCell(
-                Text(
-                  item.name,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF1E293B),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 150),
+                  child: Text(
+                    item.name,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF1E293B),
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
                   ),
                 ),
               ),
               DataCell(
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       decoration: BoxDecoration(
@@ -1127,32 +1186,66 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
                 ),
               ),
               DataCell(
-                Text(
-                  currencyFormatter.format(item.price),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF1E293B),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 100),
+                  child: Text(
+                    currencyFormatter.format(item.price),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF1E293B),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
                   ),
                 ),
               ),
               DataCell(
-                Text(
-                  currencyFormatter.format(item.discount),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFFEF4444),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 100),
+                  child: Text(
+                    currencyFormatter.format(item.discount),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFFEF4444),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
                   ),
                 ),
               ),
               DataCell(
-                Text(
-                  currencyFormatter.format(item.subtotal),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1E293B),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 80),
+                  child: Text(
+                    '${product['taxRate'] ?? 0.0}%',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF1E293B),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
+                  ),
+                ),
+              ),
+              DataCell(
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 100),
+                  child: Text(
+                    currencyFormatter.format(item.subtotal),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1E293B),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
                   ),
                 ),
               ),
