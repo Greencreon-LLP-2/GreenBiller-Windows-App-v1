@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:green_biller/core/constants/colors.dart';
@@ -11,6 +13,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:green_biller/features/item/controller/view_all_items_controller.dart';
 import 'package:green_biller/features/item/services/category/view_categories_service.dart';
+import 'package:pdf/pdf.dart' show PdfPageFormat, PdfColors;
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:path_provider/path_provider.dart';
 
 class POSBillingPage extends ConsumerStatefulWidget {
   const POSBillingPage({Key? key}) : super(key: key);
@@ -500,91 +506,319 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
           ),
         ),
       ),
-      body: Column(
+      body: SingleChildScrollView(
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return constraints.maxWidth > 900
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 3, child: _buildBillingContainer()),
+                        const SizedBox(width: 16),
+                        Expanded(flex: 2, child: _buildInventoryContainer()),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        _buildBillingContainer(),
+                        const SizedBox(height: 16),
+                        _buildInventoryContainer(),
+                      ],
+                    );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReceiptPreview(List<CartItem> receiptItems) {
+    // Company details (same as in generateReceiptPDF)
+    const companyName = 'Green Biller';
+    const companyMobile = '+91 1234567890';
+    const companyEmail = 'contact@greenbiller.com';
+    const companyLogoUrl = 'https://via.placeholder.com/100x100';
+
+    // Invoice details
+    final invoiceNo = 'INV-${DateTime.now().millisecondsSinceEpoch}';
+    final invoiceDate = DateFormat('dd-MM-yyyy').format(DateTime.now());
+    final customerName = selectedCustomer ?? 'Walk-in Customer';
+    final customerId = selectedCustomerId ?? 'N/A';
+
+    // Calculate totals
+    final totalAmount = receiptItems.fold(
+        0.0, (sum, item) => sum + (item.price * item.quantity));
+    final totalDiscount =
+        receiptItems.fold(0.0, (sum, item) => sum + item.discount);
+    final totalTax = receiptItems.fold(0.0, (sum, item) {
+      final product = productData.firstWhere((p) => p['itemName'] == item.name,
+          orElse: () => {'taxRate': 0.0});
+      final taxRate = double.tryParse(product['taxRate'].toString()) ?? 0.0;
+      return sum + ((item.price * item.quantity) * taxRate / 100);
+    });
+    const shipping = 0.0;
+    final grandTotal = totalAmount - totalDiscount + totalTax + shipping;
+    const dueAmount = 0.0;
+    final totalPayable = grandTotal;
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            child: Row(
+          // Company Details
+          Center(
+            child: Column(
               children: [
-                Expanded(
-                  child: _buildModernSummaryCard(
-                    'Total Items',
-                    cartItems.length.toString(),
-                    const Color(0xFF3B82F6),
-                    Icons.shopping_cart_outlined,
+                Image.network(
+                  companyLogoUrl,
+                  width: 80,
+                  height: 80,
+                  errorBuilder: (context, error, stackTrace) => const Text(
+                    '[Company Logo]',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernSummaryCard(
-                    'Total Amount',
-                    currencyFormatter.format(cartItems.fold(0.0,
-                        (sum, item) => sum + (item.price * item.quantity))),
-                    const Color(0xFF8B5CF6),
-                    Icons.payments_outlined,
-                  ),
+                const SizedBox(height: 8),
+                const Text(
+                  companyName,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernSummaryCard(
-                    'Total Discount',
-                    currencyFormatter.format(cartItems.fold(
-                        0.0, (sum, item) => sum + item.discount)),
-                    const Color(0xFFEF4444),
-                    Icons.discount_outlined,
-                  ),
+                Text(
+                  'Mobile: $companyMobile',
+                  style: const TextStyle(fontSize: 12),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildModernSummaryCard(
-                    'Grand Total',
-                    currencyFormatter.format(cartItems.fold(
-                        0.0, (sum, item) => sum + item.subtotal)),
-                    accentColor,
-                    Icons.check_circle_outline,
+                Text(
+                  'Email: $companyEmail',
+                  style: const TextStyle(fontSize: 10),
+                ),
+                const Divider(),
+              ],
+            ),
+          ),
+          // Invoice Details
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Invoice: $invoiceNo',
+                    style: const TextStyle(fontSize: 12)),
+                Text('Date: $invoiceDate',
+                    style: const TextStyle(fontSize: 12)),
+                Text('Customer: $customerName',
+                    style: const TextStyle(fontSize: 12)),
+                Text('Customer ID: $customerId',
+                    style: const TextStyle(fontSize: 12)),
+              ],
+            ),
+          ),
+          const Divider(),
+          // Item Header
+          Row(
+            children: [
+              const Expanded(
+                  flex: 3,
+                  child: Text('Item',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 12))),
+              const Expanded(
+                  flex: 1,
+                  child: Text('Qty',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 12))),
+              const Expanded(
+                  flex: 2,
+                  child: Text('Price',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 12))),
+              const Expanded(
+                  flex: 2,
+                  child: Text('Total',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 12))),
+            ],
+          ),
+          const Divider(),
+          // Item List
+          ...receiptItems.map((item) {
+            final product = productData.firstWhere(
+                (p) => p['itemName'] == item.name,
+                orElse: () => {'taxRate': 0.0});
+            final taxRate =
+                double.tryParse(product['taxRate'].toString()) ?? 0.0;
+            final itemTotal = (item.price * item.quantity) -
+                item.discount +
+                ((item.price * item.quantity) * taxRate / 100);
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(item.name, style: const TextStyle(fontSize: 10)),
+                        Text('Tax: ${taxRate.toStringAsFixed(2)}%',
+                            style: const TextStyle(
+                                fontSize: 8, color: Colors.grey)),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                      flex: 1,
+                      child: Text(item.quantity.toString(),
+                          style: const TextStyle(fontSize: 10))),
+                  Expanded(
+                      flex: 2,
+                      child: Text(currencyFormatter.format(item.price),
+                          style: const TextStyle(fontSize: 10))),
+                  Expanded(
+                      flex: 2,
+                      child: Text(currencyFormatter.format(itemTotal),
+                          style: const TextStyle(fontSize: 10))),
+                ],
+              ),
+            );
+          }),
+          const Divider(),
+          // Totals
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Subtotal', style: TextStyle(fontSize: 12)),
+                    Text(currencyFormatter.format(totalAmount),
+                        style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Discount', style: TextStyle(fontSize: 12)),
+                    Text(currencyFormatter.format(totalDiscount),
+                        style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Shipping', style: TextStyle(fontSize: 12)),
+                    Text(currencyFormatter.format(shipping),
+                        style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Total Tax', style: TextStyle(fontSize: 12)),
+                    Text(currencyFormatter.format(totalTax),
+                        style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Total Bill',
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(currencyFormatter.format(grandTotal),
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Due', style: TextStyle(fontSize: 12)),
+                    Text(currencyFormatter.format(dueAmount),
+                        style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Total Payable',
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(currencyFormatter.format(totalPayable),
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade400),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Payment Method:',
+                              style: TextStyle(
+                                  fontSize: 10, fontWeight: FontWeight.bold)),
+                          Text(selectedPaymentMethod,
+                              style: const TextStyle(
+                                  fontSize: 10, color: Colors.blue)),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Amount Paid:',
+                              style: TextStyle(
+                                  fontSize: 10, fontWeight: FontWeight.bold)),
+                          Text(currencyFormatter.format(totalPayable),
+                              style: const TextStyle(fontSize: 10)),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Balance Due:',
+                              style: TextStyle(
+                                  fontSize: 10, fontWeight: FontWeight.bold)),
+                          Text(currencyFormatter.format(dueAmount),
+                              style: const TextStyle(fontSize: 10)),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return constraints.maxWidth > 900
-                        ? Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                  flex: 3, child: _buildBillingContainer()),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                  flex: 2, child: _buildInventoryContainer()),
-                            ],
-                          )
-                        : Column(
-                            children: [
-                              _buildBillingContainer(),
-                              const SizedBox(height: 16),
-                              _buildInventoryContainer(),
-                            ],
-                          );
-                  },
-                ),
-              ),
+          // Footer
+          Center(
+            child: Column(
+              children: [
+                const Text('Thank you for your purchase!',
+                    style: TextStyle(fontSize: 12)),
+                Text('For any queries, contact us at $companyEmail.',
+                    style: const TextStyle(fontSize: 10)),
+                const Text('Software by Green Biller',
+                    style: TextStyle(fontSize: 10)),
+              ],
             ),
           ),
         ],
@@ -702,6 +936,8 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
             child: _buildCartTable(),
           ),
           const SizedBox(height: 16),
+          _buildMinimalSummary(),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(child: _buildHoldButton()),
@@ -709,6 +945,116 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
               Expanded(child: _buildCashButton()),
               const SizedBox(width: 16),
               Expanded(child: _buildPaymentMethodDropdown()),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMinimalSummary() {
+    final totalItems = cartItems.length;
+    final totalAmount =
+        cartItems.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    final totalDiscount =
+        cartItems.fold(0.0, (sum, item) => sum + item.discount);
+    final grandTotal = cartItems.fold(0.0, (sum, item) => sum + item.subtotal);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Divider(
+            color: Colors.grey.withOpacity(0.2),
+            thickness: 1,
+            height: 24,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Total Items',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+              Text(
+                '$totalItems',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Total Amount',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+              Text(
+                currencyFormatter.format(totalAmount),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Total Discount',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+              Text(
+                currencyFormatter.format(totalDiscount),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFEF4444),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Grand Total',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF475569),
+                ),
+              ),
+              Text(
+                currencyFormatter.format(grandTotal),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: accentColor,
+                ),
+              ),
             ],
           ),
         ],
@@ -1023,7 +1369,7 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
   Widget _buildCartTable() {
     return SingleChildScrollView(
       child: DataTable(
-        columnSpacing: 40, // Compact spacing for better fit
+        columnSpacing: 40,
         horizontalMargin: 10,
         headingRowHeight: 60,
         dataRowHeight: 90,
@@ -1352,16 +1698,11 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
           stock: int.tryParse(product['stock'].toString()) ?? 0,
           imageUrl: product['imageUrl'],
           onTap: () {
-            // final stock = int.tryParse(product['stock'].toString()) ?? 0;
-            // if (stock > 0) {
             _addQuickItem(
               product['itemName'],
               double.tryParse(product['price'].toString()) ?? 100.0,
               product['discount'].toString(),
             );
-            // } else {
-            //   _showErrorSnackBar('Item out of stock');
-            // }
           },
         );
       },
@@ -1403,10 +1744,6 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
         stock = int.tryParse(product['stock'].toString()) ?? 0;
         discount = double.tryParse(product['discount'].toString()) ?? 0.0;
       }
-      // if (stock <= 0) {
-      //   _showErrorSnackBar('Item out of stock');
-      //   return;
-      // }
       setState(() {
         cartItems.add(CartItem(
           name: itemName!,
@@ -1433,10 +1770,6 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
     final product = productData.firstWhere((p) => p['itemName'] == itemName);
     final stock = int.tryParse(product['stock'].toString()) ?? 0;
     final discountValue = double.tryParse(discount) ?? 0.0;
-    // if (stock <= 0) {
-    //   _showErrorSnackBar('Item out of stock');
-    //   return;
-    // }
     setState(() {
       cartItems.add(CartItem(
         name: itemName,
@@ -1517,13 +1850,7 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              setState(() {
-                cartItems.clear();
-              });
-              _showSuccessSnackBar(
-                  'Payment completed successfully via $selectedPaymentMethod!',
-                  Icons.check_circle);
-              _generateReceipt();
+              _showPrintDialog();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: accentColor,
@@ -1537,64 +1864,528 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
     );
   }
 
+  void _showPrintDialog() {
+    final List<CartItem> receiptItems = List.from(cartItems);
+    setState(() {
+      cartItems.clear();
+    });
+    _showSuccessSnackBar(
+        'Payment completed successfully via $selectedPaymentMethod!',
+        Icons.check_circle);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Payment Completed'),
+        content: const Text(
+            'Would you like to print the receipt or proceed to the next order?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                selectedItemName = null;
+                selectedItemId = null;
+                barcodeController.clear();
+              });
+              _showSuccessSnackBar('Ready for next order', Icons.arrow_forward);
+            },
+            child: const Text('Next Order',
+                style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _printReceipt(receiptItems);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: accentColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Print Receipt'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _printReceipt(List<CartItem> receiptItems) async {
+    try {
+      final pdfBytes = await generateReceiptPDF(receiptItems);
+      final directory = await getTemporaryDirectory();
+      final file = File(
+          '${directory.path}/Receipt_${DateTime.now().millisecondsSinceEpoch}.pdf');
+      await file.writeAsBytes(pdfBytes);
+
+      await Printing.layoutPdf(
+        onLayout: (format) => pdfBytes,
+        name: 'Receipt_${DateTime.now().millisecondsSinceEpoch}',
+      );
+      _showSuccessSnackBar('Receipt printed successfully', Icons.print);
+    } catch (e) {
+      _showErrorSnackBar('Failed to print receipt: $e');
+    }
+  }
+
+  Future<Uint8List> generateReceiptPDF(List<CartItem> receiptItems) async {
+    final pdf = pw.Document();
+    final userModel = ref.read(userProvider);
+
+    final companyName = 'Green Biller';
+    final companyMobile = '+91 1234567890';
+    final companyEmail = 'contact@greenbiller.com';
+    final companyLogoUrl = 'https://via.placeholder.com/100x100';
+
+    pw.Widget logoWidget;
+    try {
+      final logoImage = await networkImage(companyLogoUrl);
+      logoWidget = pw.Image(logoImage, width: 80, height: 80);
+    } catch (e) {
+      logoWidget = pw.Text('[Company Logo]', style: pw.TextStyle(fontSize: 12));
+    }
+
+    // Invoice details
+    final invoiceNo = 'INV-${DateTime.now().millisecondsSinceEpoch}';
+    final invoiceDate = DateFormat('dd-MM-yyyy').format(DateTime.now());
+    final customerName = selectedCustomer ?? 'Walk-in Customer';
+    final customerId = selectedCustomerId ?? 'N/A';
+
+    // Calculate totals
+    final totalAmount = receiptItems.fold(
+        0.0, (sum, item) => sum + (item.price * item.quantity));
+    final totalDiscount =
+        receiptItems.fold(0.0, (sum, item) => sum + item.discount);
+    final totalTax = receiptItems.fold(0.0, (sum, item) {
+      final product = productData.firstWhere((p) => p['itemName'] == item.name,
+          orElse: () => {'taxRate': 0.0});
+      final taxRate = double.tryParse(product['taxRate'].toString()) ?? 0.0;
+      return sum + ((item.price * item.quantity) * taxRate / 100);
+    });
+    final shipping = 0.0;
+    final grandTotal = totalAmount - totalDiscount + totalTax + shipping;
+    final dueAmount = 0.0;
+    final totalPayable = grandTotal;
+
+    // Item list for PDF
+    final items = receiptItems.map((item) {
+      final product = productData.firstWhere((p) => p['itemName'] == item.name,
+          orElse: () => {'taxRate': 0.0, 'mrp': '0.0'});
+      final taxRate = double.tryParse(product['taxRate'].toString()) ?? 0.0;
+      final itemTotal = (item.price * item.quantity) -
+          item.discount +
+          ((item.price * item.quantity) * taxRate / 100);
+      return [
+        item.name,
+        currencyFormatter.format(item.price),
+        item.quantity.toString(),
+        '${taxRate.toStringAsFixed(2)}%',
+        currencyFormatter.format(itemTotal),
+      ];
+    }).toList();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.roll57,
+        build: (pw.Context context) {
+          return pw.Container(
+            width: double.infinity,
+            padding: const pw.EdgeInsets.all(8),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // Company Details
+                pw.Center(
+                  child: pw.Column(
+                    children: [
+                      logoWidget, 
+                      pw.SizedBox(height: 4),
+                      pw.Text(
+                        companyName,
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                      pw.Text(
+                        'Mobile: $companyMobile',
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
+                      pw.Text(
+                        'Email: $companyEmail',
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                      pw.Divider(thickness: 1),
+                    ],
+                  ),
+                ),
+                // Invoice Details
+                pw.Container(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 4),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        'Invoice: $invoiceNo',
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                      pw.Text(
+                        'Date: ${invoiceDate.toString().split(' ')[0]}',
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                      pw.Text(
+                        'Customer: $customerName',
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                      pw.Text(
+                        'Customer ID: $customerId',
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                    ],
+                  ),
+                ),
+                pw.Divider(thickness: 0.5),
+                // Item Header
+                pw.Row(
+                  children: [
+                    pw.Expanded(
+                      flex: 3,
+                      child: pw.Text(
+                        'Item',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8,
+                        ),
+                      ),
+                    ),
+                    pw.Expanded(
+                      flex: 1,
+                      child: pw.Text(
+                        'Qty',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8,
+                        ),
+                      ),
+                    ),
+                    pw.Expanded(
+                      flex: 2,
+                      child: pw.Text(
+                        'Price',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8,
+                        ),
+                      ),
+                    ),
+                    pw.Expanded(
+                      flex: 2,
+                      child: pw.Text(
+                        'Total',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                pw.Divider(thickness: 0.3),
+                // Item List
+                for (var item in items)
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                    child: pw.Row(
+                      children: [
+                        pw.Expanded(
+                          flex: 3,
+                          child: pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(
+                                item[
+                                    0], 
+                                style: const pw.TextStyle(fontSize: 7),
+                              ),
+                              pw.Text(
+                                'Tax: ${item[3]}', 
+                                style: const pw.TextStyle(
+                                  fontSize: 6,
+                                  color: PdfColors.grey600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        pw.Expanded(
+                          flex: 1,
+                          child: pw.Text(
+                            item[2],
+                            style: const pw.TextStyle(fontSize: 7),
+                          ),
+                        ),
+                        pw.Expanded(
+                          flex: 2,
+                          child: pw.Text(
+                            item[1], 
+                            style: const pw.TextStyle(fontSize: 7),
+                          ),
+                        ),
+                        pw.Expanded(
+                          flex: 2,
+                          child: pw.Text(
+                            item[4], 
+                            style: const pw.TextStyle(fontSize: 7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                pw.Divider(thickness: 0.5),
+                // Totals
+                pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                  child: pw.Column(
+                    children: [
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Subtotal',
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                          pw.Text(
+                            currencyFormatter.format(totalAmount),
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                        ],
+                      ),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Discount',
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                          pw.Text(
+                            currencyFormatter.format(totalDiscount),
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                        ],
+                      ),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Shipping',
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                          pw.Text(
+                            currencyFormatter.format(shipping),
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                        ],
+                      ),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Total Tax',
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                          pw.Text(
+                            currencyFormatter.format(totalTax),
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                        ],
+                      ),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Total Bill',
+                            style: pw.TextStyle(
+                              fontSize: 8,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                          pw.Text(
+                            currencyFormatter.format(grandTotal),
+                            style: pw.TextStyle(
+                              fontSize: 8,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Due',
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                          pw.Text(
+                            currencyFormatter.format(dueAmount),
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                        ],
+                      ),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            'Total Payable',
+                            style: pw.TextStyle(
+                              fontSize: 8,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                          pw.Text(
+                            currencyFormatter.format(totalPayable),
+                            style: pw.TextStyle(
+                              fontSize: 8,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 8),
+                      pw.Container(
+                        decoration: pw.BoxDecoration(
+                          border: pw.Border.all(color: PdfColors.grey400),
+                          borderRadius: pw.BorderRadius.circular(4),
+                        ),
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Column(
+                          children: [
+                            pw.Row(
+                              mainAxisAlignment:
+                                  pw.MainAxisAlignment.spaceBetween,
+                              children: [
+                                pw.Text(
+                                  'Payment Method:',
+                                  style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    fontSize: 6,
+                                  ),
+                                ),
+                                pw.Text(
+                                  'Cash', 
+                                  style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: PdfColors.blue700,
+                                    fontSize: 6,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            pw.SizedBox(height: 4),
+                            pw.Row(
+                              mainAxisAlignment:
+                                  pw.MainAxisAlignment.spaceBetween,
+                              children: [
+                                pw.Text(
+                                  'Amount Paid:',
+                                  style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    fontSize: 6,
+                                  ),
+                                ),
+                                pw.Text(
+                                  currencyFormatter.format(
+                                      totalPayable), 
+                                  style: const pw.TextStyle(fontSize: 8),
+                                ),
+                              ],
+                            ),
+                            pw.SizedBox(height: 4),
+                            pw.Row(
+                              mainAxisAlignment:
+                                  pw.MainAxisAlignment.spaceBetween,
+                              children: [
+                                pw.Text(
+                                  'Balance Due:',
+                                  style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    fontSize: 6,
+                                  ),
+                                ),
+                                pw.Text(
+                                  currencyFormatter.format(dueAmount),
+                                  style: const pw.TextStyle(fontSize: 8),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Footer
+                pw.Center(
+                  child: pw.Column(
+                    children: [
+                      pw.Text(
+                        'Thank you for your purchase!',
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
+                      pw.Text(
+                        'For any queries, contact us at $companyEmail.',
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                      pw.Text(
+                        'Software by Green Biller',
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+    return pdf.save();
+  }
+
   void _generateReceipt() {
     if (cartItems.isEmpty) {
       _showErrorSnackBar('No items in cart to generate receipt');
       return;
     }
-
-    double totalAmount =
-        cartItems.fold(0, (sum, item) => sum + (item.price * item.quantity));
-    double totalDiscount =
-        cartItems.fold(0, (sum, item) => sum + item.discount);
-    double grandTotal = totalAmount - totalDiscount;
-
-    String receipt = '''
-POS Receipt
-----------------------------------------
-Date: ${DateTime.now().toString()}
-Customer: ${selectedCustomer ?? 'Not selected'}
-Customer ID: ${selectedCustomerId ?? 'Not selected'}
-Warehouse: ${selectedWarehouse ?? 'Not selected'}
-Warehouse ID: ${selectedWarehouseId ?? 'Not selected'}
-----------------------------------------
-Items:
-${cartItems.map((item) {
-      final product = productData.firstWhere((p) => p['itemName'] == item.name,
-          orElse: () => {});
-      return '${item.name} x${item.quantity} @ ${currencyFormatter.format(item.price)} (MRP: ${product['mrp'] ?? 'N/A'}, Tax: ${product['taxRate'] ?? '0'}%) - Discount: ${currencyFormatter.format(item.discount)} = ${currencyFormatter.format(item.subtotal)}';
-    }).join('\n')}
-----------------------------------------
-Total Amount: ${currencyFormatter.format(totalAmount)}
-Total Discount: ${currencyFormatter.format(totalDiscount)}
-Grand Total: ${currencyFormatter.format(grandTotal)}
-Payment Method: $selectedPaymentMethod
-Tax Report: ${taxReport ? 'Yes' : 'No'}
-----------------------------------------
-Thank you for your purchase!
-''';
-
+    final List<CartItem> receiptItems = List.from(cartItems);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Receipt'),
-        content: SingleChildScrollView(
-          child: Text(receipt, style: const TextStyle(fontSize: 12)),
+        title: const Text('Receipt Preview'),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.8, 
+          height: MediaQuery.of(context).size.height * 0.6, 
+          child: _buildReceiptPreview(receiptItems),
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         actions: [
           TextButton(
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: receipt));
-              _showSuccessSnackBar('Receipt copied to clipboard', Icons.copy);
-            },
-            child:
-                const Text('Copy', style: TextStyle(color: Color(0xFF64748B))),
-          ),
-          TextButton(
             onPressed: () => Navigator.pop(context),
-            child:
-                const Text('Close', style: TextStyle(color: Color(0xFF64748B))),
+            child: const Text('Cancel',
+                style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _printReceipt(receiptItems);
+              _showPrintDialog(); // Show post-print dialog
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: accentColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Print Receipt'),
           ),
         ],
       ),
