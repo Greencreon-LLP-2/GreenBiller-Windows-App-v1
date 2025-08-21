@@ -9,6 +9,7 @@ import 'package:green_biller/features/store/view/parties_page/widgets/add_custom
 import 'package:green_biller/features/store/view/parties_page/widgets/add_supplier_dialog.dart';
 import 'package:green_biller/features/store/view/parties_page/widgets/customers_tab.dart';
 import 'package:green_biller/features/store/view/parties_page/widgets/suppliers_tab.dart';
+import 'package:green_biller/utils/custom_appbar.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class AdminPartiesPage extends HookConsumerWidget {
@@ -46,43 +47,35 @@ class AdminPartiesPage extends HookConsumerWidget {
               ),
             ],
           ),
-          child: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            centerTitle: false,
-            title: const Text(
-              'Parties Management',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: IconButton(
-                  icon: const Icon(Icons.refresh, color: Colors.white),
-                  onPressed: currentTabIndex.value == 0
-                      ? refreshCustomers
-                      : refreshSuppliers,
-                ),
-              ),
-            ],
-            bottom: TabBar(
-              indicatorColor: Colors.white,
-              indicatorWeight: 3,
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white.withOpacity(0.7),
-              labelStyle: const TextStyle(fontWeight: FontWeight.w600),
-              controller: tabController,
-              onTap: (index) => currentTabIndex.value = index,
-              tabs: const [
-                Tab(text: 'Customers'),
-                Tab(text: 'Suppliers'),
-              ],
-            ),
-          ),
+          child: GradientAppBar(
+  title: 'Parties Management',
+  gradientColor: Colors.blue, // pick your gradient base color
+  actions: [
+    Padding(
+      padding: const EdgeInsets.only(right: 16.0),
+      child: IconButton(
+        icon: const Icon(Icons.refresh, color: Colors.white),
+        onPressed: currentTabIndex.value == 0
+            ? refreshCustomers
+            : refreshSuppliers,
+      ),
+    ),
+  ],
+  bottom: TabBar(
+    indicatorColor: Colors.white,
+    indicatorWeight: 3,
+    labelColor: Colors.white,
+    unselectedLabelColor: Colors.white.withOpacity(0.7),
+    labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+    controller: tabController,
+    onTap: (index) => currentTabIndex.value = index,
+    tabs: const [
+      Tab(text: 'Customers'),
+      Tab(text: 'Suppliers'),
+    ],
+  ),
+)
+
         ),
       ),
       body: TabBarView(

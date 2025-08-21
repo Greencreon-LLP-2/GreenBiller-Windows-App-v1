@@ -9,6 +9,7 @@ import 'package:green_biller/features/store/view/store_page/admin/admin_stores_t
 import 'package:green_biller/features/store/view/store_page/admin/admin_warehouses_tab.dart';
 import 'package:green_biller/features/store/view/store_page/shared/add_store_dialog.dart';
 import 'package:green_biller/features/store/view/store_page/shared/add_warehouse_dialog.dart';
+import 'package:green_biller/utils/custom_appbar.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class AdminStorePage extends HookConsumerWidget {
@@ -49,29 +50,30 @@ class AdminStorePage extends HookConsumerWidget {
     final role = UserRoleModel.fromLevel(user.user?.userLevel);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Store Management (${role.name})'),
-        backgroundColor: cardColor,
-        foregroundColor: textPrimaryColor,
-        bottom: TabBar(
-          controller: tabController,
-          tabs: const [
-            Tab(text: 'Stores'),
-            Tab(text: 'Warehouses'),
-          ],
-          labelColor: accentColor,
-          unselectedLabelColor: textSecondaryColor,
-          indicatorColor: accentColor,
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // Super admin specific actions
-            },
-          ),
-        ],
-      ),
+      appBar: GradientAppBar(
+  title: 'Store Management (${role.name})',
+  gradientColor: cardColor, // main gradient color
+  subtitle: null, // optional
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.settings),
+      onPressed: () {
+        // Super admin specific actions
+      },
+    ),
+  ],
+  bottom: TabBar(
+    controller: tabController,
+    tabs: const [
+      Tab(text: 'Stores'),
+      Tab(text: 'Warehouses'),
+    ],
+    labelColor: accentColor,
+    unselectedLabelColor: textSecondaryColor,
+    indicatorColor: accentColor,
+  ),
+),
+
       body: TabBarView(
         controller: tabController,
         children: const [
