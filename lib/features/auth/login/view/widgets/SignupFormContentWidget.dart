@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:green_biller/features/auth/login/services/sign_up_service.dart';
 import 'package:green_biller/features/auth/login/view/widgets/ActionButtonWidget.dart';
 import 'package:green_biller/features/auth/login/view/widgets/CustomTextFieldWidget.dart';
@@ -60,7 +61,11 @@ class SignupFormContentWidget extends HookConsumerWidget {
         );
 
         if (result['status'] == 'success') {
-          onSwitchToOtp(int.parse(phone)); // Go to OTP for verification
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              context.go('/homepage');
+            }
+          });
         } else {
           errorMessage.value = result['message'];
         }
