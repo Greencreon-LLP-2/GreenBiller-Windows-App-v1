@@ -651,11 +651,11 @@ class AddNewSalePage extends HookConsumerWidget {
         displayStringForOption: (item_model.Item item) => item.itemName,
         onSelected: (item_model.Item item) => onItemSelected(item, rowIndex),
         fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-          itemInputController.value[rowIndex] = controller; 
-          itemInputFocusNode.value[rowIndex] = focusNode; 
+          itemInputController.value[rowIndex] = controller;
+          itemInputFocusNode.value[rowIndex] = focusNode;
           return TextField(
-            controller: controller, 
-            focusNode: focusNode, 
+            controller: controller,
+            focusNode: focusNode,
             style: const TextStyle(fontSize: 14),
             decoration: const InputDecoration(
               isDense: true,
