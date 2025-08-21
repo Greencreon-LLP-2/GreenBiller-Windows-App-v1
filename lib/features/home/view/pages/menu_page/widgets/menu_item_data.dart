@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
 import 'package:green_biller/features/auth/login/services/auth_service.dart';
 import 'package:green_biller/features/home/view/pages/menu_page/models/menu_item_model.dart';
-import 'package:green_biller/features/payment/view/pages/all_payment_page/all_payment_page.dart';
+import 'package:green_biller/features/payment/view/pages/all_payment_page/payment_in_page.dart';
 import 'package:green_biller/features/sales/view/pages/sales_order_page.dart';
 import 'package:green_biller/features/sales/view/pages/sales_return_page.dart';
 
@@ -17,7 +17,7 @@ class MenuItemData {
     }),
     MenuItemModel("Payment-In", Icons.payment, (context, ref) async {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const PaymentIn()));
+          context, MaterialPageRoute(builder: (context) => const PaymentInPage()));
       return;
     }),
     MenuItemModel("Sale Return", Icons.assignment_return, (context, ref) async {

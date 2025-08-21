@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/core/widgets/card_container.dart';
-import 'package:green_biller/features/payment/view/pages/payment_in_page/payment_in_page.dart';
+import 'package:green_biller/features/payment/controller/payment_data_providers.dart';
+import 'package:green_biller/features/payment/view/pages/payment_in_page/add_payment_in_page.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class PaymentIn extends StatelessWidget {
-  const PaymentIn({super.key});
+class PaymentInPage extends ConsumerWidget {
+  const PaymentInPage({super.key});
 
   Widget _buildSummaryCard(
     String title,
@@ -138,218 +140,12 @@ class PaymentIn extends StatelessWidget {
     );
   }
 
-  Widget _buildTransactionTable(BuildContext context) {
-    final transactions = [
-      {
-        "name": "test-124",
-        "date": "01/01/2025",
-        "payIn": "PayIn : 2",
-        "amount": "123.00",
-        "status": "Pending"
-      },
-      {
-        "name": "ftg",
-        "date": "01/01/2025",
-        "payIn": "PayIn : 3",
-        "amount": "885.00",
-        "status": "Completed"
-      },
-    ];
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columnSpacing: 170,
-        horizontalMargin: 40,
-        headingRowHeight: 60,
-        dataRowHeight: 72,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-        ),
-        headingTextStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF475569),
-        ),
-        columns: const [
-          DataColumn(label: Text('Customer')),
-          DataColumn(label: Text('Date')),
-          DataColumn(label: Text('PayIn ID')),
-          DataColumn(label: Text('Amount')),
-          DataColumn(label: Text('Status')),
-          DataColumn(label: Text('Actions')),
-        ],
-        rows: transactions.asMap().entries.map((entry) {
-          final index = entry.key;
-          final transaction = entry.value;
-          final isEven = index % 2 == 0;
-
-          return DataRow(
-            color: MaterialStateProperty.all(
-              isEven ? const Color(0xFFFAFAFA) : Colors.white,
-            ),
-            cells: [
-              DataCell(
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: accentColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Text(
-                          transaction["name"]!.split('-')[0][0].toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: accentColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      transaction["name"]!,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF1E293B),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              DataCell(
-                Text(
-                  transaction["date"]!,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF64748B),
-                  ),
-                ),
-              ),
-              DataCell(
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: const Color(0xFF3B82F6).withOpacity(0.2),
-                    ),
-                  ),
-                  child: Text(
-                    transaction["payIn"]!,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF3B82F6),
-                    ),
-                  ),
-                ),
-              ),
-              DataCell(
-                Text(
-                  "₹${transaction["amount"]!}",
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF1E293B),
-                  ),
-                ),
-              ),
-              DataCell(
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: transaction["status"] == "Completed"
-                        ? successColor.withOpacity(0.1)
-                        : warningColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: transaction["status"] == "Completed"
-                          ? successColor.withOpacity(0.3)
-                          : warningColor.withOpacity(0.3),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: transaction["status"] == "Completed"
-                              ? successColor
-                              : warningColor,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        transaction["status"]!,
-                        style: TextStyle(
-                          color: transaction["status"] == "Completed"
-                              ? successColor
-                              : warningColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              DataCell(
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: accentColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.edit, size: 20),
-                        color: accentColor,
-                        onPressed: () {},
-                        tooltip: 'Edit Payment',
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: errorColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.delete_outline, size: 20),
-                        color: errorColor,
-                        onPressed: () {},
-                        tooltip: 'Delete Payment',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        }).toList(),
-      ),
-    );
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDesktop = MediaQuery.of(context).size.width >= 1200;
     final screenWidth = MediaQuery.of(context).size.width;
     final cardWidth = isDesktop ? (screenWidth - 80) / 4 : screenWidth - 32;
-
+    final paymentsAsync = ref.watch(paymentInProvider(null));
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: PreferredSize(
@@ -374,7 +170,7 @@ class PaymentIn extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
             title: const Text(
-              'All Payments',
+              'All Payments in',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
@@ -382,6 +178,17 @@ class PaymentIn extends StatelessWidget {
               ),
             ),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.add, color: Colors.white),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const AddPaymentInPage()),
+                  );
+                },
+                tooltip: 'Add New Payment-out',
+              ),
               IconButton(
                 icon: const Icon(Icons.filter_list, color: Colors.white),
                 onPressed: () {},
@@ -396,6 +203,11 @@ class PaymentIn extends StatelessWidget {
                 icon: const Icon(Icons.search, color: Colors.white),
                 onPressed: () {},
                 tooltip: 'Search',
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                onPressed: () => ref.refresh(paymentInProvider(null)),
+                tooltip: 'Refresh',
               ),
               const SizedBox(width: 8),
             ],
@@ -451,7 +263,7 @@ class PaymentIn extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const PaymentInPage()),
+                          builder: (context) => const AddPaymentInPage()),
                     );
                   },
                 ),
@@ -489,6 +301,7 @@ class PaymentIn extends StatelessWidget {
               ],
               child: Column(
                 children: [
+                  // Header with record count
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: const BoxDecoration(
@@ -507,32 +320,120 @@ class PaymentIn extends StatelessWidget {
                             color: Colors.grey[800],
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: accentColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            '2 records',
-                            style: TextStyle(
-                              color: accentColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
+                        paymentsAsync.when(
+                          data: (payments) => Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: accentColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '${payments.length} records',
+                              style: const TextStyle(
+                                color: accentColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
+                          loading: () => const Text("..."),
+                          error: (_, __) => const Text("0 records"),
                         ),
                       ],
                     ),
                   ),
+
+                  // Payment list
                   Expanded(
-                    child: _buildTransactionTable(context),
+                    child: paymentsAsync.when(
+                      data: (payments) {
+                        if (payments.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              "No payment records found",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          );
+                        }
+
+                        return ListView.builder(
+                          itemCount: payments.length,
+                          itemBuilder: (context, index) {
+                            final payment =
+                                payments[index] as Map<String, dynamic>;
+
+                            return Card(
+                              margin: const EdgeInsets.symmetric(
+                                  vertical: 6, horizontal: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              elevation: 2,
+                              child: ListTile(
+                                leading: const Icon(Icons.payments,
+                                    color: Colors.green),
+                                title: Text(
+                                  "Payment Code: ${payment['payment_code'] ?? 'N/A'}",
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        "Customer: ${payment['customer_name'] ?? 'Unknown'}"),
+                                    Text(
+                                        "Store ID: ${payment['store_id'] ?? ''}"),
+                                    Text(
+                                        "Sale ID: ${payment['sales_id'] ?? ''}"),
+                                    Text(
+                                        "Type: ${payment['payment_type'] ?? ''}"),
+                                    Text("Amount: ${payment['payment'] ?? ''}"),
+                                    Text(
+                                        "Note: ${payment['payment_note'] ?? ''}"),
+                                    Text(
+                                        "Account ID: ${payment['account_id'] ?? ''}"),
+                                    Text(
+                                        "Short Code: ${payment['short_code'] ?? ''}"),
+                                    Text("Status: ${payment['status'] ?? ''}"),
+                                    Text(
+                                        "Created By: ${payment['created_by'] ?? ''}"),
+                                    Text(
+                                        "Customer Phone: ${payment['customer_phone'] ?? ''}"),
+                                    Text(
+                                        "Customer Mobile: ${payment['customer_mobile'] ?? ''}"),
+                                    Text(
+                                        "Customer Email: ${payment['customer_email'] ?? ''}"),
+                                    Text(
+                                        "Customer Address: ${payment['customer_address'] ?? ''}"),
+                                  ],
+                                ),
+                                trailing: Text(
+                                  payment['payment_date'] ?? '',
+                                  style: const TextStyle(
+                                      fontSize: 12, color: Colors.grey),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (err, stack) => Center(
+                        child: Text(
+                          'Error loading payments\n$err',
+                          style: const TextStyle(color: Colors.red),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
+          )
         ],
       ),
     );

@@ -12,8 +12,7 @@ class StorePageCustom extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(userProvider);
-
+    final user = ref.read(userProvider);
     if (user == null || user.user?.userLevel == null) {
       return const Scaffold(
         body: Center(child: Text('Please login to access stores')),

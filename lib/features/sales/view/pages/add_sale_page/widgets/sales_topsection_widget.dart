@@ -8,7 +8,7 @@ import 'package:green_biller/features/store/view/parties_page/widgets/add_custom
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SalesPageTopSectionwidget extends HookConsumerWidget {
+class SalesPageTopSectionwidget extends StatefulHookConsumerWidget {
   final ValueNotifier<List<Item>> itemsList;
   final ValueNotifier<Map<String, String>> supplierMap;
   final ValueNotifier<Map<String, String>> warehouseMap;
@@ -20,7 +20,7 @@ class SalesPageTopSectionwidget extends HookConsumerWidget {
   final VoidCallback onCustomerAddSucess;
   final String accessToken;
 
-  SalesPageTopSectionwidget({
+  const SalesPageTopSectionwidget({
     super.key,
     required this.itemsList,
     required this.supplierMap,
@@ -34,62 +34,129 @@ class SalesPageTopSectionwidget extends HookConsumerWidget {
     required this.accessToken,
   });
 
+  @override
+  ConsumerState<SalesPageTopSectionwidget> createState() =>
+      _SalesPageTopSectionwidgetState();
+}
+
+class _SalesPageTopSectionwidgetState
+    extends ConsumerState<SalesPageTopSectionwidget> {
   final isLoadingWarehouses = ValueNotifier<bool>(false);
   final isLoadingCustomers = ValueNotifier<bool>(false);
+  bool _isMounted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isMounted = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_isMounted) {
+        _initializeData();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _isMounted = false;
+    isLoadingWarehouses.dispose();
+    isLoadingCustomers.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeData() async {
+    if (!_isMounted) return;
+
+    if (widget.storeMap.value.isEmpty) {
+      await _fetchStores(context);
+      await _loadSavedState();
+
+      if (_isMounted && widget.selectedStore.value == null && widget.storeMap.value.isNotEmpty) {
+        widget.selectedStore.value = widget.storeMap.value.keys.first;
+        await _saveCurrentState();
+      }
+
+      if (_isMounted && widget.selectedStore.value != null) {
+        await _fetchAndUpdateData(context);
+        await _loadSavedState();
+      }
+    } else if (_isMounted && widget.selectedStore.value != null) {
+      // Load items if store is already selected
+      final items = await _fetchItems(widget.selectedStore.value!, context);
+      if (_isMounted) {
+        widget.itemsList.value = items;
+      }
+    }
+  }
 
   Future<void> _showEditModal(BuildContext context) async {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => Dialog(
         child: _EditSettingsModal(
-          storeMap: storeMap,
-          warehouseMap: warehouseMap,
-          supplierMap: supplierMap,
-          selectedStore: selectedStore,
-          selectedWarehouse: selectedWarehouse,
-          selectedCustomer: selectedCustomer,
-          billNo: billNo,
-          accessToken: accessToken,
+          storeMap: widget.storeMap,
+          warehouseMap: widget.warehouseMap,
+          supplierMap: widget.supplierMap,
+          selectedStore: widget.selectedStore,
+          selectedWarehouse: widget.selectedWarehouse,
+          selectedCustomer: widget.selectedCustomer,
+          billNo: widget.billNo,
+          accessToken: widget.accessToken,
           onCustomerAddSuccess: () {
-            onCustomerAddSucess();
-            _fetchCustomers(storeMap.value[selectedStore.value]!, context)
-                .then((customers) {
-              supplierMap.value = customers;
-            });
+            widget.onCustomerAddSucess();
+            if (widget.selectedStore.value != null) {
+              _fetchCustomers(widget.storeMap.value[widget.selectedStore.value]!, context)
+                  .then((customers) {
+                if (_isMounted) {
+                  widget.supplierMap.value = customers;
+                }
+              });
+            }
           },
         ),
       ),
     );
 
-    if (result == true) {
+    if (result == true && _isMounted) {
       await _saveCurrentState();
       await _fetchAndUpdateData(context);
     }
   }
 
   Future<void> _fetchAndUpdateData(BuildContext context) async {
-    if (selectedStore.value == null) return;
+    if (widget.selectedStore.value == null || !_isMounted) return;
 
-    final storeId = storeMap.value[selectedStore.value] ?? '';
+    final storeId = widget.storeMap.value[widget.selectedStore.value] ?? '';
     if (storeId.isEmpty) return;
 
-    isLoadingWarehouses.value = true;
-    warehouseMap.value = await _fetchWarehouses(storeId, context);
-    isLoadingWarehouses.value = false;
+    if (_isMounted) isLoadingWarehouses.value = true;
+    final warehouses = await _fetchWarehouses(storeId, context);
+    if (_isMounted) {
+      widget.warehouseMap.value = warehouses;
+      isLoadingWarehouses.value = false;
+    }
 
-    isLoadingCustomers.value = true;
-    supplierMap.value = await _fetchCustomers(storeId, context);
-    isLoadingCustomers.value = false;
+    if (_isMounted) isLoadingCustomers.value = true;
+    final customers = await _fetchCustomers(storeId, context);
+    if (_isMounted) {
+      widget.supplierMap.value = customers;
+      isLoadingCustomers.value = false;
+    }
 
-    itemsList.value = await fetchItems(storeId, context);
+    final items = await _fetchItems(storeId, context);
+    if (_isMounted) {
+      widget.itemsList.value = items;
+    }
   }
 
-  Future<Map<String, String>> fetchStores(BuildContext context) async {
+  Future<Map<String, String>> _fetchStores(BuildContext context) async {
     try {
       final map =
-          await ViewStoreController(accessToken: accessToken, storeId: 0)
+          await ViewStoreController(accessToken: widget.accessToken, storeId: 0)
               .getStoreList();
-      storeMap.value = map;
+      if (_isMounted) {
+        widget.storeMap.value = map;
+      }
       return map;
     } catch (e) {
       debugPrint('Error fetching stores: $e');
@@ -100,7 +167,7 @@ class SalesPageTopSectionwidget extends HookConsumerWidget {
   Future<Map<String, String>> _fetchWarehouses(
       String storeId, BuildContext context) async {
     try {
-      return await ViewWarehouseController(accessToken: accessToken)
+      return await ViewWarehouseController(accessToken: widget.accessToken)
           .warehouseListByIdController(storeId);
     } catch (e) {
       debugPrint('Error fetching warehouses: $e');
@@ -111,16 +178,17 @@ class SalesPageTopSectionwidget extends HookConsumerWidget {
   Future<Map<String, String>> _fetchCustomers(
       String storeId, BuildContext context) async {
     try {
-      return await ViewPartiesController().customerList(accessToken, storeId);
+      return await ViewPartiesController()
+          .customerList(widget.accessToken, storeId);
     } catch (e) {
       debugPrint('Error fetching customers: $e');
       return {};
     }
   }
 
-  Future<List<Item>> fetchItems(String storeId, BuildContext context) async {
+  Future<List<Item>> _fetchItems(String storeId, BuildContext context) async {
     try {
-      final items = await ViewAllItemsController(accessToken: accessToken)
+      final items = await ViewAllItemsController(accessToken: widget.accessToken)
           .getAllItems(storeId);
       return items.data ?? [];
     } catch (e) {
@@ -130,49 +198,61 @@ class SalesPageTopSectionwidget extends HookConsumerWidget {
   }
 
   Future<void> _saveCurrentState() async {
+    if (!_isMounted) return;
+
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('storeId', storeMap.value[selectedStore.value] ?? '');
+    await prefs.setString(
+        'storeId', widget.storeMap.value[widget.selectedStore.value] ?? '');
     await prefs.setString(
       'customerId',
-      selectedCustomer.value == "Walk-in Customer"
+      widget.selectedCustomer.value == "Walk-in Customer"
           ? "Walk-in Customer"
-          : supplierMap.value[selectedCustomer.value] ?? '',
+          : widget.supplierMap.value[widget.selectedCustomer.value] ?? '',
     );
     await prefs.setString(
       'warehouseId',
-      warehouseMap.value[selectedWarehouse.value] ?? '',
+      widget.warehouseMap.value[widget.selectedWarehouse.value] ?? '',
     );
-    await prefs.setString('billNo', billNo.value ?? '');
+    await prefs.setString('billNo', widget.billNo.value ?? '');
   }
 
   Future<void> _loadSavedState() async {
+    if (!_isMounted) return;
+
     final prefs = await SharedPreferences.getInstance();
     final savedStoreId = prefs.getString('storeId');
     final savedCustomerId = prefs.getString('customerId');
     final savedWarehouseId = prefs.getString('warehouseId');
-    billNo.value = prefs.getString('billNo');
+    final savedBillNo = prefs.getString('billNo');
+
+    if (_isMounted) {
+      widget.billNo.value = savedBillNo;
+    }
 
     // Restore store selection
-    if (savedStoreId != null && storeMap.value.containsValue(savedStoreId)) {
-      selectedStore.value = storeMap.value.entries
+    if (savedStoreId != null &&
+        widget.storeMap.value.containsValue(savedStoreId) &&
+        _isMounted) {
+      widget.selectedStore.value = widget.storeMap.value.entries
           .firstWhere((entry) => entry.value == savedStoreId)
           .key;
     }
 
-    // Restore warehouse selection - must happen AFTER store is loaded
+    // Restore warehouse selection
     if (savedWarehouseId != null &&
-        warehouseMap.value.containsValue(savedWarehouseId)) {
-      selectedWarehouse.value = warehouseMap.value.entries
+        widget.warehouseMap.value.containsValue(savedWarehouseId) &&
+        _isMounted) {
+      widget.selectedWarehouse.value = widget.warehouseMap.value.entries
           .firstWhere((entry) => entry.value == savedWarehouseId)
           .key;
     }
 
-    // Restore customer selection - must happen AFTER store is loaded
-    if (savedCustomerId != null) {
+    // Restore customer selection
+    if (savedCustomerId != null && _isMounted) {
       if (savedCustomerId == "Walk-in Customer") {
-        selectedCustomer.value = "Walk-in Customer";
-      } else if (supplierMap.value.containsValue(savedCustomerId)) {
-        selectedCustomer.value = supplierMap.value.entries
+        widget.selectedCustomer.value = "Walk-in Customer";
+      } else if (widget.supplierMap.value.containsValue(savedCustomerId)) {
+        widget.selectedCustomer.value = widget.supplierMap.value.entries
             .firstWhere((entry) => entry.value == savedCustomerId)
             .key;
       }
@@ -180,68 +260,30 @@ class SalesPageTopSectionwidget extends HookConsumerWidget {
   }
 
   Future<void> _resetToDefaults(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
+    if (!_isMounted) return;
 
-    // Only remove the session-specific keys, not the whole storage
+    final prefs = await SharedPreferences.getInstance();
     await prefs.remove('storeId');
     await prefs.remove('customerId');
     await prefs.remove('warehouseId');
     await prefs.remove('billNo');
 
     // Reset in-memory values
-    if (storeMap.value.isNotEmpty) {
-      selectedStore.value = storeMap.value.keys.first;
+    if (_isMounted && widget.storeMap.value.isNotEmpty) {
+      widget.selectedStore.value = widget.storeMap.value.keys.first;
     }
-    selectedCustomer.value = "Walk-in Customer";
-    selectedWarehouse.value = null;
-    billNo.value = null;
+
+    if (_isMounted) {
+      widget.selectedCustomer.value = "Walk-in Customer";
+      widget.selectedWarehouse.value = null;
+      widget.billNo.value = null;
+    }
 
     // Save defaults back
     await _saveCurrentState();
 
     // Refresh UI/data
     await _fetchAndUpdateData(context);
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (storeMap.value.isEmpty) {
-        await fetchStores(context);
-        await _loadSavedState();
-
-        // If no store selected but stores exist, select first one
-        if (selectedStore.value == null && storeMap.value.isNotEmpty) {
-          selectedStore.value = storeMap.value.keys.first;
-          await _saveCurrentState(); // Save the initial selection
-        }
-
-        // Fetch related data if store is selected
-        if (selectedStore.value != null) {
-          await _fetchAndUpdateData(context);
-          // Reload saved state again to ensure warehouse/customer selections are applied
-          await _loadSavedState();
-        }
-      } else {
-        fetchItems(selectedStore.value!, context);
-      }
-    });
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.green.withOpacity(0.2))),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeaderSection(context),
-          const SizedBox(height: 20),
-          _buildInfoDisplay(context),
-        ],
-      ),
-    );
   }
 
   Widget _buildHeaderSection(BuildContext context) {
@@ -277,17 +319,21 @@ class SalesPageTopSectionwidget extends HookConsumerWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _buildInfoTile(
-              "Store", selectedStore.value ?? "Not selected", Icons.store),
+          _buildInfoTile("Store", widget.selectedStore.value ?? "Not selected",
+              Icons.store),
           const SizedBox(width: 8),
-          _buildInfoTile("Warehouse", selectedWarehouse.value ?? "Not selected",
+          _buildInfoTile(
+              "Warehouse",
+              widget.selectedWarehouse.value ?? "Not selected",
               Icons.warehouse),
           const SizedBox(width: 8),
-          _buildInfoTile("Customer",
-              selectedCustomer.value ?? "Walk-in Customer", Icons.person),
-          const SizedBox(width: 8),
           _buildInfoTile(
-              "Bill Number Prefix", billNo.value ?? "Not set", Icons.receipt),
+              "Customer",
+              widget.selectedCustomer.value ?? "Walk-in Customer",
+              Icons.person),
+          const SizedBox(width: 8),
+          _buildInfoTile("Bill Number Prefix",
+              widget.billNo.value ?? "Not set", Icons.receipt),
         ],
       ),
     );
@@ -295,7 +341,7 @@ class SalesPageTopSectionwidget extends HookConsumerWidget {
 
   Widget _buildInfoTile(String label, String value, IconData icon) {
     return Container(
-      width: 180, // Fixed width for each tile
+      width: 180,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
@@ -329,6 +375,25 @@ class SalesPageTopSectionwidget extends HookConsumerWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.green.withOpacity(0.2))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeaderSection(context),
+          const SizedBox(height: 20),
+          _buildInfoDisplay(context),
         ],
       ),
     );
@@ -369,10 +434,12 @@ class _EditSettingsModalState extends State<_EditSettingsModal> {
   late String _tempBillNo;
   bool _loadingWarehouses = false;
   bool _loadingCustomers = false;
+  bool _isMounted = false;
 
   @override
   void initState() {
     super.initState();
+    _isMounted = true;
     _tempStore = widget.selectedStore.value;
     _tempWarehouse = widget.selectedWarehouse.value;
     _tempCustomer = widget.selectedCustomer.value;
@@ -380,32 +447,47 @@ class _EditSettingsModalState extends State<_EditSettingsModal> {
     _fetchWarehousesAndCustomers();
   }
 
-  Future<void> _fetchWarehousesAndCustomers() async {
-    if (_tempStore == null) return;
+  @override
+  void dispose() {
+    _isMounted = false;
+    super.dispose();
+  }
 
-    setState(() {
-      _loadingWarehouses = true;
-      _loadingCustomers = true;
-    });
+  Future<void> _fetchWarehousesAndCustomers() async {
+    if (_tempStore == null || !_isMounted) return;
+
+    if (_isMounted) {
+      setState(() {
+        _loadingWarehouses = true;
+        _loadingCustomers = true;
+      });
+    }
 
     final storeId = widget.storeMap.value[_tempStore];
     if (storeId != null) {
       try {
-        widget.warehouseMap.value =
+        final warehouses =
             await ViewWarehouseController(accessToken: widget.accessToken)
                 .warehouseListByIdController(storeId);
 
-        widget.supplierMap.value = await ViewPartiesController()
+        final customers = await ViewPartiesController()
             .customerList(widget.accessToken, storeId);
+
+        if (_isMounted) {
+          widget.warehouseMap.value = warehouses;
+          widget.supplierMap.value = customers;
+        }
       } catch (e) {
         debugPrint('Error fetching data: $e');
       }
     }
 
-    setState(() {
-      _loadingWarehouses = false;
-      _loadingCustomers = false;
-    });
+    if (_isMounted) {
+      setState(() {
+        _loadingWarehouses = false;
+        _loadingCustomers = false;
+      });
+    }
   }
 
   Future<void> _showAddCustomerDialog(BuildContext context) async {
@@ -414,10 +496,29 @@ class _EditSettingsModalState extends State<_EditSettingsModal> {
       builder: (context) => AddCustomerDialog(
         onSuccess: () {
           widget.onCustomerAddSuccess();
-          _fetchWarehousesAndCustomers();
+          if (_isMounted) {
+            _fetchWarehousesAndCustomers();
+          }
         },
       ),
     );
+  }
+
+  Future<void> _saveCurrentState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+        'storeId', widget.storeMap.value[widget.selectedStore.value] ?? '');
+    await prefs.setString(
+      'customerId',
+      widget.selectedCustomer.value == "Walk-in Customer"
+          ? "Walk-in Customer"
+          : widget.supplierMap.value[widget.selectedCustomer.value] ?? '',
+    );
+    await prefs.setString(
+      'warehouseId',
+      widget.warehouseMap.value[widget.selectedWarehouse.value] ?? '',
+    );
+    await prefs.setString('billNo', widget.billNo.value ?? '');
   }
 
   @override
@@ -470,7 +571,7 @@ class _EditSettingsModalState extends State<_EditSettingsModal> {
                       widget.billNo.value = _tempBillNo;
 
                       // Save to shared preferences immediately
-                      _saveCurrentState(widget).then((_) {
+                      _saveCurrentState().then((_) {
                         Navigator.pop(context, true);
                       });
                     },
@@ -484,23 +585,6 @@ class _EditSettingsModalState extends State<_EditSettingsModal> {
         ),
       ),
     );
-  }
-
-  Future<void> _saveCurrentState(_EditSettingsModal widget) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-        'storeId', widget.storeMap.value[widget.selectedStore.value] ?? '');
-    await prefs.setString(
-      'customerId',
-      widget.selectedCustomer.value == "Walk-in Customer"
-          ? "Walk-in Customer"
-          : widget.supplierMap.value[widget.selectedCustomer.value] ?? '',
-    );
-    await prefs.setString(
-      'warehouseId',
-      widget.warehouseMap.value[widget.selectedWarehouse.value] ?? '',
-    );
-    await prefs.setString('billNo', widget.billNo.value ?? '');
   }
 
   Widget _buildStoreDropdown() {

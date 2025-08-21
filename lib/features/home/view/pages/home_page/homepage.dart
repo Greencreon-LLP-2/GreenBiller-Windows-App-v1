@@ -18,7 +18,7 @@ import 'package:green_biller/features/sales/view/pages/add_sale_page/sales%20LIs
 import 'package:green_biller/features/store/view/parties_page/parties_page.dart';
 import 'package:green_biller/features/store/view/store_page/store_page.dart';
 import 'package:green_biller/features/user/user_creation_page/user_creation_page.dart';
-import 'package:green_biller/main.dart';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

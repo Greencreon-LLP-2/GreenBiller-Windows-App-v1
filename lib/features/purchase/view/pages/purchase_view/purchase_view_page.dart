@@ -63,24 +63,6 @@ class PurchaseViewPage extends HookConsumerWidget {
     );
   }
 
-  void _showErrorSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
-  }
-
   Widget _buildActionButton(
       String label, IconData icon, Color color, VoidCallback onPressed) {
     return Container(
@@ -301,6 +283,7 @@ class PurchaseViewPage extends HookConsumerWidget {
             color: Color(0xFF475569),
           ),
           columns: const [
+            DataColumn(label: Text('#ID')),
             DataColumn(label: Text('Purchase Date')),
             DataColumn(label: Text('Bill No')),
             DataColumn(label: Text('Supplier')),
@@ -321,6 +304,15 @@ class PurchaseViewPage extends HookConsumerWidget {
                 isEven ? const Color(0xFFFAFAFA) : Colors.white,
               ),
               cells: [
+                DataCell(
+                  Text(
+                    purchase.id.toString(),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
                 DataCell(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

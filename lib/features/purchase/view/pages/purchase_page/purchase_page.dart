@@ -143,11 +143,13 @@ class PurchasePage extends HookConsumerWidget {
           accessToken,
           storeId,
         );
+
         supplierMap.value = map;
       } catch (e) {
-        debugPrint('Error fetching suppliers: $e');
+        print('Error fetching suppliers: $e');
       } finally {
         isLoadingSuppliers.value = false;
+        print(supplierMap.value);
       }
     }
 
@@ -159,13 +161,14 @@ class PurchasePage extends HookConsumerWidget {
           final map =
               await ViewStoreController(accessToken: accessToken, storeId: 0)
                   .getStoreList();
-          if (cancelCompleter.isCompleted) return;
+
           storeMap.value = map;
+          if (cancelCompleter.isCompleted) return;
         } catch (e) {
           debugPrint('Error fetching stores: $e');
         } finally {
           if (!cancelCompleter.isCompleted) {
-            isLoading.value = false;
+            isLoadingStores.value = false;
           }
         }
       }
@@ -184,7 +187,11 @@ class PurchasePage extends HookConsumerWidget {
 
       fetchStores();
       fetchTax();
-      return null;
+      return () {
+        if (!cancelCompleter.isCompleted) {
+          cancelCompleter.complete();
+        }
+      };
     }, [accessToken]);
 
     void onStoreSelected(String? storeName) async {

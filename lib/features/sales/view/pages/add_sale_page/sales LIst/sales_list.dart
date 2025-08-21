@@ -1123,6 +1123,7 @@ class _SalesListContentState extends ConsumerState<_SalesListContent>
             color: Color(0xFF475569),
           ),
           columns: const [
+            DataColumn(label: Text('Sales ID')),
             DataColumn(label: Text('Sales Date')),
             DataColumn(label: Text('Customer Name')),
             DataColumn(label: Text('Sales Code')),
@@ -1143,6 +1144,15 @@ class _SalesListContentState extends ConsumerState<_SalesListContent>
                 isEven ? const Color(0xFFFAFAFA) : Colors.white,
               ),
               cells: [
+                DataCell(
+                  Text(
+                    sale.id.toString(),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
                 DataCell(
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

@@ -17,7 +17,7 @@ class SignUpService {
       final response = await http.post(
         Uri.parse(signUpUrl),
         body: {
-          'user_level': '2',
+          'user_level': '4',
           'name': name,
           'email': email,
           'country_code': countryCode,
