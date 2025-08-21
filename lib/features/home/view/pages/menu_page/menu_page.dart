@@ -44,9 +44,12 @@ class MenuPage extends ConsumerWidget {
       context.push('/purchase-view');
       return;
     }),
-    MenuItemModel("Purchase Returns", Icons.assignment_return,
-        (context, ref) async {
+    MenuItemModel("Purchase Returns", Icons.exit_to_app, (context, ref) async {
       context.push('/purchase-returns-view');
+      return;
+    }),
+    MenuItemModel("Payment Out", Icons.assignment_return, (context, ref) async {
+      context.push('/payment-out');
       return;
     }),
   ];
