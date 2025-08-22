@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:green_biller/core/constants/colors.dart';
@@ -13,6 +14,7 @@ import 'package:green_biller/features/item/services/category/view_categories_ser
 import 'package:green_biller/features/store/controllers/view_warehouse_controller.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
+import 'package:open_file/open_file.dart';
 
 /// ! AddItemsPage is responsible for creating and editing inventory items
 /// ! It uses a tabbed interface to organize item details into Basic Info, Pricing, and Stock
@@ -25,15 +27,11 @@ class AddItemsPage extends StatefulWidget {
 
 class _AddItemsPageState extends State<AddItemsPage>
     with SingleTickerProviderStateMixin {
-  // Initialize logger
   final _logger = Logger();
-  // final _addItemService = AddItemService();
 
-  // Controllers and form key
   late TabController _tabController;
   final _formKey = GlobalKey<FormState>();
 
-  // Text Controllers for all fields
   final _itemNameController = TextEditingController();
   final _brandController = TextEditingController();
   final _skuController = TextEditingController();
@@ -51,44 +49,37 @@ class _AddItemsPageState extends State<AddItemsPage>
   final _openingStockController = TextEditingController();
   final _alertQuantityController = TextEditingController();
   final TextEditingController _subUnitController = TextEditingController();
-  // Dropdown values
+
   String? _selectedCategory;
   String? _selectedTaxType;
   String? _selectedDiscountType;
   String? _selectedWarehouse;
 
-  // Add image file state
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
 
-  // Processing state
   bool _isProcessing = false;
 
-  // Add new state variables for store management
   final Map<String, int> _storeMap = {};
   String? _selectedStore;
-
   final Map<String, int> _categoryMap = {};
   final Map<String, int> _unitMap = {};
-
   int? _selectedStoreId;
   bool _isLoadingStores = false;
   bool _isLoadingCategories = false;
   bool _isLoadingUnits = false;
-
   bool _isInitialized = false;
 
-  // Add new state variable for calculated profit
   double _calculatedProfit = 0.0;
 
-  // Add brand-related state variables
   final Map<String, int> _brandMap = {};
   String? _selectedBrand;
   bool _isLoadingBrands = false;
 
-  // Add warehouse-related state variables
   final Map<String, String> _warehouseMap = {};
   bool _isLoadingWarehouses = false;
+
+  Map<String, dynamic>? _importedFile;
 
   @override
   void initState() {
@@ -96,7 +87,6 @@ class _AddItemsPageState extends State<AddItemsPage>
     _logger.d('Initializing AddItemsPage');
     _tabController = TabController(length: 3, vsync: this);
 
-    // Listen to tab changes
     _tabController.addListener(() {
       _logger.d('Tab changed to index: ${_tabController.index}');
     });
@@ -135,12 +125,125 @@ class _AddItemsPageState extends State<AddItemsPage>
     _profitMarginController.dispose();
     _openingStockController.dispose();
     _alertQuantityController.dispose();
-    _subUnitController.dispose(); // Add this
-    _unitController.dispose();
+    _subUnitController.dispose();
     super.dispose();
   }
 
-  /// ! Main build method that creates the tabbed interface
+  Future<void> _pickFile() async {
+    try {
+      _logger.d('Opening file picker for Excel/CSV');
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['xlsx', 'xls', 'csv'],
+      );
+
+      if (result != null &&
+          result.files.single.name != null &&
+          result.files.single.path != null) {
+        final filePath = result.files.single.path!;
+        final file = File(filePath);
+        if (await file.exists()) {
+          setState(() {
+            _importedFile = {
+              'name': result.files.single.name,
+              'file': file,
+            };
+            _logger.i(
+                'File selected: ${_importedFile!['name']} at path: $filePath');
+          });
+        } else {
+          _logger.w('File does not exist at path: $filePath');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Selected file does not exist'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } else {
+        _logger.w('No file selected');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No file selected'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      _logger.e('Error picking file: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting file: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _openFile() async {
+    if (_importedFile != null && _importedFile!['file'] != null) {
+      try {
+        final file = _importedFile!['file'] as File;
+        final filePath = file.path;
+        _logger.d(
+            'Attempting to open file: ${_importedFile!['name']} at path: $filePath');
+
+        if (await file.exists()) {
+          final result = await OpenFile.open(filePath);
+          if (result.type != ResultType.done) {
+            _logger.w('Failed to open file: ${result.message}');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to open file: ${result.message}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          } else {
+            _logger.i('File opened successfully: ${_importedFile!['name']}');
+          }
+        } else {
+          _logger.w('File does not exist at path: $filePath');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('File does not exist'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        _logger.e('Error opening file: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error opening file: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } else {
+      _logger.w('No file to open');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No file selected to open'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -154,11 +257,94 @@ class _AddItemsPageState extends State<AddItemsPage>
           appBar: AppBar(
             title: const Text(
               "Add Item",
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 20,
+                  color: Colors.white),
             ),
-            backgroundColor: primaryColor,
+            backgroundColor: accentColor,
             actions: isDesktop
                 ? [
+                    Tooltip(
+                      message: _importedFile != null &&
+                              _importedFile!['name'] != null
+                          ? 'Open ${_importedFile!['name']}'
+                          : 'No file selected',
+                      child: TextButton(
+                        onPressed: _openFile,
+                        style: ButtonStyle(
+                          foregroundColor: MaterialStateProperty.all(
+                              Colors.white), // Matches AppBar theme
+                          padding: MaterialStateProperty.all(
+                            const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                          ),
+                          minimumSize:
+                              MaterialStateProperty.all(const Size(0, 0)),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          overlayColor:
+                              MaterialStateProperty.resolveWith<Color?>(
+                            (states) {
+                              if (states.contains(MaterialState.hovered)) {
+                                return Colors.white.withOpacity(0.2);
+                              }
+                              if (states.contains(MaterialState.pressed)) {
+                                return Colors.white.withOpacity(0.3);
+                              }
+                              return null;
+                            },
+                          ),
+                          backgroundColor: MaterialStateProperty.all(
+                            _importedFile != null &&
+                                    _importedFile!['name'] != null
+                                ? Colors.transparent
+                                : Colors.white.withOpacity(0.1),
+                          ),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_importedFile != null &&
+                                _importedFile!['name'] != null) ...[
+                              const Icon(
+                                Icons.insert_drive_file,
+                                size: 16,
+                                color: Colors.white70,
+                              ),
+                              const SizedBox(width: 4),
+                            ],
+                            Flexible(
+                              child: Text(
+                                _importedFile != null &&
+                                        _importedFile!['name'] != null
+                                    ? _importedFile!['name']
+                                    : 'No File',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: _importedFile != null &&
+                                          _importedFile!['name'] != null
+                                      ? Colors.white
+                                      : Colors.white70,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.download_sharp),
+                      onPressed: _pickFile,
+                      tooltip: 'Import File',
+                    ),
                     IconButton(
                       icon: const Icon(Icons.help_outline),
                       onPressed: () {},
