@@ -5,8 +5,8 @@ import 'package:green_biller/features/payment/controller/payment_data_providers.
 import 'package:green_biller/features/payment/view/pages/payment_in_page/add_payment_in_page.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class PaymentInPage extends ConsumerWidget {
-  const PaymentInPage({super.key});
+class AllPaymentInPage extends ConsumerWidget {
+  const AllPaymentInPage({super.key});
 
   Widget _buildSummaryCard(
     String title,
@@ -187,7 +187,7 @@ class PaymentInPage extends ConsumerWidget {
                         builder: (context) => const AddPaymentInPage()),
                   );
                 },
-                tooltip: 'Add New Payment-out',
+                tooltip: 'Add New Payment-In',
               ),
               IconButton(
                 icon: const Icon(Icons.filter_list, color: Colors.white),
@@ -364,12 +364,14 @@ class PaymentInPage extends ConsumerWidget {
                                 payments[index] as Map<String, dynamic>;
 
                             return Card(
+                              color: Colors.white,
+                              shadowColor: Colors.black.withOpacity(1),
                               margin: const EdgeInsets.symmetric(
                                   vertical: 6, horizontal: 10),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              elevation: 2,
+                              elevation: 5,
                               child: ListTile(
                                 leading: const Icon(Icons.payments,
                                     color: Colors.green),

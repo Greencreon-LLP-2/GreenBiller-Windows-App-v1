@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
 import 'package:green_biller/features/auth/login/services/auth_service.dart';
 import 'package:green_biller/features/home/view/pages/menu_page/models/menu_item_model.dart';
-import 'package:green_biller/features/payment/view/pages/all_payment_page/payment_in_page.dart';
+import 'package:green_biller/features/payment/view/pages/all_payment_page/all_payment_in_page.dart';
 import 'package:green_biller/features/sales/view/pages/sales_order_page.dart';
 import 'package:green_biller/features/sales/view/pages/sales_return_page.dart';
 
@@ -16,8 +16,8 @@ class MenuItemData {
       return;
     }),
     MenuItemModel("Payment-In", Icons.payment, (context, ref) async {
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const PaymentInPage()));
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => const AllPaymentInPage()));
       return;
     }),
     MenuItemModel("Sale Return", Icons.assignment_return, (context, ref) async {
@@ -60,8 +60,6 @@ class MenuItemData {
     //   return;
     // }),
   ];
-
-
 
   //!--------------------------------------------------------  Define menu items for the Other group
   static final List<MenuItemModel> otherItems = [

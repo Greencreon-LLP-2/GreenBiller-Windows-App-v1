@@ -13,7 +13,7 @@ import 'package:green_biller/features/home/view/pages/quick_actions/transactions
 import 'package:green_biller/features/item/view/pages/items_page.dart';
 import 'package:green_biller/features/item/view/pages/units/units_page.dart';
 import 'package:green_biller/features/packages/view/pages/packages_page.dart';
-import 'package:green_biller/features/payment/view/pages/all_payment_page/payment_in_page.dart';
+import 'package:green_biller/features/payment/view/pages/all_payment_page/all_payment_in_page.dart';
 import 'package:green_biller/features/payment/view/pages/all_payment_page/payment_out_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_page/purchase_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_return_page/purchase_return_page.dart';
@@ -83,20 +83,20 @@ final routerProvider = Provider<GoRouter>((ref) {
           appStatus.settings == null || appStatus == AppStatusModel.initial();
 
       // 1. First check maintenance mode (highest priority)
-      final isInMaintenance = appStatus.shutdown == true ||
-          appStatus.settings?.appMaintenanceMode == true;
+      // final isInMaintenance = appStatus.shutdown == true ||
+      //     appStatus.settings?.appMaintenanceMode == true;
 
-      if (isInMaintenance &&
-          !isMaintenanceRoute &&
-          appStatus.maintenanceData?.code == 302) {
-        return '/';
-      }
+      // if (isInMaintenance &&
+      //     !isMaintenanceRoute &&
+      //     appStatus.maintenanceData?.code == 302) {
+      //   return '/';
+      // }
 
-      if (appStatus.settings?.appVersion.toString() !=
-              AppConfig.version.toString() &&
-          !isUpdateRoute) {
-        return '/update-app';
-      }
+      // if (appStatus.settings?.appVersion.toString() !=
+      //         AppConfig.version.toString() &&
+      //     !isUpdateRoute) {
+      //   return '/update-app';
+      // }
 
       // 3. Handle initial state before status loaded
       if (appStatusNotLoaded) {
@@ -303,7 +303,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/payment-in',
-        builder: (context, state) => const PaymentInPage(),
+        builder: (context, state) => const AllPaymentInPage(),
       ),
       GoRoute(
         path: '/payment-out',

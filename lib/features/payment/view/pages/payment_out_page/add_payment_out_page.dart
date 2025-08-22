@@ -18,11 +18,9 @@ class _AddPaymentOutPageState extends ConsumerState<AddPaymentOutPage> {
   final TextEditingController _searchController = TextEditingController();
   final ValueNotifier<List<Map<String, dynamic>>> supplierMap =
       ValueNotifier<List<Map<String, dynamic>>>([]);
-
   final ValueNotifier<bool> isLoadingSuppliers = ValueNotifier<bool>(false);
   final ValueNotifier<String?> selectedSupplier = ValueNotifier<String?>(null);
   late String accessToken;
-  bool _loadingSuppliers = false;
   Map<String, dynamic> _supplierDetails = {};
   List<Map<String, dynamic>> _supplierSuggestions = [];
   bool _showSuggestions = false;
@@ -60,15 +58,12 @@ class _AddPaymentOutPageState extends ConsumerState<AddPaymentOutPage> {
   }
 
   Future<List<Map<String, dynamic>>> _fetchSuppliers(
-    String storeId,
-    BuildContext context,
-  ) async {
+      String storeId, BuildContext context) async {
     return await _service.viewSupplierServies(storeId);
   }
 
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase().trim();
-
     if (query.isEmpty) {
       setState(() {
         _supplierSuggestions = [];
@@ -79,13 +74,11 @@ class _AddPaymentOutPageState extends ConsumerState<AddPaymentOutPage> {
 
     Future.delayed(const Duration(milliseconds: 100), () {
       if (!mounted) return;
-
       final suggestions = supplierMap.value
           .where((supplier) =>
               (supplier['supplier_name']?.toString().toLowerCase() ?? '')
                   .contains(query))
           .toList();
-
       setState(() {
         _supplierSuggestions = suggestions;
         _showSuggestions = suggestions.isNotEmpty;
@@ -100,7 +93,6 @@ class _AddPaymentOutPageState extends ConsumerState<AddPaymentOutPage> {
       _showSuggestions = false;
       _supplierDetails = supplier;
     });
-
     FocusScope.of(context).unfocus();
   }
 
@@ -123,26 +115,33 @@ class _AddPaymentOutPageState extends ConsumerState<AddPaymentOutPage> {
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width > 600;
-    final padding = isDesktop ? 24.0 : 16.0;
+    final padding = isDesktop ? 32.0 : 16.0;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: primaryColor,
-        elevation: 0,
+        backgroundColor: accentColor,
+        elevation: 5,
+        shadowColor: Colors.black.withOpacity(0.2),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios, color: Color.fromARGB(255, 0, 0, 0)),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          splashRadius: 24,
         ),
         title: const Text(
           "Payment Out",
-          style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.black),
-            onPressed: () => _refreshSuppliers(),
-          )
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            splashRadius: 24,
+            onPressed: _refreshSuppliers,
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -150,51 +149,75 @@ class _AddPaymentOutPageState extends ConsumerState<AddPaymentOutPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Supplier Information Section
             _buildSectionTitle("Supplier Information"),
             CardContainer(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSearchSupplier(),
-                  const SizedBox(height: 16),
-                  _buildSupplierDetails(),
-                ],
+              elevation: 5,
+              borderRadius: 12,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSearchSupplier(),
+                    const SizedBox(height: 16),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: isLoadingSuppliers,
+                      builder: (context, isLoading, _) {
+                        return isLoading
+                            ? const Center(
+                                child: CircularProgressIndicator(
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(accentColor),
+                              ))
+                            : _buildSupplierDetails();
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
-
-            // Payment Details Section
             _buildSectionTitle("Payment Details"),
             CardContainer(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildPaymentFields(),
-                ],
+              elevation: 5,
+              borderRadius: 12,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: _buildPaymentFields(),
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildSectionTitle("Payment Actions"),
+            CardContainer(
+              elevation: 5,
+              borderRadius: 12,
+              margin: EdgeInsets.symmetric(horizontal: padding, vertical: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: PaymentOutBottomBar(
+                  supplierId: selectedSupplier.value,
+                  accessToken: accessToken,
+                  supplierDue: _supplierDetails['purchase_due']?.toString(),
+                ),
               ),
             ),
             const SizedBox(height: 24),
           ],
         ),
       ),
-      bottomNavigationBar: PaymentOutBottomBar(
-        supplierId: selectedSupplier.value,
-        accessToken: accessToken,
-        supplierDue: _supplierDetails['purchase_due']?.toString(),
-      ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12, left: 4),
       child: Text(
         title,
         style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
           color: textPrimaryColor,
+          letterSpacing: 0.2,
         ),
       ),
     );
@@ -202,91 +225,141 @@ class _AddPaymentOutPageState extends ConsumerState<AddPaymentOutPage> {
 
   Widget _buildSearchSupplier() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Expanded(
-              child: Column(
+              child: Stack(
                 children: [
                   TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search supplier...',
-                      prefixIcon: const Icon(Icons.search),
+                      labelText: 'Search supplier by name...',
+                      labelStyle:
+                          TextStyle(color: textLightColor.withOpacity(0.6)),
+                      prefixIcon: Icon(Icons.search, color: textSecondaryColor),
+                      filled: true,
+                      fillColor: Colors.white,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: textLightColor),
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: accentColor),
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            const BorderSide(color: accentColor, width: 2),
                       ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 16),
                     ),
+                    style:
+                        const TextStyle(fontSize: 16, color: textPrimaryColor),
                   ),
-                  if (_showSuggestions && _supplierSuggestions.isNotEmpty)
-                    Container(
-                      margin: const EdgeInsets.only(top: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: textLightColor),
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.3),
-                            blurRadius: 5,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      constraints: const BoxConstraints(maxHeight: 200),
-                      child: ListView(
-                        shrinkWrap: true,
-                        padding: EdgeInsets.zero,
-                        children: _supplierSuggestions
-                            .map(
-                              (supplier) => ListTile(
-                                title: Text(supplier['supplier_name'] ?? ''),
-                                onTap: () => _selectSupplier(supplier),
-                              ),
-                            )
-                            .toList(),
+                  if (_searchController.text.isNotEmpty)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: IconButton(
+                        icon: const Icon(Icons.clear,
+                            size: 20, color: textSecondaryColor),
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearchChanged();
+                        },
                       ),
                     ),
                 ],
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             ElevatedButton.icon(
               onPressed: () => _showAddSupplierDialog(context),
-              icon: const Icon(Icons.person_add),
+              icon: const Icon(Icons.person_add, size: 20),
               label: const Text('New Supplier'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: accentColor,
                 foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                elevation: 5,
+                shadowColor: Colors.black.withOpacity(0.2),
               ),
             ),
           ],
         ),
+        if (_showSuggestions && _supplierSuggestions.isNotEmpty)
+          CardContainer(
+            elevation: 5,
+            borderRadius: 12,
+            margin: const EdgeInsets.only(top: 8),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: const EdgeInsets.all(8),
+                itemCount: _supplierSuggestions.length,
+                itemBuilder: (context, index) {
+                  final supplier = _supplierSuggestions[index];
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () => _selectSupplier(supplier),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 16),
+                        child: Text(
+                          supplier['supplier_name'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: textPrimaryColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
       ],
     );
   }
 
   Widget _buildSupplierDetails() {
     if (_supplierDetails.isEmpty) {
-      return const SizedBox.shrink();
+      return const Text(
+        'No supplier selected',
+        style: TextStyle(
+          color: textSecondaryColor,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildInfoRow(Icons.person, 'Supplier Name', _supplierDetails['supplier_name'] ?? ''),
-        const SizedBox(height: 12),
-        _buildInfoRow(Icons.phone, 'Phone Number', _supplierDetails['mobile'] ?? _supplierDetails['phone'] ?? ''),
-        const SizedBox(height: 12),
-        _buildInfoRow(Icons.email, 'Email', _supplierDetails['email'] ?? ''),
-        const SizedBox(height: 12),
-        _buildInfoRow(Icons.attach_money, 'Purchase Due', '₹ ${_supplierDetails['purchase_due'] ?? '0.00'}'),
-      ],
+    return AnimatedOpacity(
+      opacity: _supplierDetails.isEmpty ? 0.0 : 1.0,
+      duration: const Duration(milliseconds: 300),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildInfoRow(Icons.person, 'Supplier Name',
+              _supplierDetails['supplier_name'] ?? ''),
+          const SizedBox(height: 12),
+          _buildInfoRow(Icons.phone, 'Phone Number',
+              _supplierDetails['mobile'] ?? _supplierDetails['phone'] ?? ''),
+          const SizedBox(height: 12),
+          _buildInfoRow(Icons.email, 'Email', _supplierDetails['email'] ?? ''),
+          const SizedBox(height: 12),
+          _buildInfoRow(Icons.attach_money, 'Purchase Due',
+              '₹ ${_supplierDetails['purchase_due']?.toStringAsFixed(2) ?? '0.00'}'),
+        ],
+      ),
     );
   }
 
@@ -295,20 +368,31 @@ class _AddPaymentOutPageState extends ConsumerState<AddPaymentOutPage> {
       children: [
         Icon(icon, size: 20, color: textSecondaryColor),
         const SizedBox(width: 12),
-        Text(
-          label,
-          style: const TextStyle(
-            color: textSecondaryColor,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          value,
-          style: const TextStyle(
-            color: textPrimaryColor,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+        Expanded(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  color: textSecondaryColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Flexible(
+                child: Text(
+                  value,
+                  style: const TextStyle(
+                    color: textPrimaryColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.right,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -316,13 +400,17 @@ class _AddPaymentOutPageState extends ConsumerState<AddPaymentOutPage> {
   }
 
   Widget _buildPaymentFields() {
-    final purchaseDue = double.tryParse(_supplierDetails['purchase_due']?.toString() ?? '0') ?? 0;
-    
+    final purchaseDue =
+        double.tryParse(_supplierDetails['purchase_due']?.toString() ?? '0') ??
+            0;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildAmountField('Total Due', '₹ ${purchaseDue.toStringAsFixed(2)}', isReadOnly: true),
+        _buildAmountField('Total Due', '₹ ${purchaseDue.toStringAsFixed(2)}',
+            isReadOnly: true),
         const SizedBox(height: 12),
-        _buildAmountField('Amount Paid', '₹ 0.00', isReadOnly: false),
+        _buildAmountField('Amount Paid', '',
+            isReadOnly: false, isPlaceholder: true),
         const SizedBox(height: 12),
         _buildAmountField('Balance', '₹ ${purchaseDue.toStringAsFixed(2)}',
             isNegative: purchaseDue > 0, isReadOnly: true),
@@ -331,7 +419,9 @@ class _AddPaymentOutPageState extends ConsumerState<AddPaymentOutPage> {
   }
 
   Widget _buildAmountField(String label, String value,
-      {bool isReadOnly = false, bool isNegative = false}) {
+      {bool isReadOnly = false,
+      bool isNegative = false,
+      bool isPlaceholder = false}) {
     return Row(
       children: [
         Expanded(
@@ -341,25 +431,35 @@ class _AddPaymentOutPageState extends ConsumerState<AddPaymentOutPage> {
             style: const TextStyle(
               fontSize: 16,
               color: textPrimaryColor,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
         Expanded(
           flex: 3,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: isReadOnly ? Colors.grey.shade100 : Colors.white,
-              border: Border.all(color: textLightColor),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: isNegative ? errorColor : textPrimaryColor,
+          child: TextField(
+            readOnly: isReadOnly,
+            controller: TextEditingController(text: value),
+            decoration: InputDecoration(
+              labelText: isPlaceholder ? 'Enter amount' : null,
+              labelStyle: TextStyle(color: textLightColor.withOpacity(0.6)),
+              filled: true,
+              fillColor: isReadOnly ? Colors.grey.shade100 : Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
               ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: accentColor, width: 2),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            ),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: isNegative ? errorColor : textPrimaryColor,
             ),
           ),
         ),

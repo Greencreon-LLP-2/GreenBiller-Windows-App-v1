@@ -365,12 +365,14 @@ class PaymentOutPage extends ConsumerWidget {
                                 payments[index] as Map<String, dynamic>;
 
                             return Card(
+                              color: Colors.white,
+                              shadowColor: Colors.black.withOpacity(1),
                               margin: const EdgeInsets.symmetric(
                                   vertical: 6, horizontal: 10),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              elevation: 2,
+                              elevation: 5,
                               child: ListTile(
                                 leading: const Icon(Icons.payments,
                                     color: Colors.orange),
