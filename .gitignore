@@ -11,11 +11,13 @@
 .pub-cache/
 .pub/
 
+
 build/
 coverage/
 flutter_*.png
 *.stamp
 **/.last_build_id
+dist/
 lib/generated_plugin_registrant.dart
 build/flutter_assets/kernel_blob.bin
 
