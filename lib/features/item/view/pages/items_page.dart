@@ -80,7 +80,6 @@ class ItemsPage extends HookConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
                 GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -95,20 +94,20 @@ class ItemsPage extends HookConsumerWidget {
                   children: [
                     _buildStatCard(
                       "Total Items",
-                      "120", 
+                      "120",
                       Icons.inventory,
                       accentColor,
                     ),
                     _buildStatCard(
                       "Low Stock",
-                      "15", 
+                      "15",
                       Icons.warning_rounded,
                       warningColor,
                     ),
                     if (!isSmallScreen) ...[
                       _buildStatCard(
                         "Categories",
-                        "8", 
+                        "8",
                         Icons.category_outlined,
                         successColor,
                       ),
@@ -121,7 +120,6 @@ class ItemsPage extends HookConsumerWidget {
                     ],
                   ],
                 ),
-
                 const SizedBox(height: 24),
                 Text(
                   "Quick Actions",
@@ -250,6 +248,7 @@ class ItemsPage extends HookConsumerWidget {
             ),
           ),
           floatingActionButton: FloatingActionButton(
+            heroTag: 'item_page_floating_btn_tag1',
             onPressed: () {
               Navigator.push(
                 context,

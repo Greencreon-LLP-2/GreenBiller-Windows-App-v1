@@ -106,6 +106,7 @@ class AdminPartiesPage extends HookConsumerWidget {
     VoidCallback callback,
   ) {
     return FloatingActionButton.extended(
+      heroTag: 'admin_parties_floating_btn_tag1',
       backgroundColor: accentColor,
       foregroundColor: Colors.white,
       onPressed: () => _showAddDialog(currentTabIndex, context, callback),

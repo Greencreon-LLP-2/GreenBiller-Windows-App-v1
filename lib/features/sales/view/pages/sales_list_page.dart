@@ -35,6 +35,7 @@ class SalesListPage extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'sales_list_floating_btn_tag1',
         backgroundColor: accentColor,
         onPressed: () {
           Navigator.push(

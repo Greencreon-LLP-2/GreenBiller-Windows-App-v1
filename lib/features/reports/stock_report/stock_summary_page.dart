@@ -489,6 +489,7 @@ class _StockSummaryPageState extends State<StockSummaryPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'stock_summary_floating_btn_tag1',
         onPressed: () => _showAddEditDialog(),
         child: const Icon(Icons.add),
       ),

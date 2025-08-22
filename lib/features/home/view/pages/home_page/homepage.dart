@@ -89,21 +89,21 @@ class HomePage extends HookConsumerWidget {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           children: [
                             _buildNavItem(
-                              'Home',
+                              'Dashboard',
                               Icons.home_outlined,
                               Icons.home,
                               0,
                               selectedIndex.value,
                               onTap: () => selectedIndex.value = 0,
                             ),
-                            _buildNavItem(
-                              'Dashboard',
-                              Icons.dashboard_outlined,
-                              Icons.dashboard,
-                              1,
-                              selectedIndex.value,
-                              onTap: () => selectedIndex.value = 1,
-                            ),
+                            // _buildNavItem(
+                            //   'Dashboard',
+                            //   Icons.dashboard_outlined,
+                            //   Icons.dashboard,
+                            //   1,
+                            //   selectedIndex.value,
+                            //   onTap: () => selectedIndex.value = 1,
+                            // ),
                             _buildNavItem(
                               'Stores',
                               Icons.store,
@@ -206,7 +206,8 @@ class HomePage extends HookConsumerWidget {
                                   ref.read(userProvider.notifier).state = null;
 
                                   // Use safe navigation service
-                                  GoRouterNavigationService.goWithDelay('/', replace: true);
+                                  GoRouterNavigationService.goWithDelay('/',
+                                      replace: true);
 
                                   // Show success message
                                   SnackBarService.showSuccess(

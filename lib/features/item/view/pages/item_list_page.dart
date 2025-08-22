@@ -32,6 +32,7 @@ class ItemListPage extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'item_liste_floating_btn_tag1',
         onPressed: () {
           // Navigate to Add Item Page
         },

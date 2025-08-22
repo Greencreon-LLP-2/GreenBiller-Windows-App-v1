@@ -42,7 +42,7 @@ class LoginFormContentWidget extends HookConsumerWidget {
             children: [
               Container(
                 width: 120, // Increased width to prevent overflow
-                height: 40,
+                height: 50,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade300),
