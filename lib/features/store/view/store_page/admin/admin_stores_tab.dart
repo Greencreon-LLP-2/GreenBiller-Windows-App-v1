@@ -499,7 +499,7 @@ class AdminStoresTab extends HookConsumerWidget {
                                 'N/A Categories', Icons.category_outlined),
                           ),
                           salesCountAsync.when(
-                            data: (salesCount) => salesCount > 0
+                            data: (salesCount) => salesCount >= 0
                                 ? _buildStatChip('$salesCount Sales',
                                     Icons.point_of_sale_outlined)
                                 : const SizedBox.shrink(),
@@ -509,7 +509,7 @@ class AdminStoresTab extends HookConsumerWidget {
                                 'N/A Sales', Icons.point_of_sale_outlined),
                           ),
                           salesReturnCountAsync.when(
-                            data: (salesReturnCount) => salesReturnCount > 0
+                            data: (salesReturnCount) => salesReturnCount >= 0
                                 ? _buildStatChip(
                                     '$salesReturnCount Sales Returns',
                                     Icons.assignment_return_outlined)
@@ -521,7 +521,7 @@ class AdminStoresTab extends HookConsumerWidget {
                                 Icons.assignment_return_outlined),
                           ),
                           purchaseCountAsync.when(
-                            data: (purchaseCount) => purchaseCount > 0
+                            data: (purchaseCount) => purchaseCount >= 0
                                 ? _buildStatChip('$purchaseCount Purchases',
                                     Icons.shopping_cart_outlined)
                                 : const SizedBox.shrink(),
@@ -532,7 +532,7 @@ class AdminStoresTab extends HookConsumerWidget {
                           ),
                           purchaseReturnCountAsync.when(
                             data: (purchaseReturnCount) =>
-                                purchaseReturnCount > 0
+                                purchaseReturnCount >= 0
                                     ? _buildStatChip(
                                         '$purchaseReturnCount Purchase Returns',
                                         Icons.keyboard_return_outlined)
