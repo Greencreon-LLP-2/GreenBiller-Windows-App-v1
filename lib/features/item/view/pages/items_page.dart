@@ -80,85 +80,46 @@ class ItemsPage extends HookConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Stats Cards with real data
-                dashboardAsync.when(
-                  loading: () => GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: isSmallScreen
-                        ? 2
-                        : isMediumScreen
-                            ? 3
-                            : 4,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    childAspectRatio: isSmallScreen ? 1.5 : 1.8,
-                    children:
-                        List.generate(4, (index) => _buildStatCardSkeleton()),
-                  ),
-                  error: (error, stack) => _buildErrorWidget(error.toString()),
-                  data: (dashboardData) {
-                    final items = dashboardData['items'] as ItemModel;
-                    final brands =
-                        dashboardData['brands'] as List<Map<String?, String?>>;
-                    // Fix: Handle the warehouse data properly - it might be dynamic
-                    final warehouses =
-                        (dashboardData['warehouses'] as List<dynamic>?)
-                                ?.map((e) => e.toString())
-                                .toList() ??
-                            [];
-
-                    final totalItems = items.data?.length ?? 0;
-                    final lowStockItems = items.data?.where((item) {
-                          final stock =
-                              int.tryParse(item.openingStock ?? '0') ?? 0;
-                          final alertQty =
-                              int.tryParse(item.alertQuantity ?? '0') ?? 0;
-                          return stock <= alertQty && stock > 0;
-                        }).length ??
-                        0;
-
-                    return GridView.count(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: isSmallScreen
-                          ? 2
-                          : isMediumScreen
-                              ? 3
-                              : 4,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: isSmallScreen ? 1.5 : 1.8,
-                      children: [
-                        _buildStatCard(
-                          "Total Items",
-                          totalItems.toString(),
-                          Icons.inventory,
-                          accentColor,
-                        ),
-                        _buildStatCard(
-                          "Low Stock",
-                          lowStockItems.toString(),
-                          Icons.warning_rounded,
-                          warningColor,
-                        ),
-                        if (!isSmallScreen) ...[
-                          _buildStatCard(
-                            "Categories",
-                            warehouses.length.toString(),
-                            Icons.category_outlined,
-                            successColor,
-                          ),
-                          _buildStatCard(
-                            "Brands",
-                            brands.length.toString(),
-                            Icons.branding_watermark_outlined,
-                            Colors.purple,
-                          ),
-                        ],
-                      ],
-                    );
-                  },
+                
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: isSmallScreen
+                      ? 2
+                      : isMediumScreen
+                          ? 3
+                          : 4,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: isSmallScreen ? 1.5 : 1.8,
+                  children: [
+                    _buildStatCard(
+                      "Total Items",
+                      "120", 
+                      Icons.inventory,
+                      accentColor,
+                    ),
+                    _buildStatCard(
+                      "Low Stock",
+                      "15", 
+                      Icons.warning_rounded,
+                      warningColor,
+                    ),
+                    if (!isSmallScreen) ...[
+                      _buildStatCard(
+                        "Categories",
+                        "8", 
+                        Icons.category_outlined,
+                        successColor,
+                      ),
+                      _buildStatCard(
+                        "Brands",
+                        "5",
+                        Icons.branding_watermark_outlined,
+                        Colors.purple,
+                      ),
+                    ],
+                  ],
                 ),
 
                 const SizedBox(height: 24),

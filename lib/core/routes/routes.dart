@@ -82,21 +82,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       final appStatusNotLoaded =
           appStatus.settings == null || appStatus == AppStatusModel.initial();
 
-      //  1. First check maintenance mode (highest priority)
+      // //  1. First check maintenance mode (highest priority)
       final isInMaintenance = appStatus.shutdown == true ||
           appStatus.settings?.appMaintenanceMode == true;
 
-      if (isInMaintenance &&
-          !isMaintenanceRoute &&
-          appStatus.maintenanceData?.code == 302) {
-        return '/';
-      }
+      // if (isInMaintenance &&
+      //     !isMaintenanceRoute &&
+      //     appStatus.maintenanceData?.code == 302) {
+      //   return '/';
+      // }
 
-      if (appStatus.settings?.appVersion.toString() !=
-              AppConfig.version.toString() &&
-          !isUpdateRoute) {
-        return '/update-app';
-      }
+      // if (appStatus.settings?.appVersion.toString() !=
+      //         AppConfig.version.toString() &&
+      //     !isUpdateRoute) {
+      //   return '/update-app';
+      // }
 
       // 3. Handle initial state before status loaded
       if (appStatusNotLoaded) {
