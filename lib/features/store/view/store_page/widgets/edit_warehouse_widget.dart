@@ -174,8 +174,7 @@ class _EditWarehouseWidgetState extends ConsumerState<EditWarehouseWidget> {
         onSave: () => _updateWarehouse(context),
         onCancel: () => Navigator.pop(context),
         saveButtonText: 'Update Warehouse',
-        primaryColor: secondaryColor,
-        secondaryColor: secondaryColor,
+        primaryColor: accentColor,
       );
     });
 

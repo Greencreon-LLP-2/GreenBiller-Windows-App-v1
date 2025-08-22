@@ -11,6 +11,41 @@ import 'package:green_biller/features/item/view/pages/brand/brand_page.dart';
 import 'package:green_biller/features/item/view/pages/categories/categories_page.dart';
 import 'package:green_biller/features/item/view/pages/units/units_page.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:green_biller/features/item/controller/view_all_items_controller.dart';
+import 'package:green_biller/features/item/controller/view_brand_controller.dart';
+
+final viewAllItemsControllerProvider =
+    Provider.family<ViewAllItemsController, String?>((ref, accessToken) {
+  return ViewAllItemsController(accessToken: accessToken ?? '');
+});
+
+final viewBrandControllerProvider =
+    Provider.family<ViewBrandController, String?>((ref, accessToken) {
+  return ViewBrandController(accessToken: accessToken ?? '');
+});
+
+final dashboardDataProvider =
+    FutureProvider.family<Map<String, dynamic>, String?>(
+        (ref, accessToken) async {
+  if (accessToken == null) throw Exception('No access token');
+
+  final itemsController = ref.read(viewAllItemsControllerProvider(accessToken));
+  final brandController = ref.read(viewBrandControllerProvider(accessToken));
+
+  try {
+    final results = await Future.wait([
+      itemsController.getAllItems(null),
+      brandController.viewBrandByIdController(0),
+    ]);
+
+    return {
+      'items': results[0] as ItemModel,
+      'brands': results[1] as List<Map<String?, String?>>,
+    };
+  } catch (e) {
+    throw Exception('Failed to load dashboard data: $e');
+  }
+});
 
 class ItemsPage extends HookConsumerWidget {
   const ItemsPage({super.key});
@@ -19,6 +54,7 @@ class ItemsPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final accessToken = ref.watch(userProvider)?.accessToken;
     final recentItemsAsync = ref.watch(recentItemsProvider);
+    final dashboardAsync = ref.watch(dashboardDataProvider(accessToken));
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -35,16 +71,6 @@ class ItemsPage extends HookConsumerWidget {
             ),
             backgroundColor: Colors.white,
             foregroundColor: textPrimaryColor,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.filter_list),
-                onPressed: () {},
-              ),
-            ],
           ),
           body: SingleChildScrollView(
             padding: EdgeInsets.symmetric(
@@ -54,46 +80,87 @@ class ItemsPage extends HookConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: isSmallScreen
-                      ? 2
-                      : isMediumScreen
-                          ? 3
-                          : 4,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: isSmallScreen ? 1.5 : 1.8,
-                  children: [
-                    _buildStatCard(
-                      "Total Items",
-                      "156",
-                      Icons.inventory,
-                      accentColor,
-                    ),
-                    _buildStatCard(
-                      "Low Stock",
-                      "12",
-                      Icons.warning_rounded,
-                      warningColor,
-                    ),
-                    if (!isSmallScreen) ...[
-                      _buildStatCard(
-                        "Categories",
-                        "8",
-                        Icons.category_outlined,
-                        successColor,
-                      ),
-                      _buildStatCard(
-                        "Brands",
-                        "15",
-                        Icons.branding_watermark_outlined,
-                        Colors.purple,
-                      ),
-                    ],
-                  ],
+                // Stats Cards with real data
+                dashboardAsync.when(
+                  loading: () => GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: isSmallScreen
+                        ? 2
+                        : isMediumScreen
+                            ? 3
+                            : 4,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: isSmallScreen ? 1.5 : 1.8,
+                    children:
+                        List.generate(4, (index) => _buildStatCardSkeleton()),
+                  ),
+                  error: (error, stack) => _buildErrorWidget(error.toString()),
+                  data: (dashboardData) {
+                    final items = dashboardData['items'] as ItemModel;
+                    final brands =
+                        dashboardData['brands'] as List<Map<String?, String?>>;
+                    // Fix: Handle the warehouse data properly - it might be dynamic
+                    final warehouses =
+                        (dashboardData['warehouses'] as List<dynamic>?)
+                                ?.map((e) => e.toString())
+                                .toList() ??
+                            [];
+
+                    final totalItems = items.data?.length ?? 0;
+                    final lowStockItems = items.data?.where((item) {
+                          final stock =
+                              int.tryParse(item.openingStock ?? '0') ?? 0;
+                          final alertQty =
+                              int.tryParse(item.alertQuantity ?? '0') ?? 0;
+                          return stock <= alertQty && stock > 0;
+                        }).length ??
+                        0;
+
+                    return GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: isSmallScreen
+                          ? 2
+                          : isMediumScreen
+                              ? 3
+                              : 4,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: isSmallScreen ? 1.5 : 1.8,
+                      children: [
+                        _buildStatCard(
+                          "Total Items",
+                          totalItems.toString(),
+                          Icons.inventory,
+                          accentColor,
+                        ),
+                        _buildStatCard(
+                          "Low Stock",
+                          lowStockItems.toString(),
+                          Icons.warning_rounded,
+                          warningColor,
+                        ),
+                        if (!isSmallScreen) ...[
+                          _buildStatCard(
+                            "Categories",
+                            warehouses.length.toString(),
+                            Icons.category_outlined,
+                            successColor,
+                          ),
+                          _buildStatCard(
+                            "Brands",
+                            brands.length.toString(),
+                            Icons.branding_watermark_outlined,
+                            Colors.purple,
+                          ),
+                        ],
+                      ],
+                    );
+                  },
                 ),
+
                 const SizedBox(height: 24),
                 Text(
                   "Quick Actions",
@@ -119,10 +186,7 @@ class ItemsPage extends HookConsumerWidget {
                       () {},
                       const AddItemsPage(),
                       LinearGradient(
-                        colors: [
-                          accentColor,
-                          accentColor.withOpacity(0.8),
-                        ],
+                        colors: [accentColor, accentColor.withOpacity(0.8)],
                       ),
                     ),
                     _buildActionCard(
@@ -134,7 +198,7 @@ class ItemsPage extends HookConsumerWidget {
                       LinearGradient(
                         colors: [
                           secondaryColor,
-                          secondaryColor.withOpacity(0.8),
+                          secondaryColor.withOpacity(0.8)
                         ],
                       ),
                     ),
@@ -145,10 +209,7 @@ class ItemsPage extends HookConsumerWidget {
                       () {},
                       const CategoriesPage(),
                       LinearGradient(
-                        colors: [
-                          successColor,
-                          successColor.withOpacity(0.8),
-                        ],
+                        colors: [successColor, successColor.withOpacity(0.8)],
                       ),
                     ),
                     _buildActionCard(
@@ -158,10 +219,7 @@ class ItemsPage extends HookConsumerWidget {
                       () {},
                       const BrandPage(),
                       LinearGradient(
-                        colors: [
-                          warningColor,
-                          warningColor.withOpacity(0.8),
-                        ],
+                        colors: [warningColor, warningColor.withOpacity(0.8)],
                       ),
                     ),
                     _buildActionCard(
@@ -202,42 +260,10 @@ class ItemsPage extends HookConsumerWidget {
                 recentItemsAsync.when(
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
-                  error: (err, stack) => Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        const Icon(Icons.error_outline,
-                            color: Colors.red, size: 40),
-                        const SizedBox(height: 10),
-                        Text(
-                          "Failed to load recent items",
-                          style: AppTextStyles.bodyMedium
-                              .copyWith(color: Colors.red),
-                        ),
-                        Text(
-                          "$err",
-                          style: AppTextStyles.bodySmall,
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
+                  error: (err, stack) => _buildErrorWidget(err.toString()),
                   data: (items) {
                     if (items.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            Icon(Icons.inventory_2_outlined,
-                                size: 40, color: Colors.grey),
-                            SizedBox(height: 10),
-                            Text(
-                              "No recent items found",
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      );
+                      return _buildEmptyState();
                     }
                     return GridView.builder(
                       shrinkWrap: true,
@@ -274,6 +300,70 @@ class ItemsPage extends HookConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildStatCardSkeleton() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 20,
+            height: 20,
+            color: Colors.grey.shade300,
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: 60,
+            height: 24,
+            color: Colors.grey.shade300,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget(String error) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red, size: 40),
+          const SizedBox(height: 10),
+          Text(
+            "Failed to load data",
+            style: AppTextStyles.bodyMedium.copyWith(color: Colors.red),
+          ),
+          Text(
+            error,
+            style: AppTextStyles.bodySmall,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return const Padding(
+      padding: EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Icon(Icons.inventory_2_outlined, size: 40, color: Colors.grey),
+          SizedBox(height: 10),
+          Text(
+            "No data found",
+            style: TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -319,15 +409,11 @@ Widget _buildActionCard(
 ) {
   return Card(
     elevation: 0,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-    ),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     child: InkWell(
       onTap: route != null
           ? () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => route),
-              )
+              context, MaterialPageRoute(builder: (context) => route))
           : null,
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -363,13 +449,13 @@ Widget _buildItemCard(BuildContext context, Item item) {
         categoryName: item.categoryName,
         brandName: item.brandName,
         storeName: item.storeName,
-        stock: int.tryParse(item.openingStock) ?? 0,
-        price: double.tryParse(item.salesPrice) ?? 0.0,
+        stock: int.tryParse(item.openingStock ?? '0') ?? 0,
+        price: double.tryParse(item.salesPrice ?? '0') ?? 0.0,
         mrp: item.mrp,
         unit: item.unit,
         sku: item.sku,
-        profitMargin: double.tryParse(item.profitMargin) ?? 0.0,
-        taxRate: double.tryParse(item.taxRate) ?? 0.0,
+        profitMargin: double.tryParse(item.profitMargin ?? '0') ?? 0.0,
+        taxRate: double.tryParse(item.taxRate ?? '0') ?? 0.0,
         taxType: item.taxType,
         discountType: item.discountType,
         discount: item.discount,
@@ -385,10 +471,9 @@ Widget _buildItemCard(BuildContext context, Item item) {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            spreadRadius: 1,
-            blurRadius: 5,
-          ),
+              color: Colors.grey.withOpacity(0.05),
+              spreadRadius: 1,
+              blurRadius: 5)
         ],
       ),
       child: Row(
@@ -400,11 +485,8 @@ Widget _buildItemCard(BuildContext context, Item item) {
               color: accentColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
-              Icons.inventory_2_outlined,
-              color: accentColor,
-              size: 24,
-            ),
+            child: const Icon(Icons.inventory_2_outlined,
+                color: accentColor, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -413,7 +495,7 @@ Widget _buildItemCard(BuildContext context, Item item) {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  item.itemName,
+                  item.itemName ?? 'Unnamed Item',
                   style: AppTextStyles.bodyLarge,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -423,23 +505,20 @@ Widget _buildItemCard(BuildContext context, Item item) {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: successColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        "In Stock: ${item.openingStock}",
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: successColor,
-                        ),
+                        "In Stock: ${item.openingStock ?? '0'}",
+                        style: AppTextStyles.bodySmall
+                            .copyWith(color: successColor),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      "SKU: ${item.sku}",
+                      "SKU: ${item.sku ?? 'N/A'}",
                       style: AppTextStyles.bodySmall,
                     ),
                   ],
@@ -452,16 +531,14 @@ Widget _buildItemCard(BuildContext context, Item item) {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                "₹${item.salesPrice}",
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                "₹${item.salesPrice ?? '0'}",
+                style: AppTextStyles.bodyLarge
+                    .copyWith(fontWeight: FontWeight.w600),
               ),
               Text(
-                "GST: ${item.taxRate}%",
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: textSecondaryColor,
-                ),
+                "GST: ${item.taxRate ?? '0'}%",
+                style:
+                    AppTextStyles.bodySmall.copyWith(color: textSecondaryColor),
               ),
             ],
           ),
