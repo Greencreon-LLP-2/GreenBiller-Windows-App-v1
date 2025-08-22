@@ -43,6 +43,7 @@ import 'package:green_biller/features/sales/view/pages/stock_transfer_item.dart'
 import 'package:green_biller/features/settings/view/pages/Activity%20Log/active_log_page.dart';
 import 'package:green_biller/features/settings/view/pages/account_settings_page.dart';
 import 'package:green_biller/features/settings/view/pages/business_setting/business_profile_page/business_profile_page.dart';
+import 'package:green_biller/features/settings/view/pages/business_setting/invoice_settings.dart';
 import 'package:green_biller/features/settings/view/pages/business_setting/invoice_settings_page.dart';
 import 'package:green_biller/features/settings/view/pages/settingspage.dart'
     hide BusinessProfilePage, InvoiceSettingsPage;
@@ -293,10 +294,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/active-log',
         builder: (context, state) => const ActiveLogPage(),
       ),
-      GoRoute(
-        path: '/invoice-settings',
-        builder: (context, state) => const InvoiceSettingsPage(),
-      ),
+    
       GoRoute(
         path: '/sale-list',
         builder: (context, state) => const SalesListPage(),

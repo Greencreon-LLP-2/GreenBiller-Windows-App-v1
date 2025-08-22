@@ -1,7 +1,7 @@
 // ignore_for_file: invalid_annotation_target
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:hooks_riverpod/legacy.dart';
 
 part 'user_model.freezed.dart';

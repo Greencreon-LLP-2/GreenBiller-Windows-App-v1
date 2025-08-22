@@ -14,7 +14,8 @@ class OtpController {
     Function(String, String) onSwitchToOtp,
   ) async {
     try {
-      final statusCode = await _otpService.sendOtpService(phoneNumber, countryCode);
+      final statusCode =
+          await _otpService.sendOtpService(phoneNumber, countryCode);
       if (statusCode == 200) {
         SnackBarService.showSuccess('OTP sent successfully');
         onSwitchToOtp(phoneNumber, countryCode);
@@ -32,7 +33,8 @@ class OtpController {
     WidgetRef ref,
   ) async {
     try {
-      final result = await _otpService.verifyOtpService(otp, phoneNumber,countryCode);
+      final result =
+          await _otpService.verifyOtpService(otp, phoneNumber, countryCode);
 
       if (result['status'] == 'success') {
         final decodedData = result['data'];
@@ -40,18 +42,22 @@ class OtpController {
 
         if (isExistingUser) {
           final data = UserModel.fromJson(decodedData);
-          
+
           // Update provider state
           ref.read(userProvider.notifier).state = data;
-          
+
           // Save user data
           await AuthService().saveUserData(data);
-          
+
           SnackBarService.showSuccess('Login successful');
-          
+
           // Use safe navigation with delay
-         GoRouterNavigationService.goWithDelay('/homepage', replace: true);
-          
+          try {
+            GoRouterNavigationService.goWithDelay('/homepage', replace: true);
+          } catch (e, stack) {
+            print(e);
+            print(stack);
+          }
         } else {
           SnackBarService.showSuccess('Please create your account');
           onSwitchToSignUp(countryCode, phoneNumber);
