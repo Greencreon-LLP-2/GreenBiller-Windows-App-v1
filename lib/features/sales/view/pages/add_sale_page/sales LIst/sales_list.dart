@@ -547,6 +547,16 @@ class _SalesListContentState extends ConsumerState<_SalesListContent>
 
                       //_showCreatePOSDialog(context),
                     ),
+                    const SizedBox(width: 12),
+                    _buildActionButton(
+                      'Refresh',
+                      Icons.refresh,
+                      Colors.white,
+                      () {
+                        ref.refresh(salesProvider);
+                      },
+                    ),
+                    const SizedBox(width: 12),
                   ],
                 ),
               ),

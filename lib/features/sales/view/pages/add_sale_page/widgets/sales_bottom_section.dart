@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 class SalesPageBottomSectionWidget extends HookConsumerWidget {
   final double subTotal;
   final double totalDiscount;
+  final TextEditingController orderNoController;
   final TextEditingController paidAmountController;
   final TextEditingController otherChargesController;
   final TextEditingController purchaseNoteController;
@@ -13,6 +14,7 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
   final void Function(String?)? onPurchaseTypeChanged;
 
   const SalesPageBottomSectionWidget({
+    required this.orderNoController,
     required this.subTotal,
     required this.totalDiscount,
     required this.paidAmountController,
@@ -160,8 +162,54 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                     ),
 
                     const SizedBox(height: 20),
-
                     // Sales Note
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Sales Bill Note",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.green.shade300),
+                            color: Colors.green.shade50,
+                          ),
+                          child: TextField(
+                            controller: orderNoController,
+                            maxLines: 1,
+                            style: const TextStyle(fontSize: 14),
+                            decoration: InputDecoration(
+                              hintText: "Add sales bill id",
+                              hintStyle: TextStyle(color: Colors.grey.shade500),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.all(16),
+                              border: InputBorder.none,
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: Icon(
+                                  Icons.note_add,
+                                  color: Colors.green.shade600,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                            onChanged: (value) {
+                              // Save value to a variable or state for API usage
+                              // Example: ref.read(purchaseNoteProvider.notifier).state = value;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Sales Note
+                    const SizedBox(height: 20),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

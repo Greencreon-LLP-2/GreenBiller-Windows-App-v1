@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TempPurchaseItem {
   final String customerId;
@@ -84,7 +86,7 @@ Future<Uint8List> generateRealisticInvoice({
   required String shopContact,
   required String shopEmail,
   required String invoiceNo,
-  required DateTime invoiceDate,
+  required String invoiceDate,
   required String website,
   required String amountInWords,
   required String terms,
@@ -158,7 +160,7 @@ Future<Uint8List> generateRealisticInvoice({
                   children: [
                     pw.Text("Invoice: $invoiceNo",
                         style: const pw.TextStyle(fontSize: 8)),
-                    pw.Text("Date: ${invoiceDate.toString().split(' ')[0]}",
+                    pw.Text("Date: ${invoiceDate.toString()}",
                         style: const pw.TextStyle(fontSize: 8)),
                     pw.Text("Customer: $customerName",
                         style: const pw.TextStyle(fontSize: 8)),
@@ -413,6 +415,7 @@ class AddNewSalePage extends HookConsumerWidget {
     final selectedWarehouse = useState<String?>(null);
     final otherChargesController = useTextEditingController();
     final paidAmountController = useTextEditingController();
+    final orderNoController = useTextEditingController();
     final salesNoteController = useTextEditingController();
     final salesType = useState<String?>('Cash');
     final isLoadingSave = useState<bool>(false);
@@ -420,15 +423,11 @@ class AddNewSalePage extends HookConsumerWidget {
     final rowCount = useState<int>(1);
     final itemInputFocusNode = useState<Map<int, FocusNode>>({});
     final itemInputController = useRef(<int, TextEditingController>{});
+    final salesOrderId = useState<String>('');
 
     void onSalesTypeChanged(String? value) {
       salesType.value = value;
       logger.i('Sales type changed to: ${salesType.value}');
-    }
-
-    String salesCode(String storeId, String user) {
-      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      return 'G_B_${storeId}_${timestamp}_$user';
     }
 
     String getCurrentDateFormatted() {
@@ -574,6 +573,34 @@ class AddNewSalePage extends HookConsumerWidget {
       return discountSum;
     }
 
+    Future<String> getBillNumber(
+        TextEditingController orderNoController) async {
+      final prefs = await SharedPreferences.getInstance();
+      final savedBillNo = prefs.getString('billNo') ?? '';
+
+      // Generate a random order number if orderNoController is empty
+      String orderNo = orderNoController.text;
+      if (orderNo.isEmpty) {
+        final random = Random();
+        orderNo =
+            (10000 + random.nextInt(90000)).toString(); // 5-digit random number
+      }
+
+      // Combine savedBillNo and orderNo
+      final salesOrderId = '$savedBillNo-$orderNo';
+      orderNoController.text = salesOrderId; // Set to controller
+
+      return salesOrderId;
+    }
+
+    useEffect(() {
+      Future.microtask(() async {
+        final orderId = await getBillNumber(orderNoController);
+        salesOrderId.value = orderId;
+        logger.i('Generated sales order ID: $orderId');
+      });
+      return null; // Cleanup for useEffect
+    }, []);
     void onItemSelected(item_model.Item item, int index) {
       initControllers(index);
       const quantity = 1.0;
@@ -723,10 +750,6 @@ class AddNewSalePage extends HookConsumerWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                // leading: IconButton(
-                //   icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                //   onPressed: () => context.pop(),
-                // ),
               ),
             ),
           ),
@@ -1452,6 +1475,7 @@ class AddNewSalePage extends HookConsumerWidget {
                     purchaseNoteController: salesNoteController,
                     onPurchaseTypeChanged: onSalesTypeChanged,
                     purchaseType: salesType.value,
+                    orderNoController: orderNoController,
                   ),
                 ],
               ),
@@ -1491,6 +1515,7 @@ class AddNewSalePage extends HookConsumerWidget {
                         selectedWarehouse.value == null ||
                         billNo.value == null ||
                         salesType.value == null ||
+                        orderNoController.text.isEmpty ||
                         customerId.value == null ||
                         tempSubTotal.value <= 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -1553,7 +1578,7 @@ class AddNewSalePage extends HookConsumerWidget {
                         grandTotal: grandTotal.toString(),
                         salesNote: salesNoteController.text,
                         paidAmount: paidAmountController.text,
-                        orderId: salesCode(storeId.value!, userId),
+                        orderId: orderNoController.text.trim(),
                       ).createSalesController();
                       if (saleId !=
                           "Sales creation failed. Please try again.") {
@@ -1675,8 +1700,7 @@ class AddNewSalePage extends HookConsumerWidget {
                           shopContact: userModel?.user?.mobile ?? "",
                           shopEmail: userModel?.user?.email ?? "",
                           invoiceNo: billNo.value!,
-                          invoiceDate:
-                              DateTime.parse(getCurrentDateFormatted()),
+                          invoiceDate: getCurrentDateFormatted(),
                           website: "www.greenbiller.com",
                           amountInWords: "",
                           terms: salesNoteController.text,
@@ -1709,7 +1733,6 @@ class AddNewSalePage extends HookConsumerWidget {
                             backgroundColor: Colors.green,
                           ),
                         );
-                        context.pop();
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -1763,6 +1786,7 @@ class AddNewSalePage extends HookConsumerWidget {
                     if (storeId.value == null ||
                         selectedWarehouse.value == null ||
                         billNo.value == null ||
+                        orderNoController.text.isEmpty ||
                         salesType.value == null ||
                         customerId.value == null ||
                         tempSubTotal.value <= 0) {
@@ -1825,7 +1849,7 @@ class AddNewSalePage extends HookConsumerWidget {
                         grandTotal: grandTotal.toString(),
                         salesNote: salesNoteController.text,
                         paidAmount: paidAmountController.text,
-                        orderId: '',
+                        orderId: orderNoController.text.trim(),
                       ).createSalesController();
                       if (saleId !=
                           "Sales creation failed. Please try again.") {
