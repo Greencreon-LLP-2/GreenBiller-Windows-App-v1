@@ -6,7 +6,6 @@ import 'package:green_biller/features/auth/login/view/widgets/LoginFormContentWi
 import 'package:green_biller/features/auth/login/view/widgets/OtpVerificationWidget.dart';
 import 'package:green_biller/features/auth/login/view/widgets/SignupFormContentWidget.dart';
 
-
 class LoginFormWidget extends HookWidget {
   const LoginFormWidget({super.key});
 

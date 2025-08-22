@@ -36,11 +36,7 @@ class LoginPage extends HookWidget {
                       horizontal: isDesktop ? 100 : 24,
                       vertical: 24,
                     ),
-                    child: isDesktop
-                        ? _buildDesktopLayout()
-                        : isTablet
-                            ? _buildTabletLayout()
-                            : _buildMobileLayout(),
+                    child: _buildDesktopLayout(),
                   ),
                 ),
               ),
@@ -58,36 +54,11 @@ class LoginPage extends HookWidget {
           flex: 2,
           child: LogoHeaderWidget(),
         ),
-        SizedBox(width: 48),
+        SizedBox(width: 20),
         Expanded(
           flex: 1,
           child: LoginFormWidget(),
         ),
-      ],
-    );
-  }
-
-  Widget _buildTabletLayout() {
-    return const Row(
-      children: [
-        Expanded(
-          flex: 1,
-          child: LogoHeaderWidget(),
-        ),
-        SizedBox(width: 32),
-        Expanded(
-          flex: 1,
-          child: LoginFormWidget(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMobileLayout() {
-    return const Column(
-      children: [
-        SizedBox(height: 32),
-        LoginFormWidget(),
       ],
     );
   }

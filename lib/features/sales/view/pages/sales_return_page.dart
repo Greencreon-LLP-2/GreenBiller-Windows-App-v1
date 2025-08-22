@@ -497,7 +497,7 @@ class SalesReturnPage extends HookConsumerWidget {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            '${salesReturnAsync.valueOrNull?.records.length ?? 0} records',
+                            '${salesReturnAsync.value?.records.length ?? 0} records',
                             style: const TextStyle(
                               color: accentColor,
                               fontWeight: FontWeight.w600,

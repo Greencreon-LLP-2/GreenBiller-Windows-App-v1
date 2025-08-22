@@ -1,20 +1,16 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:country_picker/country_picker.dart';
 import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/core/theme/text_styles.dart';
 import 'package:green_biller/features/auth/login/controllers/otp_controller.dart';
-
 import 'package:green_biller/features/auth/login/services/sign_in_service.dart';
 import 'package:green_biller/features/auth/login/services/snackbar_service.dart';
 import 'package:green_biller/features/auth/login/view/widgets/ActionButtonWidget.dart';
 import 'package:green_biller/features/auth/login/view/widgets/CustomTextFieldWidget.dart';
-
-import 'package:green_biller/main.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:country_picker/country_picker.dart';
 
 class LoginFormContentWidget extends HookConsumerWidget {
   final Function(String, String) onSwitchToSignup;
@@ -45,8 +41,8 @@ class LoginFormContentWidget extends HookConsumerWidget {
           Row(
             children: [
               Container(
-                width: 90,
-                height: 50,
+                width: 120, // Increased width to prevent overflow
+                height: 40,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade300),
@@ -55,6 +51,7 @@ class LoginFormContentWidget extends HookConsumerWidget {
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: selectedCountryCode.value,
+                    isExpanded: true, // Ensure dropdown uses full width
                     items: CountryService()
                         .getAll()
                         .where((c) => c.phoneCode.isNotEmpty)
@@ -62,10 +59,20 @@ class LoginFormContentWidget extends HookConsumerWidget {
                       return DropdownMenuItem<String>(
                         value: '+${country.phoneCode}',
                         child: Row(
+                          mainAxisSize: MainAxisSize.min, // Minimize Row size
                           children: [
-                            Text(country.flagEmoji),
-                            const SizedBox(width: 6),
-                            Text('+${country.phoneCode}'),
+                            Text(
+                              country.flagEmoji,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(width: 4), // Reduced spacing
+                            Flexible(
+                              child: Text(
+                                '+${country.phoneCode}',
+                                style: const TextStyle(fontSize: 14),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ],
                         ),
                       );
@@ -73,13 +80,16 @@ class LoginFormContentWidget extends HookConsumerWidget {
                     onChanged: (value) {
                       if (value != null) selectedCountryCode.value = value;
                     },
+                    icon: const Icon(Icons.arrow_drop_down,
+                        size: 20), // Smaller icon
+                    style: const TextStyle(fontSize: 14, color: Colors.black),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: CustomTextFieldWidget(
-                  hintText: "9876543210",
+                  hintText: 'Mobile Number',
                   label: 'Mobile Number',
                   prefixIcon: Icons.phone_android,
                   controller: mobileController,
@@ -145,7 +155,6 @@ class LoginFormContentWidget extends HookConsumerWidget {
 
               try {
                 if (isPasswordLogin.value) {
-                  // Password login
                   final signInService = ref.read(signInServiceProvider);
                   final response = await signInService.signInWithPassword(
                     ref,
@@ -156,7 +165,6 @@ class LoginFormContentWidget extends HookConsumerWidget {
 
                   if (response == 1) {
                     SnackBarService.showSuccess('Login successful');
-                    // Use safe go_router navigation
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (context.mounted) {
                         context.go('/homepage');
@@ -164,7 +172,6 @@ class LoginFormContentWidget extends HookConsumerWidget {
                     });
                   }
                 } else {
-                  // OTP login
                   final mobileNumber = int.parse(mobileController.text);
                   await OtpController().sendOtpController(
                     mobileNumber.toString(),
@@ -183,16 +190,6 @@ class LoginFormContentWidget extends HookConsumerWidget {
           ),
 
           const SizedBox(height: 24),
-          Center(
-            child: TextButton(
-              onPressed: () => onSwitchToSignup(
-                  selectedCountryCode.value, mobileController.text),
-              child: Text(
-                "Don't have an account? Sign up",
-                style: AppTextStyles.labelMedium.copyWith(color: accentColor),
-              ),
-            ),
-          ),
         ],
       ),
     );

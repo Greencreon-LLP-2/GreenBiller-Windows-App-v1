@@ -11,9 +11,11 @@ import 'package:green_biller/features/sales/service/sales_view_service.dart';
 import 'package:green_biller/features/store/controllers/view_parties_controller.dart';
 import 'package:green_biller/features/store/controllers/view_store_controller.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/legacy.dart';
 import 'package:intl/intl.dart';
 
-final selectedCreditNoteItemsProvider = StateProvider<List<CreditNoteItem>>((ref) => []);
+final selectedCreditNoteItemsProvider =
+    StateProvider<List<CreditNoteItem>>((ref) => []);
 
 class CreditNotePage extends HookConsumerWidget {
   CreditNotePage({super.key});

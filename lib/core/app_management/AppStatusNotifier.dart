@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:green_biller/core/app_management/app_status_model.dart';
 import 'package:green_biller/core/constants/api_constants.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
+import 'package:hooks_riverpod/legacy.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -149,7 +150,7 @@ class AppStatusNotifier extends StateNotifier<AppStatusModel> {
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
-            'Accept': 'application/json',
+          'Accept': 'application/json',
         },
       );
       responseCode = response.statusCode;

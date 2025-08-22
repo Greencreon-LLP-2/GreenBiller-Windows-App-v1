@@ -10,6 +10,7 @@ import 'package:green_biller/features/store/controllers/view_store_controller.da
 import 'package:green_biller/features/store/model/store_model/store_model.dart'
     as store_model;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:hooks_riverpod/legacy.dart';
 
 final refreshTriggerProvider = StateProvider<int>((ref) => 0);
 
@@ -677,7 +678,9 @@ class UnitsPage extends HookConsumerWidget {
                               isLoading.value = false;
                               if (response ==
                                   "Units Detail Created Successfully") {
-                                ref.read(refreshTriggerProvider.notifier).state++;
+                                ref
+                                    .read(refreshTriggerProvider.notifier)
+                                    .state++;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Unit added successfully'),
