@@ -86,10 +86,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isInMaintenance = appStatus.shutdown == true ||
           appStatus.settings?.appMaintenanceMode == true;
 
-      if (isInMaintenance && !isMaintenanceRoute) {
-        return '/maintanance';
-      }
-
       if (isInMaintenance &&
           !isMaintenanceRoute &&
           appStatus.maintenanceData?.code == 302) {

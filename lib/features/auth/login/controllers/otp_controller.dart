@@ -32,7 +32,7 @@ class OtpController {
     WidgetRef ref,
   ) async {
     try {
-      final result = await _otpService.verifyOtpService(otp, phoneNumber);
+      final result = await _otpService.verifyOtpService(otp, phoneNumber,countryCode);
 
       if (result['status'] == 'success') {
         final decodedData = result['data'];

@@ -33,16 +33,11 @@ class OtpService {
   }
 
   Future<Map<String, dynamic>> verifyOtpService(
-    String otp,
-    String phoneNumber,
-  ) async {
+      String otp, String phoneNumber, String countryCode) async {
     try {
       final response = await http.post(
         Uri.parse(verifyOtpUrl),
-        body: {
-          'otp': otp,
-          'mobile': phoneNumber,
-        },
+        body: {'otp': otp, 'mobile': phoneNumber, 'country_code': countryCode},
       );
 
       if (response.statusCode == 200) {
