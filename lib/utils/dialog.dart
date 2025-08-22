@@ -17,12 +17,10 @@ class DialogField {
   final bool enabled;
   final FieldType fieldType;
 
-  // Dropdown specific properties
   final List<DropdownMenuItem<String>>? dropdownItems;
   final String? dropdownValue;
   final ValueChanged<String?>? onDropdownChanged;
 
-  // Image picker specific properties
   final VoidCallback? onImagePressed;
   final Widget? imagePreview;
 

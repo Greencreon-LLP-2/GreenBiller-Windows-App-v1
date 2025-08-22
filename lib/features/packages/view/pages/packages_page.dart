@@ -5,9 +5,8 @@ import 'package:green_biller/features/auth/login/model/user_model.dart';
 import 'package:green_biller/features/packages/controller/package_controller.dart';
 import 'package:green_biller/features/packages/models/package_model.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart'; // Add this import
+import 'package:url_launcher/url_launcher.dart';
 
-// Custom package model for customizable store package
 class CustomizablePackage {
   final String id;
   final String name;
@@ -34,7 +33,6 @@ class CustomizablePackage {
   }
 }
 
-// State Notifier for package selection
 class PackageState {
   final Datum? selectedPackage;
   final CustomizablePackage? selectedCustomPackage;
@@ -147,7 +145,6 @@ class PackageNotifier extends StateNotifier<PackageState> {
   }
 }
 
-// Providers
 final packageNotifierProvider =
     StateNotifierProvider.family<PackageNotifier, PackageState, String?>(
   (ref, accessToken) => PackageNotifier(
@@ -234,7 +231,6 @@ class _PackageCardState extends State<PackageCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header Section with Gradient
                 Expanded(
                   flex: 2,
                   child: Stack(
@@ -283,7 +279,6 @@ class _PackageCardState extends State<PackageCard> {
                           ],
                         ),
                       ),
-                      // Selection Indicator
                       if (widget.isSelected)
                         Positioned(
                           top: 8,
@@ -311,7 +306,6 @@ class _PackageCardState extends State<PackageCard> {
                     ],
                   ),
                 ),
-                // Content Section
                 Expanded(
                   flex: 3,
                   child: Padding(
@@ -967,7 +961,6 @@ class PackagesPage extends HookConsumerWidget {
             );
           }
 
-          // Filter packages based on search and filter
           final filteredPackages = packages.where((package) {
             final matchesSearch = packageState.searchQuery.isEmpty ||
                 (package.packageName
@@ -989,8 +982,7 @@ class PackagesPage extends HookConsumerWidget {
                   matchesFilter = package.ifMultistore == '1';
                   break;
                 case 'custom':
-                  matchesFilter =
-                      false; // Custom package doesn't match regular filters
+                  matchesFilter = false;
                   break;
               }
             }
@@ -1607,7 +1599,6 @@ class _CustomizablePackageCardState extends State<CustomizablePackageCard> {
   }
 }
 
-// Customizable Package Details View - Converted to ConsumerWidget
 class CustomizablePackageDetailsView extends ConsumerWidget {
   final CustomizablePackage package;
   final int storeCount;
@@ -1993,10 +1984,8 @@ class CustomizablePackageDetailsView extends ConsumerWidget {
                     onPressed: isLoading
                         ? null
                         : () async {
-                            // Get user mobile number
                             final mobile = userModel?.user?.mobile ?? '';
 
-                            // Validate mobile number
                             if (mobile.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -2007,11 +1996,9 @@ class CustomizablePackageDetailsView extends ConsumerWidget {
                               return;
                             }
 
-                            // Construct URL
                             final url =
                                 'https://greenbiller.in/paynow/$mobile/${package.id}';
 
-                            // Launch URLs
                             if (await canLaunchUrl(Uri.parse(url))) {
                               await launchUrl(Uri.parse(url));
                             } else {

@@ -4,10 +4,15 @@ import 'package:green_biller/core/constants/api_constants.dart';
 import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
 import 'package:green_biller/features/store/controllers/view_store_controller.dart';
+import 'package:green_biller/features/store/provider/pruchase_count_provider.dart';
+import 'package:green_biller/features/store/provider/sales_count_provider.dart';
+import 'package:green_biller/features/store/provider/sales_return_count_provider.dart';
+import 'package:green_biller/features/store/provider/warehouse_count_provider.dart';
 import 'package:green_biller/features/store/services/delete_store_service.dart';
 import 'package:green_biller/features/store/view/store_page/shared/single_store_details.dart';
 import 'package:green_biller/features/store/view/store_page/widgets/edit_store_page.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../provider/categories_provider.dart';
 
 class AdminStoresTab extends HookConsumerWidget {
   const AdminStoresTab({super.key});
@@ -334,23 +339,45 @@ class AdminStoresTab extends HookConsumerWidget {
   Widget _buildStoreListCard(dynamic store, String accessToken,
       BuildContext context, WidgetRef ref, ValueNotifier<bool> isLoading) {
     final storeName = store.storeName ?? 'Unnamed Store';
-    final warehouseCount = store.warehousesCount;
-    final categoryCount = store.categoriesCount;
-    final customersCount = store.customersCount;
-    final purchasesCount = store.purchasesCount;
-    final suppliersCount = store.suppliersCount;
-    final salesCount = store.salesCount;
-    final salesReturnsCount = store.salesReturnsCount;
-
+    final customersCount = store.customersCount ?? 0;
+    final suppliersCount = store.suppliersCount ?? 0;
+    final storeId = store.id?.toString() ?? '';
     final location = store.storeAddress ?? 'No address';
     final phone = store.storePhone ?? '';
     final email = store.storeEmail ?? '';
     final city = store.storeCity ?? '';
     final country = store.storeCountry ?? '';
     final status = store.status;
-    final storeId = store.id?.toString() ?? '';
     final logo = "$publicUrl/${store.storeLogo}";
     final isActive = status == 'active';
+
+    final warehouseCountAsync = ref.watch(warehouseCountProvider(storeId));
+    final categoriesAsync = ref.watch(categoriesProvider(storeId));
+    final salesCountAsync = ref.watch(salesCountProvider(storeId));
+    final salesReturnCountAsync = ref.watch(salesReturnCountProvider(storeId));
+    final purchaseCountAsync = ref.watch(purchaseCountProvider(storeId));
+    final purchaseReturnCountAsync =
+        ref.watch(purchaseReturnCountProvider(storeId));
+
+    if (storeId.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child:
+            const Text('Invalid store ID', style: TextStyle(color: Colors.red)),
+      );
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -449,13 +476,79 @@ class AdminStoresTab extends HookConsumerWidget {
                         ),
                       ],
                       const SizedBox(height: 8),
-                      Row(
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
                         children: [
-                          _buildStatChip('$warehouseCount Warehouses',
-                              Icons.warehouse_outlined),
-                          const SizedBox(width: 8),
-                          _buildStatChip('$categoryCount Categories',
-                              Icons.category_outlined),
+                          warehouseCountAsync.when(
+                            data: (warehouseCount) => _buildStatChip(
+                                '$warehouseCount Warehouses',
+                                Icons.warehouse_outlined),
+                            loading: () => _buildStatChip(
+                                'Loading...', Icons.warehouse_outlined),
+                            error: (error, _) => _buildStatChip(
+                                'N/A Warehouses', Icons.warehouse_outlined),
+                          ),
+                          categoriesAsync.when(
+                            data: (categories) => _buildStatChip(
+                                '${categories.length} Categories',
+                                Icons.category_outlined),
+                            loading: () => _buildStatChip(
+                                'Loading...', Icons.category_outlined),
+                            error: (error, _) => _buildStatChip(
+                                'N/A Categories', Icons.category_outlined),
+                          ),
+                          salesCountAsync.when(
+                            data: (salesCount) => salesCount > 0
+                                ? _buildStatChip('$salesCount Sales',
+                                    Icons.point_of_sale_outlined)
+                                : const SizedBox.shrink(),
+                            loading: () => _buildStatChip(
+                                'Loading...', Icons.point_of_sale_outlined),
+                            error: (error, _) => _buildStatChip(
+                                'N/A Sales', Icons.point_of_sale_outlined),
+                          ),
+                          salesReturnCountAsync.when(
+                            data: (salesReturnCount) => salesReturnCount > 0
+                                ? _buildStatChip(
+                                    '$salesReturnCount Sales Returns',
+                                    Icons.assignment_return_outlined)
+                                : const SizedBox.shrink(),
+                            loading: () => _buildStatChip(
+                                'Loading...', Icons.assignment_return_outlined),
+                            error: (error, _) => _buildStatChip(
+                                'N/A Sales Returns',
+                                Icons.assignment_return_outlined),
+                          ),
+                          purchaseCountAsync.when(
+                            data: (purchaseCount) => purchaseCount > 0
+                                ? _buildStatChip('$purchaseCount Purchases',
+                                    Icons.shopping_cart_outlined)
+                                : const SizedBox.shrink(),
+                            loading: () => _buildStatChip(
+                                'Loading...', Icons.shopping_cart_outlined),
+                            error: (error, _) => _buildStatChip(
+                                'N/A Purchases', Icons.shopping_cart_outlined),
+                          ),
+                          purchaseReturnCountAsync.when(
+                            data: (purchaseReturnCount) =>
+                                purchaseReturnCount > 0
+                                    ? _buildStatChip(
+                                        '$purchaseReturnCount Purchase Returns',
+                                        Icons.keyboard_return_outlined)
+                                    : const SizedBox.shrink(),
+                            loading: () => _buildStatChip(
+                                'Loading...', Icons.keyboard_return_outlined),
+                            error: (error, _) => _buildStatChip(
+                                'N/A Purchase Returns',
+                                Icons.keyboard_return_outlined),
+                          ),
+                          if (customersCount > 0)
+                            _buildStatChip('$customersCount Customers',
+                                Icons.people_outline),
+                          if (suppliersCount > 0)
+                            _buildStatChip('$suppliersCount Suppliers',
+                                Icons.local_shipping_outlined),
                         ],
                       ),
                     ],
@@ -464,7 +557,6 @@ class AdminStoresTab extends HookConsumerWidget {
 
                 const SizedBox(width: 16),
 
-                // Action buttons
                 Column(
                   children: [
                     _buildActionButton(

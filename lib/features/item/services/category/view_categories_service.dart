@@ -44,6 +44,30 @@ Future<int?> deleteCatgoryById(String? accessToken, String? id) async {
   }
 }
 
+Future<List<dynamic>> getCategoriesService(
+    String accessToken, String storeId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/category-view'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+
+      return data['data'] ?? [];
+    } else {
+      throw Exception(
+          'Failed to load categories: ${response.statusCode} - ${response.body}');
+    }
+  } catch (e, stackTrace) {
+    throw Exception('Error fetching categories: $e');
+  }
+}
+
 Future<List<Item>> getItemsBasedOnCateId(
     String accessToken, String cateId) async {
   final String url = "$baseUrl/category/$cateId/items";
