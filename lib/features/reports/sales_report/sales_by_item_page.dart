@@ -41,8 +41,8 @@ class _SalesByItemPageState extends State<SalesByItemPage> {
           icon: const Icon(Icons.arrow_back_ios),
         ),
         title: const Text('Sales by Item'),
-        backgroundColor: Colors.white,
-        foregroundColor: textPrimaryColor,
+        backgroundColor: accentColor,
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(

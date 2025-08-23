@@ -44,6 +44,8 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
           elevation: 0,
           centerTitle: false,
           leading: leading,
+          automaticallyImplyLeading:
+              false, // 🚀 This disables the default back arrow
           title: subtitle != null
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

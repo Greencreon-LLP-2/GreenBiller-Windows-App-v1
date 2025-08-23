@@ -43,8 +43,8 @@ class UnitsPage extends HookConsumerWidget {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         title: const Text('Units'),
-        backgroundColor: cardColor,
-        foregroundColor: textPrimaryColor,
+        backgroundColor: accentColor,
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: Padding(
