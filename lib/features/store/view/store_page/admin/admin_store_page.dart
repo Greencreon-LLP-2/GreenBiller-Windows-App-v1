@@ -52,17 +52,17 @@ class AdminStorePage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Store Management (${role.name})'),
-        backgroundColor: cardColor,
-        foregroundColor: textPrimaryColor,
+        backgroundColor: accentColor,
+        foregroundColor: Colors.white,
         bottom: TabBar(
           controller: tabController,
           tabs: const [
             Tab(text: 'Stores'),
             Tab(text: 'Warehouses'),
           ],
-          labelColor: accentColor,
-          unselectedLabelColor: textSecondaryColor,
-          indicatorColor: accentColor,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white,
+          indicatorColor: Colors.white,
         ),
         actions: [
           IconButton(
