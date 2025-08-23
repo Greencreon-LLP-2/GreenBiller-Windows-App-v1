@@ -837,14 +837,14 @@ class SalesByCustomerPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            context.go("/reports");
-          },
-        ),
-        title: const Text('Sales Summary'),
-        backgroundColor:accentColor,
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back),
+        //   onPressed: () {
+        //     context.go("/reports");
+        //   },
+        // ),
+        title: const Text('Sales Summary By Customer'),
+        backgroundColor: accentColor,
         foregroundColor: Colors.white,
         elevation: 0,
       ),

@@ -166,11 +166,11 @@ class SignupFormContentWidget extends HookConsumerWidget {
             label: 'Confirm Password',
             prefixIcon: Icons.lock_outline,
             isPassword: true,
+            controller: confirmPasswordController,
             passwordVisible: confPassVisible.value,
             onToggleVisibility: () {
               confPassVisible.value = !confPassVisible.value;
             },
-            controller: confirmPasswordController,
           ),
           const SizedBox(height: 16),
           CustomTextFieldWidget(
