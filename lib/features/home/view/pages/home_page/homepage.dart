@@ -8,13 +8,13 @@ import 'package:green_biller/features/auth/login/services/snackbar_service.dart'
 import 'package:green_biller/features/home/view/pages/darshboard_page.dart';
 import 'package:green_biller/features/home/view/pages/home_page/utils/trail_version_container.dart';
 import 'package:green_biller/features/home/view/pages/home_page/widgets/build_home_content.dart';
-import 'package:green_biller/features/home/view/pages/menu_page/menu_page.dart';
+
 import 'package:green_biller/features/home/view/pages/menu_page/widgets/payment_out.dart';
 import 'package:green_biller/features/item/view/pages/items_page.dart';
 import 'package:green_biller/features/notifications/views/notification_page.dart';
 import 'package:green_biller/features/payment/view/pages/payment_in_page/add_payment_in_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_page/purchase_page.dart';
-import 'package:green_biller/features/purchase/view/pages/purchase_return_page/purchase_return_page.dart';
+
 import 'package:green_biller/features/purchase/view/pages/purchase_returns_view/purchase_return_view_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_view/purchase_bills.dart';
 import 'package:green_biller/features/reports/purchase_report/view/pages/purchase_item_report.dart';
@@ -366,13 +366,17 @@ class HomePage extends HookConsumerWidget {
                                       await SharedPreferences.getInstance();
                                   await prefs.clear();
                                   ref.read(userProvider.notifier).state = null;
-                                  GoRouterNavigationService.goWithDelay('/',
-                                      replace: true);
                                   SnackBarService.showSuccess(
-                                      'Successfully logged out');
+                                    'Successfully logged out',
+                                  );
+                                  GoRouterNavigationService.goWithDelay(
+                                    '/',
+                                    replace: true,
+                                  );
                                 } catch (e) {
                                   SnackBarService.showError(
-                                      'Logout failed: $e');
+                                    'Logout failed: $e',
+                                  );
                                 }
                               },
                             ),
@@ -390,7 +394,9 @@ class HomePage extends HookConsumerWidget {
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 16),
+                                horizontal: 8,
+                                vertical: 16,
+                              ),
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
                                   colors: [
@@ -536,8 +542,9 @@ class HomePage extends HookConsumerWidget {
                         index: selectedIndex.value,
                         children: [
                           BuildHomeContent(
-                              isSmallScreen: isSmallScreen,
-                              isMediumScreen: isMediumScreen),
+                            isSmallScreen: isSmallScreen,
+                            isMediumScreen: isMediumScreen,
+                          ),
                           const DashboardPage(), //0
                           const StorePageCustom(), //1
                           const ItemsPage(), //2
@@ -562,7 +569,6 @@ class HomePage extends HookConsumerWidget {
                           PurchaseSummary(), //21
                           PurchaseItemReportPage(), //22
                           PurchaseSupplierBaseSummary(), //23
-                         
                         ],
                       ),
                     ),
@@ -643,13 +649,11 @@ class HomePage extends HookConsumerWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 12,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
-            color:
-                isSelected ? accentColor.withOpacity(0.1) : Colors.transparent,
+            color: isSelected
+                ? accentColor.withOpacity(0.1)
+                : Colors.transparent,
             border: Border(
               left: BorderSide(
                 color: isSelected ? accentColor : Colors.transparent,
@@ -688,15 +692,9 @@ class HomePage extends HookConsumerWidget {
     required List<Widget> subItems,
   }) {
     return Theme(
-      data: ThemeData(
-        dividerColor: Colors.transparent,
-      ),
+      data: ThemeData(dividerColor: Colors.transparent),
       child: ExpansionTile(
-        leading: Icon(
-          icon,
-          color: textSecondaryColor,
-          size: 24,
-        ),
+        leading: Icon(icon, color: textSecondaryColor, size: 24),
         title: Text(
           title,
           style: const TextStyle(
@@ -719,15 +717,9 @@ class HomePage extends HookConsumerWidget {
     required List<Widget> subItems,
   }) {
     return Theme(
-      data: ThemeData(
-        dividerColor: Colors.transparent,
-      ),
+      data: ThemeData(dividerColor: Colors.transparent),
       child: ExpansionTile(
-        leading: Icon(
-          icon,
-          color: textSecondaryColor,
-          size: 20,
-        ),
+        leading: Icon(icon, color: textSecondaryColor, size: 20),
         title: Text(
           title,
           style: const TextStyle(
@@ -756,13 +748,11 @@ class HomePage extends HookConsumerWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 0,
-            vertical: 12,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
           decoration: BoxDecoration(
-            color:
-                isSelected ? accentColor.withOpacity(0.1) : Colors.transparent,
+            color: isSelected
+                ? accentColor.withOpacity(0.1)
+                : Colors.transparent,
             border: Border(
               left: BorderSide(
                 color: isSelected ? accentColor : Colors.transparent,
