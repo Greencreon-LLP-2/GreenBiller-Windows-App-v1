@@ -40,7 +40,7 @@ class ViewPartiesServies {
       String accessToken, String? storeId) async {
     final isStoreIdValid = storeId != null &&
         storeId.isNotEmpty &&
-        storeId != 'null' &&
+        storeId != 'null' &&  storeId != '' &&
         storeId != 'undefined';
 
     String url = isStoreIdValid ? "$viewSupplierUrl/$storeId" : viewSupplierUrl;

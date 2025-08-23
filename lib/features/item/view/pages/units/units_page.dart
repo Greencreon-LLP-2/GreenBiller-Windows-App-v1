@@ -103,25 +103,25 @@ class UnitsPage extends HookConsumerWidget {
                     ],
                   ),
                   const Spacer(),
-                  TextButton(
-                    onPressed: () => _showAddUnitDialog(context, ref),
-                    style: TextButton.styleFrom(
-                      backgroundColor: accentColor,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: Text(
-                      "Add New Unit",
-                      style: AppTextStyles.labelMedium.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
+                  // TextButton(
+                  //   onPressed: () => _showAddUnitDialog(context, ref),
+                  //   style: TextButton.styleFrom(
+                  //     backgroundColor: accentColor,
+                  //     padding: const EdgeInsets.symmetric(
+                  //         horizontal: 24, vertical: 12),
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(30),
+                  //     ),
+                  //   ),
+                  //   child: Text(
+                  //     "Add New Unit",
+                  //     style: AppTextStyles.labelMedium.copyWith(
+                  //       fontWeight: FontWeight.bold,
+                  //       color: Colors.white,
+                  //       fontSize: 20,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
@@ -341,126 +341,125 @@ class UnitsPage extends HookConsumerWidget {
                                               ],
                                             ),
                                           ),
-                                          const SizedBox(
-                                            width: 20,
-                                          ),
+                                       
                                           // Action Buttons
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  Colors.red.withOpacity(0.1),
-                                              borderRadius:
-                                                  BorderRadius.circular(50),
-                                            ),
-                                            child: IconButton(
-                                              tooltip: 'Delete',
-                                              icon: const Icon(
-                                                  Icons.delete_outline,
-                                                  size: 20,
-                                                  color: Colors.red),
-                                              onPressed: () async {
-                                                // Show confirmation dialog
-                                                final shouldDelete =
-                                                    await showDialog<bool>(
-                                                  context: context,
-                                                  builder: (context) =>
-                                                      AlertDialog(
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        16)),
-                                                    title: const Text(
-                                                        'Delete Store'),
-                                                    content: Text(
-                                                        'Are you sure you want to delete "${unit.unitName}"?'),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop(false),
-                                                        child: const Text(
-                                                            'Cancel'),
-                                                      ),
-                                                      FilledButton(
-                                                        onPressed: () =>
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop(true),
-                                                        style: FilledButton
-                                                            .styleFrom(
-                                                                backgroundColor:
-                                                                    Colors.red),
-                                                        child: const Text(
-                                                            'Delete'),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
+                                          // Container(
+                                          //   decoration: BoxDecoration(
+                                          //     color:
+                                          //         Colors.red.withOpacity(0.1),
+                                          //     borderRadius:
+                                          //         BorderRadius.circular(50),
+                                          //   ),
+                                          //   child: IconButton(
+                                          //     tooltip: 'Delete',
+                                          //     icon: const Icon(
+                                          //         Icons.delete_outline,
+                                          //         size: 20,
+                                          //         color: Colors.red),
+                                          //     onPressed: () async {
+                                          //       // Show confirmation dialog
+                                          //       final shouldDelete =
+                                          //           await showDialog<bool>(
+                                          //         context: context,
+                                          //         builder: (context) =>
+                                          //             AlertDialog(
+                                          //           shape:
+                                          //               RoundedRectangleBorder(
+                                          //                   borderRadius:
+                                          //                       BorderRadius
+                                          //                           .circular(
+                                          //                               16)),
+                                          //           title: const Text(
+                                          //               'Delete Store'),
+                                          //           content: Text(
+                                          //               'Are you sure you want to delete "${unit.unitName}"?'),
+                                          //           actions: [
+                                          //             TextButton(
+                                          //               onPressed: () =>
+                                          //                   Navigator.of(
+                                          //                           context)
+                                          //                       .pop(false),
+                                          //               child: const Text(
+                                          //                   'Cancel'),
+                                          //             ),
+                                          //             FilledButton(
+                                          //               onPressed: () =>
+                                          //                   Navigator.of(
+                                          //                           context)
+                                          //                       .pop(true),
+                                          //               style: FilledButton
+                                          //                   .styleFrom(
+                                          //                       backgroundColor:
+                                          //                           Colors.red),
+                                          //               child: const Text(
+                                          //                   'Delete'),
+                                          //             ),
+                                          //           ],
+                                          //         ),
+                                          //       );
 
-                                                if (shouldDelete == true) {
-                                                  isLoading.value = true;
-                                                  final viewUnitService =
-                                                      ViewUnitService(
-                                                          accessToken:
-                                                              accessToken);
-                                                  final response =
-                                                      await viewUnitService
-                                                          .deleteUnitSerivce(
-                                                              unit.id!);
-                                                  if (response == 200) {
-                                                    isLoading.value = false;
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
-                                                      SnackBar(
-                                                        content: const Text(
-                                                            "Store deleted successfully"),
-                                                        backgroundColor:
-                                                            Colors.green,
-                                                        behavior:
-                                                            SnackBarBehavior
-                                                                .floating,
-                                                        shape: RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10)),
-                                                      ),
-                                                    );
-                                                    Future.delayed(
-                                                        const Duration(
-                                                            seconds: 3), () {
-                                                      ref.refresh(
-                                                          storesProvider);
-                                                    });
-                                                  } else {
-                                                    isLoading.value = false;
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
-                                                      SnackBar(
-                                                        content: const Text(
-                                                            "Failed to delete store"),
-                                                        backgroundColor:
-                                                            Colors.red,
-                                                        behavior:
-                                                            SnackBarBehavior
-                                                                .floating,
-                                                        shape: RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10)),
-                                                      ),
-                                                    );
-                                                  }
-                                                }
-                                              },
-                                            ),
-                                          ),
+                                          //       if (shouldDelete == true) {
+                                          //         isLoading.value = true;
+                                          //         final viewUnitService =
+                                          //             ViewUnitService(
+                                          //                 accessToken:
+                                          //                     accessToken);
+                                          //         final response =
+                                          //             await viewUnitService
+                                          //                 .deleteUnitSerivce(
+                                          //                     unit.id!);
+                                          //         if (response == 200) {
+                                          //           isLoading.value = false;
+                                          //           ScaffoldMessenger.of(
+                                          //                   context)
+                                          //               .showSnackBar(
+                                          //             SnackBar(
+                                          //               content: const Text(
+                                          //                   "Store deleted successfully"),
+                                          //               backgroundColor:
+                                          //                   Colors.green,
+                                          //               behavior:
+                                          //                   SnackBarBehavior
+                                          //                       .floating,
+                                          //               shape: RoundedRectangleBorder(
+                                          //                   borderRadius:
+                                          //                       BorderRadius
+                                          //                           .circular(
+                                          //                               10)),
+                                          //             ),
+                                          //           );
+                                          //           Future.delayed(
+                                          //               const Duration(
+                                          //                   seconds: 3), () {
+                                          //             ref.refresh(
+                                          //                 storesProvider);
+                                          //           });
+                                          //         } else {
+                                          //           isLoading.value = false;
+                                          //           ScaffoldMessenger.of(
+                                          //                   context)
+                                          //               .showSnackBar(
+                                          //             SnackBar(
+                                          //               content: const Text(
+                                          //                   "Failed to delete store"),
+                                          //               backgroundColor:
+                                          //                   Colors.red,
+                                          //               behavior:
+                                          //                   SnackBarBehavior
+                                          //                       .floating,
+                                          //               shape: RoundedRectangleBorder(
+                                          //                   borderRadius:
+                                          //                       BorderRadius
+                                          //                           .circular(
+                                          //                               10)),
+                                          //             ),
+                                          //           );
+                                          //         }
+                                          //       }
+                                          //     },
+                                          //   ),
+                                          // ),
+                                       
                                         ],
                                       ),
                                     ],

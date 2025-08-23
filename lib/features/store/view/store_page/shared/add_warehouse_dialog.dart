@@ -1,4 +1,3 @@
-// New widget: AddWarehouseDialog
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -15,12 +14,14 @@ class AddWarehouseDialog extends HookConsumerWidget {
   final String? accessToken;
   final String? userId;
   final VoidCallback? onSuccess;
+  final BuildContext parentContext; // Add parent context for ScaffoldMessenger
 
   const AddWarehouseDialog({
     super.key,
     required this.accessToken,
     required this.userId,
     this.onSuccess,
+    required this.parentContext,
   });
 
   @override
@@ -33,7 +34,7 @@ class AddWarehouseDialog extends HookConsumerWidget {
 
     final selectedStore = useState<store_model.StoreData?>(null);
     final storesAsync = ref.watch(storesProvider);
-    final token = accessToken; // promote for null checks
+    final token = accessToken;
 
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -117,7 +118,6 @@ class AddWarehouseDialog extends HookConsumerWidget {
                   );
                 },
               ),
-
               const SizedBox(height: 16),
               TextfieldWidget(
                 controller: warehouseNameController,
@@ -178,7 +178,7 @@ class AddWarehouseDialog extends HookConsumerWidget {
                     onPressed: () async {
                       // Validation
                       if (selectedStore.value == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        ScaffoldMessenger.of(parentContext).showSnackBar(
                           const SnackBar(
                             content: Text('Please select a store'),
                             backgroundColor: Colors.red,
@@ -187,7 +187,7 @@ class AddWarehouseDialog extends HookConsumerWidget {
                         return;
                       }
                       if (warehouseNameController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        ScaffoldMessenger.of(parentContext).showSnackBar(
                           const SnackBar(
                             content: Text('Warehouse name is required'),
                             backgroundColor: Colors.red,
@@ -196,7 +196,7 @@ class AddWarehouseDialog extends HookConsumerWidget {
                         return;
                       }
                       if (token == null || token.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        ScaffoldMessenger.of(parentContext).showSnackBar(
                           const SnackBar(
                             content: Text('Missing access token'),
                             backgroundColor: Colors.red,
@@ -210,23 +210,23 @@ class AddWarehouseDialog extends HookConsumerWidget {
                           warehouseNameController.text,
                           warehouseAddressController.text,
                           warehouseTypeController.text,
-                          warehousePhoneController.text,
+                          warehouseEmailController.text, // Fixed: Use email controller
                           warehousePhoneController.text,
                           token,
                           selectedStore.value!.id.toString(),
                           userId,
                         );
                         if (response == 'Warehouse created successfully') {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          Navigator.pop(context); // Pop dialog first
+                          ScaffoldMessenger.of(parentContext).showSnackBar(
                             const SnackBar(
                               content: Text('Warehouse added successfully'),
                               backgroundColor: Colors.green,
                             ),
                           );
                           onSuccess?.call();
-                          Navigator.pop(context);
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          ScaffoldMessenger.of(parentContext).showSnackBar(
                             SnackBar(
                               content:
                                   Text('Failed to add warehouse: $response'),
@@ -236,7 +236,7 @@ class AddWarehouseDialog extends HookConsumerWidget {
                         }
                       } catch (e) {
                         log('Add warehouse error: $e');
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        ScaffoldMessenger.of(parentContext).showSnackBar(
                           SnackBar(
                             content: Text('Error: ${e.toString()}'),
                             backgroundColor: Colors.red,

@@ -13,46 +13,7 @@ class UserSettingsPage extends StatefulWidget {
 
 class _UserSettingsPageState extends State<UserSettingsPage> {
   final List<User> users = [
-    const User(
-      id: 1,
-      name: 'Adithya S',
-      userLevel: 'Manager',
-      storeId: 'Main Store',
-      employeeCode: '1234-5678-9101',
-      status: true,
-    ),
-    const User(
-      id: 2,
-      name: 'Rahul D',
-      userLevel: 'Cashier',
-      storeId: 'Branch 1',
-      employeeCode: '2345-6789-1011',
-      status: false,
-    ),
-    const User(
-      id: 3,
-      name: 'Priya M',
-      userLevel: 'Supervisor',
-      storeId: 'Main Store',
-      employeeCode: '3456-7890-1121',
-      status: true,
-    ),
-    const User(
-      id: 4,
-      name: 'Arjun K',
-      userLevel: 'Sales Executive',
-      storeId: 'Branch 2',
-      employeeCode: '4567-8901-2131',
-      status: true,
-    ),
-    const User(
-      id: 5,
-      name: 'Kavya R',
-      userLevel: 'Assistant Manager',
-      storeId: 'Main Store',
-      employeeCode: '5678-9012-3141',
-      status: false,
-    ),
+   
   ];
 
   String searchQuery = '';
@@ -62,23 +23,16 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
 
   final _nameController = TextEditingController();
   final _employeeCodeController = TextEditingController();
-  String _selectedRole = 'Cashier';
+  String _selectedRole = 'Manager';
   String _selectedStore = 'Main Store';
   bool _isActive = true;
 
   final List<String> _roles = [
-    'Manager',
-    'Assistant Manager',
-    'Supervisor',
-    'Cashier',
-    'Sales Executive',
+   
   ];
 
   final List<String> _stores = [
-    'Main Store',
-    'Branch 1',
-    'Branch 2',
-    'Branch 3',
+  
   ];
 
   final List<String> _filters = ['All', 'Active', 'Inactive'];
@@ -808,7 +762,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     setState(() {
       _nameController.clear();
       _employeeCodeController.clear();
-      _selectedRole = 'Cashier';
+      _selectedRole = 'Manager';
       _selectedStore = 'Main Store';
       _isActive = true;
     });

@@ -20,14 +20,15 @@ class AdminStorePage extends HookConsumerWidget {
     final user = ref.watch(userProvider);
     final currentTabIndex = useState(0);
     final warehouseNameController = useTextEditingController();
-    final warehouseTypecontroller = useTextEditingController();
-    final warehouseaddressController = useTextEditingController();
+    final warehouseTypeController = useTextEditingController();
+    final warehouseAddressController = useTextEditingController();
     final warehouseEmailController = useTextEditingController();
     final warehousePhoneController = useTextEditingController();
 
     final accessToken = user?.accessToken;
     final userId = user?.user?.id.toString();
-    final storeAsync = ref.read(storesProvider);
+    // Removed unused storeAsync variable
+    // final storeAsync = ref.read(storesProvider);
 
     // Listen to tab changes
     useEffect(() {
@@ -80,17 +81,18 @@ class AdminStorePage extends HookConsumerWidget {
         ],
       ),
       floatingActionButton: _buildFloatingActionButton(
-          currentTabIndex.value,
-          role,
-          context,
-          accessToken,
-          warehouseNameController,
-          warehouseaddressController,
-          warehouseTypecontroller,
-          warehouseEmailController,
-          warehousePhoneController,
-          ref,
-          userId),
+        currentTabIndex.value,
+        role,
+        context,
+        accessToken,
+        warehouseNameController,
+        warehouseAddressController,
+        warehouseTypeController,
+        warehouseEmailController,
+        warehousePhoneController,
+        ref,
+        userId,
+      ),
     );
   }
 
@@ -100,8 +102,8 @@ class AdminStorePage extends HookConsumerWidget {
     BuildContext context,
     String? accessToken,
     TextEditingController warehouseNameController,
-    TextEditingController warehouseaddressController,
-    TextEditingController warehouseTypecontroller,
+    TextEditingController warehouseAddressController,
+    TextEditingController warehouseTypeController,
     TextEditingController warehouseEmailController,
     TextEditingController warehousePhoneController,
     WidgetRef ref,
@@ -156,6 +158,7 @@ class AdminStorePage extends HookConsumerWidget {
         userId: userId,
         accessToken: accessToken,
         onSuccess: callback,
+        parentContext: context, // Pass the parent context
       ),
     );
   }
