@@ -13,15 +13,12 @@ class StorePageCustom extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.read(userProvider);
-    if (user == null || user.user?.userLevel == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please login to access stores')),
-      );
-    }
 
     // userLevel is a string but actually a number; parse it
-    final role =
-        GloablUtils.determineUserRole(user.user?.userLevel, user.user?.storeId);
+    final role = GloablUtils.determineUserRole(
+      user!.user!.userLevelId.toString(),
+      user.user?.storeId,
+    );
 
     // Example: show role in AppBar
     Widget body;
@@ -36,10 +33,7 @@ class StorePageCustom extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Store - ${role.name}'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text('Store - ${role.name}'), centerTitle: true),
       body: body,
     );
   }

@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:green_biller/core/app_management/app_status_model.dart';
 import 'package:green_biller/core/app_management/app_status_provider.dart';
-import 'package:green_biller/core/constants/app_config.dart';
+
 import 'package:green_biller/features/auth/login/model/user_model.dart';
 import 'package:green_biller/features/auth/login/view/login_page.dart';
 import 'package:green_biller/features/errors/views/maintenance_page.dart';
@@ -43,10 +43,8 @@ import 'package:green_biller/features/sales/view/pages/stock_transfer_item.dart'
 import 'package:green_biller/features/settings/view/pages/Activity%20Log/active_log_page.dart';
 import 'package:green_biller/features/settings/view/pages/account_settings_page.dart';
 import 'package:green_biller/features/settings/view/pages/business_setting/business_profile_page/business_profile_page.dart';
-import 'package:green_biller/features/settings/view/pages/business_setting/invoice_settings.dart';
-import 'package:green_biller/features/settings/view/pages/business_setting/invoice_settings_page.dart';
-import 'package:green_biller/features/settings/view/pages/settingspage.dart'
-    hide BusinessProfilePage, InvoiceSettingsPage;
+
+import 'package:green_biller/features/settings/view/pages/settingspage.dart';
 import 'package:green_biller/features/settings/view/pages/users_setting_page/users_settings.page.dart';
 import 'package:green_biller/features/store/view/parties_page/parties_page.dart';
 import 'package:green_biller/features/user/user_creation_page/user_creation_page.dart';
@@ -84,7 +82,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           appStatus.settings == null || appStatus == AppStatusModel.initial();
 
       // //  1. First check maintenance mode (highest priority)
-      final isInMaintenance = appStatus.shutdown == true ||
+      final isInMaintenance =
+          appStatus.shutdown == true ||
           appStatus.settings?.appMaintenanceMode == true;
 
       // if (isInMaintenance &&
@@ -105,7 +104,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // 4. Handle user invalidation
-      final shouldLogout = appStatus.userExists != true ||
+      final shouldLogout =
+          appStatus.userExists != true ||
           appStatus.isLoggedIn != true ||
           appStatus.userBlocked == true;
 
@@ -122,14 +122,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/homepage',
-        builder: (context, state) => const HomePage(),
-      ),
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const LoginPage(),
-      ),
+      GoRoute(path: '/homepage', builder: (context, state) => const HomePage()),
+      GoRoute(path: '/', builder: (context, state) => const LoginPage()),
       GoRoute(
         path: '/maintanance',
         builder: (context, state) => const MaintenancePage(),
@@ -138,14 +132,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/update-app',
         builder: (context, state) => const UpdateApp(),
       ),
-      GoRoute(
-        path: '/items',
-        builder: (context, state) => const ItemsPage(),
-      ),
-      GoRoute(
-        path: '/units',
-        builder: (context, state) => const UnitsPage(),
-      ),
+      GoRoute(path: '/items', builder: (context, state) => const ItemsPage()),
+      GoRoute(path: '/units', builder: (context, state) => const UnitsPage()),
       GoRoute(
         path: '/dashboard',
         builder: (context, state) => const DashboardPage(),
@@ -154,10 +142,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/packages',
         builder: (context, state) => const PackagesPage(),
       ),
-      GoRoute(
-        path: '/menu',
-        builder: (context, state) => const MenuPage(),
-      ),
+      GoRoute(path: '/menu', builder: (context, state) => const MenuPage()),
       GoRoute(
         path: '/user-creation',
         builder: (context, state) => const UserCreationPage(),

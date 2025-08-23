@@ -178,42 +178,48 @@ class HomePage extends HookConsumerWidget {
                               ),
                             ),
                             _buildNavDropdown(
-                                title: 'Items',
-                                icon: Icons.inventory_2_outlined,
-                                selectedIcon: Icons.inventory_2,
-                                selectedIndex: selectedIndex.value,
-                                subItems: [
-                                  _buildNavSubItem(
-                                      title: 'Add Items',
-                                      icon: Icons.add,
-                                      index: 25,
-                                      selectedIndex: selectedIndex.value,
-                                      onTap: () => selectedIndex.value = 25),
-                                  _buildNavSubItem(
-                                      title: 'All Items',
-                                      icon: Icons.all_inclusive,
-                                      index: 26,
-                                      selectedIndex: selectedIndex.value,
-                                      onTap: () => selectedIndex.value = 26),
-                                  _buildNavSubItem(
-                                      title: 'Categories',
-                                      icon: Icons.category_outlined,
-                                      index: 22,
-                                      selectedIndex: selectedIndex.value,
-                                      onTap: () => selectedIndex.value = 27),
-                                  _buildNavSubItem(
-                                      title: 'Brands',
-                                      icon: Icons.branding_watermark,
-                                      index: 28,
-                                      selectedIndex: selectedIndex.value,
-                                      onTap: () => selectedIndex.value = 28),
-                                  _buildNavSubItem(
-                                      title: 'Units',
-                                      icon: Icons.scale_outlined,
-                                      index: 29,
-                                      selectedIndex: selectedIndex.value,
-                                      onTap: () => selectedIndex.value = 29),
-                                ]),
+                              title: 'Items',
+                              icon: Icons.inventory_2_outlined,
+                              selectedIcon: Icons.inventory_2,
+                              selectedIndex: selectedIndex.value,
+                              subItems: [
+                                _buildNavSubItem(
+                                  title: 'Add Items',
+                                  icon: Icons.add,
+                                  index: 25,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 25,
+                                ),
+                                _buildNavSubItem(
+                                  title: 'All Items',
+                                  icon: Icons.all_inclusive,
+                                  index: 26,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 26,
+                                ),
+                                _buildNavSubItem(
+                                  title: 'Categories',
+                                  icon: Icons.category_outlined,
+                                  index: 22,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 27,
+                                ),
+                                _buildNavSubItem(
+                                  title: 'Brands',
+                                  icon: Icons.branding_watermark,
+                                  index: 28,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 28,
+                                ),
+                                _buildNavSubItem(
+                                  title: 'Units',
+                                  icon: Icons.scale_outlined,
+                                  index: 29,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 29,
+                                ),
+                              ],
+                            ),
                             _buildNavDropdown(
                               title: 'Sales Details',
                               icon: Icons.sell_outlined,
@@ -387,48 +393,55 @@ class HomePage extends HookConsumerWidget {
                               ],
                             ),
                             _buildNavDropdown(
-                                title: 'Settings',
-                                icon: Icons.settings,
-                                selectedIcon: Icons.settings,
-                                selectedIndex: selectedIndex.value,
-                                subItems: [
-                                  _buildNavSubItem(
-                                      title: 'Business Settings',
-                                      icon: Icons.business,
-                                      index: 30,
-                                      selectedIndex: selectedIndex.value,
-                                      onTap: () => selectedIndex.value = 30),
-                                  _buildNavSubItem(
-                                      title: 'Accounts Settings',
-                                      icon: Icons.account_box_sharp,
-                                      index: 31,
-                                      selectedIndex: selectedIndex.value,
-                                      onTap: () => selectedIndex.value = 31),
-                                  _buildNavSubItem(
-                                      title: 'Sales Settings',
-                                      icon: Icons.sell,
-                                      index: 32,
-                                      selectedIndex: selectedIndex.value,
-                                      onTap: () => selectedIndex.value = 32),
-                                  _buildNavSubItem(
-                                      title: 'Invoice Settings',
-                                      icon: Icons.file_open,
-                                      index: 33,
-                                      selectedIndex: selectedIndex.value,
-                                      onTap: () => selectedIndex.value = 33),
-                                  _buildNavSubItem(
-                                      title: 'Users Settings',
-                                      icon: Icons.person_2,
-                                      index: 34,
-                                      selectedIndex: selectedIndex.value,
-                                      onTap: () => selectedIndex.value = 34),
-                                  _buildNavSubItem(
-                                      title: 'Activity Log',
-                                      icon: Icons.local_activity,
-                                      index: 35,
-                                      selectedIndex: selectedIndex.value,
-                                      onTap: () => selectedIndex.value = 35),
-                                ]),
+                              title: 'Settings',
+                              icon: Icons.settings,
+                              selectedIcon: Icons.settings,
+                              selectedIndex: selectedIndex.value,
+                              subItems: [
+                                _buildNavSubItem(
+                                  title: 'Business Settings',
+                                  icon: Icons.business,
+                                  index: 30,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 30,
+                                ),
+                                _buildNavSubItem(
+                                  title: 'Accounts Settings',
+                                  icon: Icons.account_box_sharp,
+                                  index: 31,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 31,
+                                ),
+                                _buildNavSubItem(
+                                  title: 'Sales Settings',
+                                  icon: Icons.sell,
+                                  index: 32,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 32,
+                                ),
+                                _buildNavSubItem(
+                                  title: 'Invoice Settings',
+                                  icon: Icons.file_open,
+                                  index: 33,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 33,
+                                ),
+                                _buildNavSubItem(
+                                  title: 'Users Settings',
+                                  icon: Icons.person_2,
+                                  index: 34,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 34,
+                                ),
+                                _buildNavSubItem(
+                                  title: 'Activity Log',
+                                  icon: Icons.local_activity,
+                                  index: 35,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 35,
+                                ),
+                              ],
+                            ),
 
                             // _buildNavItem(
                             //   title: 'Logout',
@@ -550,9 +563,7 @@ class HomePage extends HookConsumerWidget {
                               ),
                             ),
                             TextButton.icon(
-                              icon: const Icon(
-                                Icons.logout_sharp,
-                              ),
+                              icon: const Icon(Icons.logout_sharp),
                               label: const Text("Logout"),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.red,
@@ -564,13 +575,17 @@ class HomePage extends HookConsumerWidget {
                                       await SharedPreferences.getInstance();
                                   await prefs.clear();
                                   ref.read(userProvider.notifier).state = null;
-                                  GoRouterNavigationService.goWithDelay('/',
-                                      replace: true);
+                                  GoRouterNavigationService.goWithDelay(
+                                    '/',
+                                    replace: true,
+                                  );
                                   SnackBarService.showSuccess(
-                                      'Successfully logged out');
+                                    'Successfully logged out',
+                                  );
                                 } catch (e) {
                                   SnackBarService.showError(
-                                      'Logout failed: $e');
+                                    'Logout failed: $e',
+                                  );
                                 }
                               },
                             ),
@@ -667,9 +682,7 @@ class HomePage extends HookConsumerWidget {
                           const BusinessProfilePage(), //30
                           const AccountSettingsPage(), //31
                           const SalesSettingsPage(), //32
-                          InvoiceSettingsPage(
-                            accessToken: accessToken!,
-                          ), //33
+                          InvoiceSettingsPage(accessToken: accessToken), //33
                           const UserSettingsPage(), //34
                           const ActiveLogPage(), //35
                         ],

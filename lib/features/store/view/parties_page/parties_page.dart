@@ -17,8 +17,10 @@ class PartiesPage extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final role =
-        GloablUtils.determineUserRole(user.user?.userLevel, user.user?.storeId);
+    final role = GloablUtils.determineUserRole(
+      user.user!.userLevelId.toString(),
+      user.user?.storeId,
+    );
 
     return _buildBody(role);
   }
@@ -27,8 +29,9 @@ class PartiesPage extends ConsumerWidget {
     if (_isAdminFlow(role)) return const AdminPartiesPage();
     // if (_isUserFlow(role)) return const UserStorePage();
     return Scaffold(
-        appBar: AppBar(title: Text('Parties - ${role.name}')),
-        body: const Center(child: Text('Access Denied')));
+      appBar: AppBar(title: Text('Parties - ${role.name}')),
+      body: const Center(child: Text('Access Denied')),
+    );
   }
 
   bool _isAdminFlow(UserRoleModel role) {

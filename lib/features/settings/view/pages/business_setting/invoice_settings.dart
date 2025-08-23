@@ -9,8 +9,8 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 class InvoiceSettingsPage extends StatefulWidget {
-  final String accessToken;
-  const InvoiceSettingsPage({super.key, required this.accessToken});
+  final String? accessToken;
+  const InvoiceSettingsPage({super.key, this.accessToken});
 
   @override
   State<InvoiceSettingsPage> createState() => _InvoiceSettingsPageState();
@@ -26,23 +26,29 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
   bool _sendCopy = false;
   String _selectedTemplate = "Template A";
   bool isLoadingStores = false;
-  final _businessNameController =
-      TextEditingController(text: "GreenBiller Solutions");
+  final _businessNameController = TextEditingController(
+    text: "GreenBiller Solutions",
+  );
   final _businessAddressController = TextEditingController(
-      text: "123 Business Street, Suite 100\nCity, State 12345");
-  final _businessEmailController =
-      TextEditingController(text: "info@greenbiller.com");
-  final _businessPhoneController =
-      TextEditingController(text: "+1 (555) 123-4567");
+    text: "123 Business Street, Suite 100\nCity, State 12345",
+  );
+  final _businessEmailController = TextEditingController(
+    text: "info@greenbiller.com",
+  );
+  final _businessPhoneController = TextEditingController(
+    text: "+1 (555) 123-4567",
+  );
   final _taxIdController = TextEditingController(text: "GST123456789");
   final _invoicePrefixController = TextEditingController(text: "INV-");
   final _startingNumberController = TextEditingController(text: "1001");
   final _taxRateController = TextEditingController(text: "18");
   final _paymentDetailsController = TextEditingController(
-      text:
-          "Bank Transfer\nAccount: 1234567890\nIFSC: ABCD0123456\nUPI: business@paytm");
-  final _invoiceNotesController =
-      TextEditingController(text: "Thank you for your business!");
+    text:
+        "Bank Transfer\nAccount: 1234567890\nIFSC: ABCD0123456\nUPI: business@paytm",
+  );
+  final _invoiceNotesController = TextEditingController(
+    text: "Thank you for your business!",
+  );
   String? selectStoreId = '';
   bool _isLoading = false;
   bool _isshowSettings = false;
@@ -53,7 +59,7 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
   @override
   void initState() {
     super.initState();
-    _service = InvoiceSettingsService(widget.accessToken);
+    _service = InvoiceSettingsService(widget.accessToken!);
     _fetchStore();
   }
 
@@ -77,9 +83,10 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
       isLoadingStores = true;
     });
     try {
-      final map =
-          await ViewStoreController(accessToken: widget.accessToken, storeId: 0)
-              .getStoreList();
+      final map = await ViewStoreController(
+        accessToken: widget.accessToken!,
+        storeId: 0,
+      ).getStoreList();
       setState(() {
         _storeMap = map;
         isLoadingStores = false;
@@ -109,7 +116,8 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
       setState(() {
         _businessNameController.text =
             data['business_name'] ?? "GreenBiller Solutions";
-        _businessAddressController.text = data['business_address'] ??
+        _businessAddressController.text =
+            data['business_address'] ??
             "123 Business Street, Suite 100\nCity, State 12345";
         _businessEmailController.text =
             data['business_email'] ?? "info@greenbiller.com";
@@ -119,7 +127,8 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
         _invoicePrefixController.text = data['invoice_prefix'] ?? "INV-";
         _startingNumberController.text = data['starting_number'] ?? "1001";
         _taxRateController.text = data['tax_rate'] ?? "18";
-        _paymentDetailsController.text = data['payment_details'] ??
+        _paymentDetailsController.text =
+            data['payment_details'] ??
             "Bank Transfer\nAccount: 1234567890\nIFSC: ABCD0123456\nUPI: business@paytm";
         _invoiceNotesController.text =
             data['invoice_notes'] ?? "Thank you for your business!";
@@ -181,8 +190,10 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
       });
 
       try {
-        final response =
-            await _service.saveInvoiceSettings(data, selectStoreId!);
+        final response = await _service.saveInvoiceSettings(
+          data,
+          selectStoreId!,
+        );
         setState(() {
           _isLoading = false;
         });
@@ -207,10 +218,7 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_errorMessage!),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(_errorMessage!), backgroundColor: Colors.red),
         );
       }
     }
@@ -244,18 +252,16 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
       body: isLoadingStores
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null && selectStoreId == null
-              ? Center(child: Text(_errorMessage!))
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: _buildDesktopLayout(),
-                ),
+          ? Center(child: Text(_errorMessage!))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: _buildDesktopLayout(),
+            ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16.0),
         decoration: const BoxDecoration(
           color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Color(0xFFE5E7EB)),
-          ),
+          border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
         ),
         child: Row(
           children: [
@@ -267,8 +273,10 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: accentColor,
                   foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -284,8 +292,10 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade600,
                   foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -302,9 +312,7 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
     return Column(
       children: [
         _buildStoreDropdown(),
-        const SizedBox(
-          height: 20,
-        ),
+        const SizedBox(height: 20),
         if (_isshowSettings)
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,10 +333,7 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                 ),
               ),
               const SizedBox(width: 24),
-              Expanded(
-                flex: 1,
-                child: _buildPreviewCard(),
-              ),
+              Expanded(flex: 1, child: _buildPreviewCard()),
             ],
           ),
       ],
@@ -361,11 +366,7 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
           children: [
             Row(
               children: [
-                Icon(
-                  icon,
-                  size: 20,
-                  color: accentColor,
-                ),
+                Icon(icon, size: 20, color: accentColor),
                 const SizedBox(width: 8),
                 Text(
                   title,
@@ -425,8 +426,10 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: accentColor, width: 2),
             ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
           ),
         ),
       ],
@@ -471,11 +474,7 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
               ],
             ),
           ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: accentColor,
-          ),
+          Switch(value: value, onChanged: onChanged, activeColor: accentColor),
         ],
       ),
     );
@@ -490,10 +489,7 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
       ),
       child: DropdownButtonFormField<String>(
         items: _storeMap.keys.map((String store) {
-          return DropdownMenuItem<String>(
-            value: store,
-            child: Text(store),
-          );
+          return DropdownMenuItem<String>(value: store, child: Text(store));
         }).toList(),
         onChanged: (value) {
           setState(() {
@@ -504,9 +500,9 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
         decoration: InputDecoration(
           hintText: "Select Store",
           prefixIcon: Icon(Icons.store, color: Colors.green.shade600),
-          border: InputBorder.none, 
-          enabledBorder: InputBorder.none, 
-          focusedBorder: InputBorder.none, 
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
         ),
       ),
     );
@@ -571,8 +567,9 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                     if (value == null || value.trim().isEmpty) {
                       return 'Email is required';
                     }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                        .hasMatch(value)) {
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(value)) {
                       return 'Enter a valid email';
                     }
                     return null;
@@ -854,7 +851,9 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                         Text(
                           "Your Logo Here",
                           style: TextStyle(
-                              color: accentColor, fontWeight: FontWeight.w500),
+                            color: accentColor,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
@@ -890,8 +889,10 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
               if (_taxIdController.text.isNotEmpty) ...[
                 Text(
                   "Tax ID: ${_taxIdController.text}",
-                  style:
-                      const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                  ),
                 ),
               ],
               const Divider(height: 30),
@@ -913,36 +914,60 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                 child: const Row(
                   children: [
                     Expanded(
-                        child: Text("Description",
-                            style: TextStyle(fontWeight: FontWeight.bold))),
+                      child: Text(
+                        "Description",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
                     Expanded(
-                        child: Text("Qty",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontWeight: FontWeight.bold))),
+                      child: Text(
+                        "Qty",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
                     Expanded(
-                        child: Text("Price",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontWeight: FontWeight.bold))),
+                      child: Text(
+                        "Price",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
                     Expanded(
-                        child: Text("Total",
-                            textAlign: TextAlign.right,
-                            style: TextStyle(fontWeight: FontWeight.bold))),
+                      child: Text(
+                        "Total",
+                        textAlign: TextAlign.right,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 8),
               _buildInvoiceItem(
-                  "Sample Product A", "2", "₹500.00", "₹1,000.00"),
+                "Sample Product A",
+                "2",
+                "₹500.00",
+                "₹1,000.00",
+              ),
               _buildInvoiceItem(
-                  "Sample Service B", "1", "₹1,500.00", "₹1,500.00"),
+                "Sample Service B",
+                "1",
+                "₹1,500.00",
+                "₹1,500.00",
+              ),
               const Divider(height: 20),
               const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Subtotal:",
-                      style: TextStyle(fontWeight: FontWeight.w500)),
-                  Text("₹2,500.00",
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    "Subtotal:",
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  Text(
+                    "₹2,500.00",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
               if (_enableTax) ...[
@@ -970,33 +995,44 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("Total:",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    const Text(
+                      "Total:",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                     Text(
                       "₹${_calculateTotal().toStringAsFixed(2)}",
                       style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: accentColor),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: accentColor,
+                      ),
                     ),
                   ],
                 ),
               ),
               if (_includeNotes && _invoiceNotesController.text.isNotEmpty) ...[
                 const SizedBox(height: 20),
-                const Text("Notes:",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  "Notes:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   _invoiceNotesController.text,
-                  style:
-                      const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                  ),
                 ),
               ],
               const SizedBox(height: 20),
-              const Text("Payment Information:",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                "Payment Information:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Text(
                 _paymentDetailsController.text.isEmpty
@@ -1012,25 +1048,37 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
   }
 
   Widget _buildInvoiceItem(
-      String desc, String qty, String price, String total) {
+    String desc,
+    String qty,
+    String price,
+    String total,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Expanded(child: Text(desc, style: const TextStyle(fontSize: 12))),
           Expanded(
-              child: Text(qty,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12))),
+            child: Text(
+              qty,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
           Expanded(
-              child: Text(price,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12))),
+            child: Text(
+              price,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
           Expanded(
-              child: Text(total,
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w500))),
+            child: Text(
+              total,
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+          ),
         ],
       ),
     );
@@ -1066,8 +1114,9 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                     style: pw.TextStyle(
                       fontSize: 24,
                       fontWeight: pw.FontWeight.bold,
-                      color:
-                          PdfColor.fromHex(accentColor.value.toRadixString(16)),
+                      color: PdfColor.fromHex(
+                        accentColor.value.toRadixString(16),
+                      ),
                       font: ttf,
                     ),
                   ),
@@ -1087,11 +1136,14 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                   height: 50,
                   width: double.infinity,
                   decoration: pw.BoxDecoration(
-                    color:
-                        PdfColor.fromHex(accentColor.value.toRadixString(16)),
+                    color: PdfColor.fromHex(
+                      accentColor.value.toRadixString(16),
+                    ),
                     border: pw.Border.all(
-                        color: PdfColor.fromHex(
-                            accentColor.value.toRadixString(16))),
+                      color: PdfColor.fromHex(
+                        accentColor.value.toRadixString(16),
+                      ),
+                    ),
                     borderRadius: pw.BorderRadius.circular(8),
                   ),
                   child: pw.Center(
@@ -1099,7 +1151,8 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                       "Your Logo Here",
                       style: pw.TextStyle(
                         color: PdfColor.fromHex(
-                            accentColor.value.toRadixString(16)),
+                          accentColor.value.toRadixString(16),
+                        ),
                         fontWeight: pw.FontWeight.bold,
                         font: ttf,
                       ),
@@ -1124,24 +1177,36 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                     ? "Your Business Address"
                     : _businessAddressController.text,
                 style: pw.TextStyle(
-                    fontSize: 12, color: PdfColors.grey, font: ttf),
+                  fontSize: 12,
+                  color: PdfColors.grey,
+                  font: ttf,
+                ),
               ),
               pw.SizedBox(height: 8),
               pw.Text(
                 "Email: ${_businessEmailController.text.isEmpty ? "your@email.com" : _businessEmailController.text}",
                 style: pw.TextStyle(
-                    fontSize: 12, color: PdfColors.grey, font: ttf),
+                  fontSize: 12,
+                  color: PdfColors.grey,
+                  font: ttf,
+                ),
               ),
               pw.Text(
                 "Phone: ${_businessPhoneController.text.isEmpty ? "+1 (555) 123-4567" : _businessPhoneController.text}",
                 style: pw.TextStyle(
-                    fontSize: 12, color: PdfColors.grey, font: ttf),
+                  fontSize: 12,
+                  color: PdfColors.grey,
+                  font: ttf,
+                ),
               ),
               if (_taxIdController.text.isNotEmpty) ...[
                 pw.Text(
                   "Tax ID: ${_taxIdController.text}",
                   style: pw.TextStyle(
-                      fontSize: 12, color: PdfColors.grey, font: ttf),
+                    fontSize: 12,
+                    color: PdfColors.grey,
+                    font: ttf,
+                  ),
                 ),
               ],
               pw.Divider(height: 30),
@@ -1152,7 +1217,10 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
               pw.Text(
                 "Sample Customer\n123 Customer Street\nCity, State 12345",
                 style: pw.TextStyle(
-                    fontSize: 14, color: PdfColors.grey, font: ttf),
+                  fontSize: 14,
+                  color: PdfColors.grey,
+                  font: ttf,
+                ),
               ),
               pw.SizedBox(height: 20),
               pw.Container(
@@ -1164,42 +1232,80 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                 child: pw.Row(
                   children: [
                     pw.Expanded(
-                        child: pw.Text("Description",
-                            style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold, font: ttf))),
+                      child: pw.Text(
+                        "Description",
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          font: ttf,
+                        ),
+                      ),
+                    ),
                     pw.Expanded(
-                        child: pw.Text("Qty",
-                            textAlign: pw.TextAlign.center,
-                            style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold, font: ttf))),
+                      child: pw.Text(
+                        "Qty",
+                        textAlign: pw.TextAlign.center,
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          font: ttf,
+                        ),
+                      ),
+                    ),
                     pw.Expanded(
-                        child: pw.Text("Price",
-                            textAlign: pw.TextAlign.center,
-                            style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold, font: ttf))),
+                      child: pw.Text(
+                        "Price",
+                        textAlign: pw.TextAlign.center,
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          font: ttf,
+                        ),
+                      ),
+                    ),
                     pw.Expanded(
-                        child: pw.Text("Total",
-                            textAlign: pw.TextAlign.right,
-                            style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold, font: ttf))),
+                      child: pw.Text(
+                        "Total",
+                        textAlign: pw.TextAlign.right,
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          font: ttf,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
               pw.SizedBox(height: 8),
               _buildPdfInvoiceItem(
-                  "Sample Product A", "2", "₹500.00", "₹1,000.00", ttf),
+                "Sample Product A",
+                "2",
+                "₹500.00",
+                "₹1,000.00",
+                ttf,
+              ),
               _buildPdfInvoiceItem(
-                  "Sample Service B", "1", "₹1,500.00", "₹1,500.00", ttf),
+                "Sample Service B",
+                "1",
+                "₹1,500.00",
+                "₹1,500.00",
+                ttf,
+              ),
               pw.Divider(height: 20),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text("Subtotal:",
-                      style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.normal, font: ttf)),
-                  pw.Text("₹2,500.00",
-                      style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold, font: ttf)),
+                  pw.Text(
+                    "Subtotal:",
+                    style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.normal,
+                      font: ttf,
+                    ),
+                  ),
+                  pw.Text(
+                    "₹2,500.00",
+                    style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold,
+                      font: ttf,
+                    ),
+                  ),
                 ],
               ),
               if (_enableTax) ...[
@@ -1210,12 +1316,16 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                     pw.Text(
                       "Tax (${_taxRateController.text.isEmpty ? "0" : _taxRateController.text}%):",
                       style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.normal, font: ttf),
+                        fontWeight: pw.FontWeight.normal,
+                        font: ttf,
+                      ),
                     ),
                     pw.Text(
                       "₹${_calculateTax().toStringAsFixed(2)}",
                       style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold, font: ttf),
+                        fontWeight: pw.FontWeight.bold,
+                        font: ttf,
+                      ),
                     ),
                   ],
                 ),
@@ -1229,46 +1339,62 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                 child: pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text("Total:",
-                        style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold,
-                            fontSize: 16,
-                            font: ttf)),
+                    pw.Text(
+                      "Total:",
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 16,
+                        font: ttf,
+                      ),
+                    ),
                     pw.Text(
                       "₹${_calculateTotal().toStringAsFixed(2)}",
                       style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 16,
-                          color: PdfColor.fromHex(
-                              accentColor.value.toRadixString(16)),
-                          font: ttf),
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 16,
+                        color: PdfColor.fromHex(
+                          accentColor.value.toRadixString(16),
+                        ),
+                        font: ttf,
+                      ),
                     ),
                   ],
                 ),
               ),
               if (_includeNotes && _invoiceNotesController.text.isNotEmpty) ...[
                 pw.SizedBox(height: 20),
-                pw.Text("Notes:",
-                    style: pw.TextStyle(
-                        fontWeight: pw.FontWeight.bold, font: ttf)),
+                pw.Text(
+                  "Notes:",
+                  style: pw.TextStyle(
+                    fontWeight: pw.FontWeight.bold,
+                    font: ttf,
+                  ),
+                ),
                 pw.SizedBox(height: 8),
                 pw.Text(
                   _invoiceNotesController.text,
                   style: pw.TextStyle(
-                      fontSize: 12, color: PdfColors.grey, font: ttf),
+                    fontSize: 12,
+                    color: PdfColors.grey,
+                    font: ttf,
+                  ),
                 ),
               ],
               pw.SizedBox(height: 20),
-              pw.Text("Payment Information:",
-                  style:
-                      pw.TextStyle(fontWeight: pw.FontWeight.bold, font: ttf)),
+              pw.Text(
+                "Payment Information:",
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: ttf),
+              ),
               pw.SizedBox(height: 8),
               pw.Text(
                 _paymentDetailsController.text.isEmpty
                     ? "Payment details will appear here"
                     : _paymentDetailsController.text,
                 style: pw.TextStyle(
-                    fontSize: 12, color: PdfColors.grey, font: ttf),
+                  fontSize: 12,
+                  color: PdfColors.grey,
+                  font: ttf,
+                ),
               ),
             ],
           );
@@ -1282,29 +1408,44 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
   }
 
   pw.Widget _buildPdfInvoiceItem(
-      String desc, String qty, String price, String total, pw.Font font) {
+    String desc,
+    String qty,
+    String price,
+    String total,
+    pw.Font font,
+  ) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 4),
       child: pw.Row(
         children: [
           pw.Expanded(
-              child:
-                  pw.Text(desc, style: pw.TextStyle(fontSize: 12, font: font))),
+            child: pw.Text(desc, style: pw.TextStyle(fontSize: 12, font: font)),
+          ),
           pw.Expanded(
-              child: pw.Text(qty,
-                  textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: 12, font: font))),
+            child: pw.Text(
+              qty,
+              textAlign: pw.TextAlign.center,
+              style: pw.TextStyle(fontSize: 12, font: font),
+            ),
+          ),
           pw.Expanded(
-              child: pw.Text(price,
-                  textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: 12, font: font))),
+            child: pw.Text(
+              price,
+              textAlign: pw.TextAlign.center,
+              style: pw.TextStyle(fontSize: 12, font: font),
+            ),
+          ),
           pw.Expanded(
-              child: pw.Text(total,
-                  textAlign: pw.TextAlign.right,
-                  style: pw.TextStyle(
-                      fontSize: 12,
-                      fontWeight: pw.FontWeight.bold,
-                      font: font))),
+            child: pw.Text(
+              total,
+              textAlign: pw.TextAlign.right,
+              style: pw.TextStyle(
+                fontSize: 12,
+                fontWeight: pw.FontWeight.bold,
+                font: font,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1344,8 +1485,9 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color:
-              isSelected ? accentColor.withOpacity(0.1) : Colors.grey.shade50,
+          color: isSelected
+              ? accentColor.withOpacity(0.1)
+              : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? accentColor : Colors.grey.shade300,
@@ -1391,8 +1533,10 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                   children: [
                     const Text(
                       'Invoice Preview',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Row(
                       children: [
@@ -1419,9 +1563,7 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                 ),
                 const Divider(),
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: _buildPreviewCard(),
-                  ),
+                  child: SingleChildScrollView(child: _buildPreviewCard()),
                 ),
               ],
             ),

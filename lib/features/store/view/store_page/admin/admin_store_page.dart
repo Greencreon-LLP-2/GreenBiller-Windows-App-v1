@@ -40,14 +40,7 @@ class AdminStorePage extends HookConsumerWidget {
       return () => tabController.removeListener(listener);
     }, [tabController]);
 
-    // Additional protection in case this page is accessed directly
-    if (user == null || user.user?.userLevel == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please login to access this page')),
-      );
-    }
-
-    final role = UserRoleModel.fromLevel(user.user?.userLevel);
+    final role = UserRoleModel.fromLevel(user!.user!.userLevel);
 
     return Scaffold(
       appBar: AppBar(
@@ -75,10 +68,7 @@ class AdminStorePage extends HookConsumerWidget {
       ),
       body: TabBarView(
         controller: tabController,
-        children: const [
-          AdminStoresTab(),
-          AdminWarehousesTab(),
-        ],
+        children: const [AdminStoresTab(), AdminWarehousesTab()],
       ),
       floatingActionButton: _buildFloatingActionButton(
         currentTabIndex.value,
@@ -121,15 +111,9 @@ class AdminStorePage extends HookConsumerWidget {
             ),
           );
         } else {
-          _showAddWarehouseDialog(
-            context,
-            accessToken,
-            userId,
-            () {
-              ref.refresh(warehouseListProvider);
-            },
-            ref,
-          );
+          _showAddWarehouseDialog(context, accessToken, userId, () {
+            ref.refresh(warehouseListProvider);
+          }, ref);
         }
       },
       backgroundColor: accentColor,

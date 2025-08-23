@@ -1,4 +1,3 @@
-
 import 'package:hooks_riverpod/legacy.dart';
 
 class UserModel {
@@ -118,6 +117,7 @@ class UserLevel {
     );
   }
 }
+
 class User {
   final int? id;
   final int? userLevelId; // ✅ store role id
@@ -186,76 +186,77 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-        id: json['id'] as int?,
-        userLevelId: json['users_level']?['id'] as int?, // ✅ extract id
-        userLevel: json['users_level']?['name'] as String?, // ✅ extract name
-        storeId: json['store_id'] as String?,
-        name: json['name'] as String?,
-        email: json['email'] as String?,
-        countryCode: json['country_code'] as String?,
-        mobile: json['mobile'] as String?,
-        whatsappNo: json['whatsapp_no'],
-        userCard: json['user_card'],
-        profileImage: json['profile_image'],
-        dob: json['dob'],
-        countId: json['count_id'],
-        employeeCode: json['employee_code'],
-        warehouseId: json['warehouse_id'],
-        currentLatitude: json['current_latitude'],
-        currentLongitude: json['current_longitude'],
-        zone: json['zone'],
-        otp: json['otp'],
-        mobileVerify: json['mobile_verify'],
-        emailVerify: json['email_verify'],
-        status: json['status'],
-        ban: json['ban'],
-        createdBy: json['created_by'],
-        subcriptionId: json['subcription_id'],
-        subscriptionStart: json['subcription_start'],
-        subscriptionEnd: json['subcription_end'],
-        referralCode: json['referralCode'],
-        licenseKey: json['license_key'],
-        createdAt: json['created_at'] != null
-            ? DateTime.parse(json['created_at'])
-            : null,
-        updatedAt: json['updated_at'] != null
-            ? DateTime.parse(json['updated_at'])
-            : null,
-      );
+    id: json['id'] as int?,
+    userLevelId: (json['users_level']?['id'] as int?) ?? 4,
+    userLevel: (json['users_level']?['name'] as String?) ?? 'Store Admin',
+
+    storeId: json['store_id'] as String?,
+    name: json['name'] as String?,
+    email: json['email'] as String?,
+    countryCode: json['country_code'] as String?,
+    mobile: json['mobile'] as String?,
+    whatsappNo: json['whatsapp_no'],
+    userCard: json['user_card'],
+    profileImage: json['profile_image'],
+    dob: json['dob'],
+    countId: json['count_id'],
+    employeeCode: json['employee_code'],
+    warehouseId: json['warehouse_id'],
+    currentLatitude: json['current_latitude'],
+    currentLongitude: json['current_longitude'],
+    zone: json['zone'],
+    otp: json['otp'],
+    mobileVerify: json['mobile_verify'],
+    emailVerify: json['email_verify'],
+    status: json['status'],
+    ban: json['ban'],
+    createdBy: json['created_by'],
+    subcriptionId: json['subcription_id'],
+    subscriptionStart: json['subcription_start'],
+    subscriptionEnd: json['subcription_end'],
+    referralCode: json['referralCode'],
+    licenseKey: json['license_key'],
+    createdAt: json['created_at'] != null
+        ? DateTime.parse(json['created_at'])
+        : null,
+    updatedAt: json['updated_at'] != null
+        ? DateTime.parse(json['updated_at'])
+        : null,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'user_level_id': userLevelId, // ✅ serialize id
-        'user_level': userLevel, // ✅ serialize name
-        'store_id': storeId,
-        'name': name,
-        'email': email,
-        'country_code': countryCode,
-        'mobile': mobile,
-        'whatsapp_no': whatsappNo,
-        'user_card': userCard,
-        'profile_image': profileImage,
-        'dob': dob,
-        'count_id': countId,
-        'employee_code': employeeCode,
-        'warehouse_id': warehouseId,
-        'current_latitude': currentLatitude,
-        'current_longitude': currentLongitude,
-        'zone': zone,
-        'otp': otp,
-        'mobile_verify': mobileVerify,
-        'email_verify': emailVerify,
-        'status': status,
-        'ban': ban,
-        'created_by': createdBy,
-        'subcription_id': subcriptionId,
-        'subcription_start': subscriptionStart,
-        'subcription_end': subscriptionEnd,
-        'referralCode': referralCode,
-        'license_key': licenseKey,
-        'created_at': createdAt?.toIso8601String(),
-        'updated_at': updatedAt?.toIso8601String(),
-      };
+    'id': id,
+    'user_level_id': userLevelId, // ✅ serialize id
+    'user_level': userLevel, // ✅ serialize name
+    'store_id': storeId,
+    'name': name,
+    'email': email,
+    'country_code': countryCode,
+    'mobile': mobile,
+    'whatsapp_no': whatsappNo,
+    'user_card': userCard,
+    'profile_image': profileImage,
+    'dob': dob,
+    'count_id': countId,
+    'employee_code': employeeCode,
+    'warehouse_id': warehouseId,
+    'current_latitude': currentLatitude,
+    'current_longitude': currentLongitude,
+    'zone': zone,
+    'otp': otp,
+    'mobile_verify': mobileVerify,
+    'email_verify': emailVerify,
+    'status': status,
+    'ban': ban,
+    'created_by': createdBy,
+    'subcription_id': subcriptionId,
+    'subcription_start': subscriptionStart,
+    'subcription_end': subscriptionEnd,
+    'referralCode': referralCode,
+    'license_key': licenseKey,
+    'created_at': createdAt?.toIso8601String(),
+    'updated_at': updatedAt?.toIso8601String(),
+  };
 
   User copyWith({
     int? id,
@@ -325,7 +326,6 @@ class User {
     );
   }
 }
-
 
 // ✅ Riverpod Provider stays the same
 final userProvider = StateProvider<UserModel?>((ref) => null);
