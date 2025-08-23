@@ -60,7 +60,8 @@ class CategoriesPage extends HookConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: accentColor,
+        foregroundColor: Colors.white,
         elevation: 0,
         title: Row(
           children: [
@@ -82,7 +83,7 @@ class CategoriesPage extends HookConsumerWidget {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 20,
-                color: textPrimaryColor,
+                color: Colors.white,
               ),
             ),
           ],

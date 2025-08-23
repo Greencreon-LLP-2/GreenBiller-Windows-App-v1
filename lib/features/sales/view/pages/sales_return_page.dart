@@ -359,10 +359,10 @@ class SalesReturnPage extends HookConsumerWidget {
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: false,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
+            // leading: IconButton(
+            //   icon: const Icon(Icons.arrow_back, color: Colors.white),
+            //   onPressed: () => Navigator.pop(context),
+            // ),
             title: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

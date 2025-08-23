@@ -70,6 +70,25 @@ class SettingsPage extends ConsumerWidget {
                   padding: const EdgeInsets.all(24),
                   child: Row(
                     children: [
+                      // Back Button
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: accentColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            color: accentColor,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // Settings Icon
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
@@ -83,6 +102,8 @@ class SettingsPage extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
+
+                      // Title
                       const Text(
                         "Settings",
                         style: TextStyle(
@@ -109,10 +130,10 @@ class SettingsPage extends ConsumerWidget {
                       _buildSectionHeader("USER MANAGEMENT"),
                       _buildNavItem(ref, 4, "Users", Icons.people_outline),
                       _buildNavItem(ref, 5, "Activity Log", Icons.history),
-                      _buildSectionHeader("APP SETTINGS"),
-                      _buildNavItem(ref, 6, "Language", Icons.language),
-                      _buildNavItem(ref, 7, "Theme", Icons.palette_outlined),
-                      _buildNavItem(ref, 8, "About", Icons.info_outline),
+                      // _buildSectionHeader("APP SETTINGS"),
+                      // _buildNavItem(ref, 6, "Language", Icons.language),
+                      // _buildNavItem(ref, 7, "Theme", Icons.palette_outlined),
+                      // _buildNavItem(ref, 8, "About", Icons.info_outline),
                     ],
                   ),
                 ),

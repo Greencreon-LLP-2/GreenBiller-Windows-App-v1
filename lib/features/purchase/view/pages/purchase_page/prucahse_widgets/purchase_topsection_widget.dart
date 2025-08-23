@@ -271,6 +271,7 @@ class PurchasePageTopSectionwidget extends HookConsumerWidget {
         decoration: InputDecoration(
           hintText: "Select Store",
           prefixIcon: Icon(Icons.store, color: Colors.green.shade600),
+          border: InputBorder.none,
         ),
       ),
     );
@@ -294,6 +295,7 @@ class PurchasePageTopSectionwidget extends HookConsumerWidget {
         decoration: InputDecoration(
           hintText: "Select Warehouse",
           prefixIcon: Icon(Icons.warehouse, color: Colors.green.shade600),
+          border: InputBorder.none,
         ),
       ),
     );
@@ -315,10 +317,10 @@ class PurchasePageTopSectionwidget extends HookConsumerWidget {
         }).toList(),
         onChanged: onSupplierSelected,
         decoration: InputDecoration(
-          hintText: "Select Supplier",
-          prefixIcon:
-              Icon(Icons.water_drop_outlined, color: Colors.green.shade600),
-        ),
+            hintText: "Select Supplier",
+            prefixIcon:
+                Icon(Icons.water_drop_outlined, color: Colors.green.shade600),
+            border: InputBorder.none),
       ),
     );
   }

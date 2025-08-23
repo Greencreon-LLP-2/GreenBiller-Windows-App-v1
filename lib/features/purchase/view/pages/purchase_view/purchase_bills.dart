@@ -9,8 +9,8 @@ import 'package:green_biller/features/purchase/models/purchase_view_model/purcha
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
-class PurchaseViewPage extends HookConsumerWidget {
-  PurchaseViewPage({super.key});
+class PurchaseBills extends HookConsumerWidget {
+  PurchaseBills({super.key});
 
   // Formatter for currency
   final currencyFormatter =
@@ -551,10 +551,10 @@ class PurchaseViewPage extends HookConsumerWidget {
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: false,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => context.pop(),
-            ),
+            // leading: IconButton(
+            //   icon: const Icon(Icons.arrow_back, color: Colors.white),
+            //   onPressed: () => context.pop(),
+            // ),
             title: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

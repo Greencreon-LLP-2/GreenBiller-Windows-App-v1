@@ -263,6 +263,7 @@ class _AddItemsPageState extends State<AddItemsPage>
                   color: Colors.white),
             ),
             backgroundColor: accentColor,
+            foregroundColor: Colors.white,
             actions: isDesktop
                 ? [
                     Tooltip(

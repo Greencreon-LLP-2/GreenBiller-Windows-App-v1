@@ -266,10 +266,10 @@ class PurchaseReturnPage extends HookConsumerWidget {
             ],
           ),
           child: AppBar(
-            leading: IconButton(
-              onPressed: () => context.go('/homepage'),
-              icon: const Icon(Icons.arrow_back_ios_new),
-            ),
+            // leading: IconButton(
+            //   onPressed: () => context.go('/homepage'),
+            //   icon: const Icon(Icons.arrow_back_ios_new),
+            // ),
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: false,

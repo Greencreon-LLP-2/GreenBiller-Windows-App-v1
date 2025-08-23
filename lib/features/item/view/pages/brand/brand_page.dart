@@ -75,10 +75,11 @@ class BrandPage extends HookConsumerWidget {
           style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 20,
-            color: textPrimaryColor,
+            color: Colors.white,
           ),
         ),
-        backgroundColor: primaryColor,
+        backgroundColor: accentColor,
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           if (isDesktop)
@@ -100,7 +101,7 @@ class BrandPage extends HookConsumerWidget {
                       icon: const Icon(Icons.add, size: 20),
                       label: const Text('Add Brand'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: accentColor,
+                        backgroundColor: accentColor.withOpacity(0.2),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,

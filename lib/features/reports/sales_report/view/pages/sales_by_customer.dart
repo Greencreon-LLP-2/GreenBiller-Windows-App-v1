@@ -844,7 +844,8 @@ class SalesByCustomerPage extends HookConsumerWidget {
           },
         ),
         title: const Text('Sales Summary'),
-        backgroundColor: accentLightColor,
+        backgroundColor:accentColor,
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: Padding(
