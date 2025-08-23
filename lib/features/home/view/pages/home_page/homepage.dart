@@ -10,7 +10,12 @@ import 'package:green_biller/features/home/view/pages/home_page/utils/trail_vers
 import 'package:green_biller/features/home/view/pages/home_page/widgets/build_home_content.dart';
 import 'package:green_biller/features/home/view/pages/menu_page/menu_page.dart';
 import 'package:green_biller/features/home/view/pages/menu_page/widgets/payment_out.dart';
+import 'package:green_biller/features/item/view/pages/add_items_page/add_items_page.dart';
+import 'package:green_biller/features/item/view/pages/all_items_page/all_items.dart';
+import 'package:green_biller/features/item/view/pages/brand/brand_page.dart';
+import 'package:green_biller/features/item/view/pages/categories/categories_page.dart';
 import 'package:green_biller/features/item/view/pages/items_page.dart';
+import 'package:green_biller/features/item/view/pages/units/units_page.dart';
 import 'package:green_biller/features/notifications/views/notification_page.dart';
 import 'package:green_biller/features/payment/view/pages/payment_in_page/add_payment_in_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_page/purchase_page.dart';
@@ -31,6 +36,12 @@ import 'package:green_biller/features/sales/view/pages/sales_order_page.dart';
 import 'package:green_biller/features/sales/view/pages/sales_return_page.dart';
 import 'package:green_biller/features/sales/view/pages/stock_adjustment_item.dart';
 import 'package:green_biller/features/sales/view/pages/stock_transfer_item.dart';
+import 'package:green_biller/features/settings/view/pages/Activity%20Log/active_log_page.dart';
+import 'package:green_biller/features/settings/view/pages/account_settings_page.dart';
+import 'package:green_biller/features/settings/view/pages/business_setting/business_profile_page/business_profile_page.dart';
+import 'package:green_biller/features/settings/view/pages/business_setting/invoice_settings.dart';
+import 'package:green_biller/features/settings/view/pages/business_setting/sales_settings_page.dart';
+import 'package:green_biller/features/settings/view/pages/users_setting_page/users_settings.page.dart';
 import 'package:green_biller/features/store/view/parties_page/parties_page.dart';
 import 'package:green_biller/features/store/view/store_page/store_page.dart';
 import 'package:green_biller/features/user/user_creation_page/user_creation_page.dart';
@@ -120,37 +131,6 @@ class HomePage extends HookConsumerWidget {
                               onTap: () => selectedIndex.value = 2,
                             ),
                             _buildNavItem(
-                              title: 'Items',
-                              icon: Icons.inventory_2_outlined,
-                              selectedIcon: Icons.inventory_2,
-                              index: 3,
-                              selectedIndex: selectedIndex.value,
-                              onTap: () => selectedIndex.value = 3,
-                            ),
-                            // _buildNavItem(
-                            //   title: 'My Business',
-                            //   icon: Icons.business,
-                            //   selectedIcon: Icons.business,
-                            //   index: 4,
-                            //   selectedIndex: selectedIndex.value,
-                            //   onTap: () => selectedIndex.value = 4,
-                            // ),
-                            const Divider(height: 32),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 8,
-                              ),
-                              child: Text(
-                                "QUICK ACTIONS",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: textSecondaryColor,
-                                ),
-                              ),
-                            ),
-                            _buildNavItem(
                               title: 'New Sale',
                               icon: Icons.add_circle_outline,
                               selectedIcon: Icons.add_circle,
@@ -166,6 +146,74 @@ class HomePage extends HookConsumerWidget {
                               selectedIndex: selectedIndex.value,
                               onTap: () => selectedIndex.value = 5,
                             ),
+                            _buildNavItem(
+                              title: 'Parties',
+                              icon: Icons.person_2_outlined,
+                              selectedIcon: Icons.person_2,
+                              index: 7,
+                              selectedIndex: selectedIndex.value,
+                              onTap: () => selectedIndex.value = 7,
+                            ),
+                            _buildNavItem(
+                              title: 'Users',
+                              icon: Icons.person_outline,
+                              selectedIcon: Icons.person,
+                              index: 8,
+                              selectedIndex: selectedIndex.value,
+                              onTap: () => selectedIndex.value = 8,
+                            ),
+                            const Divider(height: 32),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 8,
+                              ),
+                              child: Text(
+                                "QUICK ACTIONS",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: textSecondaryColor,
+                                ),
+                              ),
+                            ),
+                            _buildNavDropdown(
+                                title: 'Items',
+                                icon: Icons.inventory_2_outlined,
+                                selectedIcon: Icons.inventory_2,
+                                selectedIndex: selectedIndex.value,
+                                subItems: [
+                                  _buildNavSubItem(
+                                      title: 'Add Items',
+                                      icon: Icons.add,
+                                      index: 25,
+                                      selectedIndex: selectedIndex.value,
+                                      onTap: () => selectedIndex.value = 25),
+                                  _buildNavSubItem(
+                                      title: 'All Items',
+                                      icon: Icons.all_inclusive,
+                                      index: 26,
+                                      selectedIndex: selectedIndex.value,
+                                      onTap: () => selectedIndex.value = 26),
+                                  _buildNavSubItem(
+                                      title: 'Categories',
+                                      icon: Icons.category_outlined,
+                                      index: 22,
+                                      selectedIndex: selectedIndex.value,
+                                      onTap: () => selectedIndex.value = 27),
+                                  _buildNavSubItem(
+                                      title: 'Brands',
+                                      icon: Icons.branding_watermark,
+                                      index: 28,
+                                      selectedIndex: selectedIndex.value,
+                                      onTap: () => selectedIndex.value = 28),
+                                  _buildNavSubItem(
+                                      title: 'Units',
+                                      icon: Icons.scale_outlined,
+                                      index: 29,
+                                      selectedIndex: selectedIndex.value,
+                                      onTap: () => selectedIndex.value = 29),
+                                ]),
                             _buildNavDropdown(
                               title: 'Sales Details',
                               icon: Icons.sell_outlined,
@@ -338,44 +386,72 @@ class HomePage extends HookConsumerWidget {
                                 ),
                               ],
                             ),
-                            _buildNavItem(
-                              title: 'Parties',
-                              icon: Icons.person_2_outlined,
-                              selectedIcon: Icons.person_2,
-                              index: 7,
-                              selectedIndex: selectedIndex.value,
-                              onTap: () => selectedIndex.value = 7,
-                            ),
-                            _buildNavItem(
-                              title: 'Users',
-                              icon: Icons.person_outline,
-                              selectedIcon: Icons.person,
-                              index: 8,
-                              selectedIndex: selectedIndex.value,
-                              onTap: () => selectedIndex.value = 8,
-                            ),
-                            _buildNavItem(
-                              title: 'Logout',
-                              icon: Icons.logout_outlined,
-                              selectedIcon: Icons.logout,
-                              index: -1,
-                              selectedIndex: selectedIndex.value,
-                              onTap: () async {
-                                try {
-                                  final prefs =
-                                      await SharedPreferences.getInstance();
-                                  await prefs.clear();
-                                  ref.read(userProvider.notifier).state = null;
-                                  GoRouterNavigationService.goWithDelay('/',
-                                      replace: true);
-                                  SnackBarService.showSuccess(
-                                      'Successfully logged out');
-                                } catch (e) {
-                                  SnackBarService.showError(
-                                      'Logout failed: $e');
-                                }
-                              },
-                            ),
+                            _buildNavDropdown(
+                                title: 'Settings',
+                                icon: Icons.settings,
+                                selectedIcon: Icons.settings,
+                                selectedIndex: selectedIndex.value,
+                                subItems: [
+                                  _buildNavSubItem(
+                                      title: 'Business Settings',
+                                      icon: Icons.business,
+                                      index: 30,
+                                      selectedIndex: selectedIndex.value,
+                                      onTap: () => selectedIndex.value = 30),
+                                  _buildNavSubItem(
+                                      title: 'Accounts Settings',
+                                      icon: Icons.account_box_sharp,
+                                      index: 31,
+                                      selectedIndex: selectedIndex.value,
+                                      onTap: () => selectedIndex.value = 31),
+                                  _buildNavSubItem(
+                                      title: 'Sales Settings',
+                                      icon: Icons.sell,
+                                      index: 32,
+                                      selectedIndex: selectedIndex.value,
+                                      onTap: () => selectedIndex.value = 32),
+                                  _buildNavSubItem(
+                                      title: 'Invoice Settings',
+                                      icon: Icons.file_open,
+                                      index: 33,
+                                      selectedIndex: selectedIndex.value,
+                                      onTap: () => selectedIndex.value = 33),
+                                  _buildNavSubItem(
+                                      title: 'Users Settings',
+                                      icon: Icons.person_2,
+                                      index: 34,
+                                      selectedIndex: selectedIndex.value,
+                                      onTap: () => selectedIndex.value = 34),
+                                  _buildNavSubItem(
+                                      title: 'Activity Log',
+                                      icon: Icons.local_activity,
+                                      index: 35,
+                                      selectedIndex: selectedIndex.value,
+                                      onTap: () => selectedIndex.value = 35),
+                                ]),
+
+                            // _buildNavItem(
+                            //   title: 'Logout',
+                            //   icon: Icons.logout_outlined,
+                            //   selectedIcon: Icons.logout,
+                            //   index: -1,
+                            //   selectedIndex: selectedIndex.value,
+                            //   onTap: () async {
+                            //     try {
+                            //       final prefs =
+                            //           await SharedPreferences.getInstance();
+                            //       await prefs.clear();
+                            //       ref.read(userProvider.notifier).state = null;
+                            //       GoRouterNavigationService.goWithDelay('/',
+                            //           replace: true);
+                            //       SnackBarService.showSuccess(
+                            //           'Successfully logged out');
+                            //     } catch (e) {
+                            //       SnackBarService.showError(
+                            //           'Logout failed: $e');
+                            //     }
+                            //   },
+                            // ),
                           ],
                         ),
                       ),
@@ -471,12 +547,30 @@ class HomePage extends HookConsumerWidget {
                                 ],
                               ),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.settings_outlined),
-                              onPressed: () {
-                                context.push('/settings');
+                            TextButton.icon(
+                              icon: const Icon(
+                                Icons.logout_sharp,
+                              ),
+                              label: const Text("Logout"),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.red,
+                                overlayColor: accentColor.withOpacity(0.3),
+                              ),
+                              onPressed: () async {
+                                try {
+                                  final prefs =
+                                      await SharedPreferences.getInstance();
+                                  await prefs.clear();
+                                  ref.read(userProvider.notifier).state = null;
+                                  GoRouterNavigationService.goWithDelay('/',
+                                      replace: true);
+                                  SnackBarService.showSuccess(
+                                      'Successfully logged out');
+                                } catch (e) {
+                                  SnackBarService.showError(
+                                      'Logout failed: $e');
+                                }
                               },
-                              color: textSecondaryColor,
                             ),
                           ],
                         ),
@@ -555,14 +649,26 @@ class HomePage extends HookConsumerWidget {
                           AddSalesOrderPage(), //14
                           PurchaseBills(), //15
                           PurchaseReturnViewPage(), //16
-                          PaymentOutPage(), //17
-                          SalesSummaryPage(), //18
-                          SalesByItemPage(), //19
-                          SalesByCustomerPage(), //20
-                          PurchaseSummary(), //21
-                          PurchaseItemReportPage(), //22
-                          PurchaseSupplierBaseSummary(), //23
-                         
+                          const PaymentOutPage(), //17
+                          const SalesSummaryPage(), //18
+                          const SalesByItemPage(), //19
+                          const SalesByCustomerPage(), //20
+                          const PurchaseSummary(), //21
+                          const PurchaseItemReportPage(), //22
+                          const PurchaseSupplierBaseSummary(), //23
+                          const AddItemsPage(), //25
+                          const AllItemsPage(), //26
+                          const CategoriesPage(), //27
+                          const BrandPage(), //28
+                          const UnitsPage(), //29
+                          const BusinessProfilePage(), //30
+                          const AccountSettingsPage(), //31
+                          const SalesSettingsPage(), //32
+                          InvoiceSettingsPage(
+                            accessToken: accessToken!,
+                          ), //33
+                          const UserSettingsPage(), //34
+                          const ActiveLogPage(), //35
                         ],
                       ),
                     ),
