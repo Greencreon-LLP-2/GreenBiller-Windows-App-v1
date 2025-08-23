@@ -141,7 +141,9 @@ class SignupFormContentWidget extends HookConsumerWidget {
             prefixIcon: Icons.lock_outline,
             isPassword: true,
             passwordVisible: passwordVisible.value,
-            onToggleVisibility: () {},
+            onToggleVisibility: () {
+              passwordVisible.value = !passwordVisible.value;
+            },
             controller: confirmPasswordController,
           ),
           const SizedBox(height: 16),

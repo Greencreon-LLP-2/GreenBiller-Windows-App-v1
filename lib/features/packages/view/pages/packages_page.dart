@@ -8,6 +8,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hooks_riverpod/legacy.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+// CUSTOM PACKAGE: Commented out CustomizablePackage class
+/*
 class CustomizablePackage {
   final String id;
   final String name;
@@ -33,11 +35,14 @@ class CustomizablePackage {
     return basePrice + (stores * pricePerStore);
   }
 }
+*/
 
 class PackageState {
   final Datum? selectedPackage;
-  final CustomizablePackage? selectedCustomPackage;
-  final int selectedStoreCount;
+  // CUSTOM PACKAGE: Commented out selectedCustomPackage
+  // final CustomizablePackage? selectedCustomPackage;
+  // CUSTOM PACKAGE: Commented out selectedStoreCount
+  // final int selectedStoreCount;
   final bool isLoading;
   final String? error;
   final String searchQuery;
@@ -45,8 +50,10 @@ class PackageState {
 
   PackageState({
     this.selectedPackage,
-    this.selectedCustomPackage,
-    this.selectedStoreCount = 1,
+    // CUSTOM PACKAGE: Commented out selectedCustomPackage
+    // this.selectedCustomPackage,
+    // CUSTOM PACKAGE: Commented out selectedStoreCount
+    // this.selectedStoreCount = 1,
     this.isLoading = false,
     this.error,
     this.searchQuery = '',
@@ -55,22 +62,29 @@ class PackageState {
 
   PackageState copyWith({
     Datum? selectedPackage,
-    CustomizablePackage? selectedCustomPackage,
-    int? selectedStoreCount,
+    // CUSTOM PACKAGE: Commented out selectedCustomPackage
+    // CustomizablePackage? selectedCustomPackage,
+    // CUSTOM PACKAGE: Commented out selectedStoreCount
+    // int? selectedStoreCount,
     bool? isLoading,
     String? error,
     String? searchQuery,
     String? selectedFilter,
     bool clearPackage = false,
-    bool clearCustomPackage = false,
+    // CUSTOM PACKAGE: Commented out clearCustomPackage
+    // bool clearCustomPackage = false,
   }) {
     return PackageState(
       selectedPackage:
           clearPackage ? null : (selectedPackage ?? this.selectedPackage),
+      // CUSTOM PACKAGE: Commented out selectedCustomPackage
+      /*
       selectedCustomPackage: clearCustomPackage
           ? null
           : (selectedCustomPackage ?? this.selectedCustomPackage),
-      selectedStoreCount: selectedStoreCount ?? this.selectedStoreCount,
+      */
+      // CUSTOM PACKAGE: Commented out selectedStoreCount
+      // selectedStoreCount: selectedStoreCount ?? this.selectedStoreCount,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
       searchQuery: searchQuery ?? this.searchQuery,
@@ -85,8 +99,8 @@ class PackageNotifier extends StateNotifier<PackageState> {
   PackageNotifier(this.controller) : super(PackageState());
 
   Future<void> selectPackage(Datum package) async {
-    state =
-        state.copyWith(isLoading: true, error: null, clearCustomPackage: true);
+    // CUSTOM PACKAGE: Modified to remove clearCustomPackage
+    state = state.copyWith(isLoading: true, error: null);
     try {
       await Future.delayed(const Duration(milliseconds: 800));
       state = state.copyWith(
@@ -101,6 +115,8 @@ class PackageNotifier extends StateNotifier<PackageState> {
     }
   }
 
+  // CUSTOM PACKAGE: Commented out selectCustomPackage method
+  /*
   Future<void> selectCustomPackage(CustomizablePackage package) async {
     state = state.copyWith(isLoading: true, error: null, clearPackage: true);
     try {
@@ -116,7 +132,10 @@ class PackageNotifier extends StateNotifier<PackageState> {
       );
     }
   }
+  */
 
+  // CUSTOM PACKAGE: Commented out updateStoreCount method
+  /*
   void updateStoreCount(int count) {
     if (state.selectedCustomPackage != null) {
       final clampedCount = count.clamp(
@@ -126,6 +145,7 @@ class PackageNotifier extends StateNotifier<PackageState> {
       state = state.copyWith(selectedStoreCount: clampedCount);
     }
   }
+  */
 
   void updateSearchQuery(String query) {
     state = state.copyWith(searchQuery: query);
@@ -138,10 +158,13 @@ class PackageNotifier extends StateNotifier<PackageState> {
   void clearSelection() {
     state = state.copyWith(
       selectedPackage: null,
-      selectedCustomPackage: null,
-      selectedStoreCount: 1,
+      // CUSTOM PACKAGE: Commented out selectedCustomPackage
+      // selectedCustomPackage: null,
+      // CUSTOM PACKAGE: Commented out selectedStoreCount
+      // selectedStoreCount: 1,
       clearPackage: true,
-      clearCustomPackage: true,
+      // CUSTOM PACKAGE: Commented out clearCustomPackage
+      // clearCustomPackage: true,
     );
   }
 }
@@ -160,6 +183,8 @@ final packagesProvider = FutureProvider<PackageModel>((ref) {
   return controller.viewPackageController();
 });
 
+// CUSTOM PACKAGE: Commented out customizablePackageProvider
+/*
 final customizablePackageProvider = Provider<CustomizablePackage>((ref) {
   return CustomizablePackage(
     id: 'custom_store_package',
@@ -182,6 +207,7 @@ final customizablePackageProvider = Provider<CustomizablePackage>((ref) {
     ],
   );
 });
+*/
 
 class PackageCard extends StatefulWidget {
   final Datum package;
@@ -808,7 +834,8 @@ class PackagesPage extends HookConsumerWidget {
     final accessToken = userModel?.accessToken;
     final packagesAsync = ref.watch(packagesProvider);
     final packageState = ref.watch(packageNotifierProvider(accessToken));
-    final customizablePackage = ref.watch(customizablePackageProvider);
+    // CUSTOM PACKAGE: Commented out customizablePackage
+    // final customizablePackage = ref.watch(customizablePackageProvider);
 
     return Scaffold(
       backgroundColor: Colors.green.shade50,
@@ -982,9 +1009,12 @@ class PackagesPage extends HookConsumerWidget {
                 case 'multistore':
                   matchesFilter = package.ifMultistore == '1';
                   break;
+                // CUSTOM PACKAGE: Commented out custom filter case
+                /*
                 case 'custom':
                   matchesFilter = false;
                   break;
+                */
               }
             }
 
@@ -1036,7 +1066,8 @@ class PackagesPage extends HookConsumerWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${filteredPackages.length + (packageState.selectedFilter == 'all' || packageState.selectedFilter == 'custom' ? 1 : 0)} package${(filteredPackages.length + (packageState.selectedFilter == 'all' || packageState.selectedFilter == 'custom' ? 1 : 0)) != 1 ? 's' : ''} available',
+                                // CUSTOM PACKAGE: Modified to remove custom package count
+                                '${filteredPackages.length} package${filteredPackages.length != 1 ? 's' : ''} available',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: textSecondaryColor,
@@ -1143,6 +1174,8 @@ class PackagesPage extends HookConsumerWidget {
                                               ref,
                                               accessToken,
                                               packageState),
+                                          // CUSTOM PACKAGE: Commented out custom filter chip
+                                          /*
                                           const SizedBox(width: 8),
                                           _buildFilterChip(
                                               'custom',
@@ -1150,6 +1183,7 @@ class PackagesPage extends HookConsumerWidget {
                                               ref,
                                               accessToken,
                                               packageState),
+                                          */
                                         ],
                                       ),
                                     ),
@@ -1165,7 +1199,8 @@ class PackagesPage extends HookConsumerWidget {
                             padding: const EdgeInsets.all(16),
                             child: _buildPackageGrid(
                               filteredPackages,
-                              customizablePackage,
+                              // CUSTOM PACKAGE: Commented out customizablePackage
+                              // customizablePackage,
                               packageState,
                               ref,
                               accessToken,
@@ -1185,6 +1220,8 @@ class PackagesPage extends HookConsumerWidget {
                           package: packageState.selectedPackage!,
                           isLoading: packageState.isLoading,
                         )
+                      // CUSTOM PACKAGE: Commented out CustomizablePackageDetailsView
+                      /*
                       : packageState.selectedCustomPackage != null
                           ? CustomizablePackageDetailsView(
                               package: packageState.selectedCustomPackage!,
@@ -1195,53 +1232,54 @@ class PackagesPage extends HookConsumerWidget {
                                       .notifier)
                                   .updateStoreCount(count),
                             )
-                          : Card(
-                              elevation: 4,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(32),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(24),
-                                        decoration: BoxDecoration(
-                                          color: accentColor.withOpacity(0.1),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(
-                                          Icons.touch_app_outlined,
-                                          size: 48,
-                                          color: accentColor.withOpacity(0.6),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      const Text(
-                                        'Select a Package',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: textPrimaryColor,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      const Text(
-                                        'Choose from our available packages to view detailed information',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: textSecondaryColor,
-                                          height: 1.5,
-                                        ),
-                                      ),
-                                    ],
+                      */
+                      : Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(32),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(24),
+                                    decoration: BoxDecoration(
+                                      color: accentColor.withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.touch_app_outlined,
+                                      size: 48,
+                                      color: accentColor.withOpacity(0.6),
+                                    ),
                                   ),
-                                ),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    'Select a Package',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: textPrimaryColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Choose from our available packages to view detailed information',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: textSecondaryColor,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -1253,11 +1291,14 @@ class PackagesPage extends HookConsumerWidget {
 
   Widget _buildPackageGrid(
     List<Datum> filteredPackages,
-    CustomizablePackage customizablePackage,
+    // CUSTOM PACKAGE: Commented out customizablePackage parameter
+    // CustomizablePackage customizablePackage,
     PackageState packageState,
     WidgetRef ref,
     String? accessToken,
   ) {
+    // CUSTOM PACKAGE: Commented out showCustomPackage and shouldShowCustom logic
+    /*
     final showCustomPackage = packageState.selectedFilter == 'all' ||
         packageState.selectedFilter == 'custom';
 
@@ -1266,8 +1307,10 @@ class PackagesPage extends HookConsumerWidget {
             customizablePackage.name
                 .toLowerCase()
                 .contains(packageState.searchQuery.toLowerCase()));
+    */
 
-    if (filteredPackages.isEmpty && !shouldShowCustom) {
+    // CUSTOM PACKAGE: Modified condition to only check filteredPackages
+    if (filteredPackages.isEmpty /* CUSTOM PACKAGE: && !shouldShowCustom */) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1297,8 +1340,12 @@ class PackagesPage extends HookConsumerWidget {
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
-      itemCount: filteredPackages.length + (shouldShowCustom ? 1 : 0),
+      // CUSTOM PACKAGE: Modified itemCount to exclude custom package
+      itemCount: filteredPackages
+          .length /* CUSTOM PACKAGE: + (shouldShowCustom ? 1 : 0) */,
       itemBuilder: (context, index) {
+        // CUSTOM PACKAGE: Commented out custom package rendering
+        /*
         if (shouldShowCustom && index == 0) {
           // Show customizable package first
           final isSelected =
@@ -1311,8 +1358,11 @@ class PackagesPage extends HookConsumerWidget {
                 .selectCustomPackage(customizablePackage),
           );
         }
+        */
 
-        final packageIndex = shouldShowCustom ? index - 1 : index;
+        // CUSTOM PACKAGE: Modified packageIndex to remove offset
+        final packageIndex = /* CUSTOM PACKAGE: shouldShowCustom ? index - 1 : */
+            index;
         final package = filteredPackages[packageIndex];
         final isSelected = packageState.selectedPackage?.id == package.id;
 
@@ -1362,686 +1412,694 @@ class PackagesPage extends HookConsumerWidget {
       ),
     );
   }
-}
 
-class CustomizablePackageCard extends StatefulWidget {
-  final CustomizablePackage package;
-  final bool isSelected;
-  final VoidCallback onSelect;
+  // CUSTOM PACKAGE: Commented out CustomizablePackageCard class
+  /*
+  class CustomizablePackageCard extends StatefulWidget {
+    final CustomizablePackage package;
+    final bool isSelected;
+    final VoidCallback onSelect;
 
-  const CustomizablePackageCard({
-    super.key,
-    required this.package,
-    required this.isSelected,
-    required this.onSelect,
-  });
+    const CustomizablePackageCard({
+      super.key,
+      required this.package,
+      required this.isSelected,
+      required this.onSelect,
+    });
 
-  @override
-  State<CustomizablePackageCard> createState() =>
-      _CustomizablePackageCardState();
-}
+    @override
+    State<CustomizablePackageCard> createState() =>
+        _CustomizablePackageCardState();
+  }
 
-class _CustomizablePackageCardState extends State<CustomizablePackageCard> {
-  bool _isHovered = false;
+  class _CustomizablePackageCardState extends State<CustomizablePackageCard> {
+    bool _isHovered = false;
 
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        transform: Matrix4.identity()..scale(_isHovered ? 1.02 : 1.0),
-        child: Card(
-          elevation: widget.isSelected ? 12 : (_isHovered ? 8 : 3),
-          shadowColor: widget.isSelected
-              ? Colors.purple.withOpacity(0.4)
-              : Colors.black.withOpacity(0.1),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: widget.isSelected
-                ? const BorderSide(color: Colors.purple, width: 2)
-                : BorderSide(
-                    color: _isHovered
-                        ? Colors.purple.withOpacity(0.3)
-                        : Colors.transparent,
-                    width: 1,
-                  ),
-          ),
-          child: InkWell(
-            onTap: widget.onSelect,
-            borderRadius: BorderRadius.circular(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Section with Gradient
-                Expanded(
-                  flex: 2,
-                  child: Stack(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(16),
-                            topRight: Radius.circular(16),
+    @override
+    Widget build(BuildContext context) {
+      return MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          transform: Matrix4.identity()..scale(_isHovered ? 1.02 : 1.0),
+          child: Card(
+            elevation: widget.isSelected ? 12 : (_isHovered ? 8 : 3),
+            shadowColor: widget.isSelected
+                ? Colors.purple.withOpacity(0.4)
+                : Colors.black.withOpacity(0.1),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: widget.isSelected
+                  ? const BorderSide(color: Colors.purple, width: 2)
+                  : BorderSide(
+                      color: _isHovered
+                          ? Colors.purple.withOpacity(0.3)
+                          : Colors.transparent,
+                      width: 1,
+                    ),
+            ),
+            child: InkWell(
+              onTap: widget.onSelect,
+              borderRadius: BorderRadius.circular(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Section with Gradient
+                  Expanded(
+                    flex: 2,
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(16),
+                              topRight: Radius.circular(16),
+                            ),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.purple,
+                                Colors.deepPurple,
+                              ],
+                            ),
                           ),
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.purple,
-                              Colors.deepPurple,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.tune,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'CUSTOMIZABLE',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1,
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
+                        // Selection Indicator
+                        if (widget.isSelected)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white,
                                 shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.purple.withOpacity(0.3),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
                               child: const Icon(
-                                Icons.tune,
-                                color: Colors.white,
-                                size: 24,
+                                Icons.check,
+                                color: Colors.purple,
+                                size: 16,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'CUSTOMIZABLE',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
-                              ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  // Content Section
+                  Expanded(
+                    flex: 3,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Package Name
+                          Text(
+                            widget.package.name,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: textPrimaryColor,
                             ),
-                          ],
-                        ),
-                      ),
-                      // Selection Indicator
-                      if (widget.isSelected)
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.purple.withOpacity(0.3),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                          // Price Range
+                          RichText(
+                            text: TextSpan(
+                              children: [
+                                const TextSpan(
+                                  text: 'From ₹',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.purple,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text:
+                                      '${widget.package.calculateTotalPrice(1).toInt()}',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.purple,
+                                  ),
                                 ),
                               ],
                             ),
-                            child: const Icon(
-                              Icons.check,
-                              color: Colors.purple,
-                              size: 16,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '₹${widget.package.pricePerStore.toInt()} per store',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: textSecondaryColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // Feature Indicators
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.storefront,
+                                        size: 12, color: Colors.purple.shade600),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        '${widget.package.minimumStores}-${widget.package.maximumStores} stores',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.purple.shade600,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(Icons.apps,
+                                        size: 12, color: Colors.purple.shade600),
+                                    const SizedBox(width: 4),
+                                    const Expanded(
+                                      child: Text(
+                                        'All platforms',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.purple,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+*/
+
+  // CUSTOM PACKAGE: Commented out CustomizablePackageDetailsView class
+  /*
+  class CustomizablePackageDetailsView extends ConsumerWidget {
+    final CustomizablePackage package;
+    final int storeCount;
+    final bool isLoading;
+    final Function(int) onStoreCountChanged;
+
+    const CustomizablePackageDetailsView({
+      super.key,
+      required this.package,
+      required this.storeCount,
+      required this.isLoading,
+      required this.onStoreCountChanged,
+    });
+
+    @override
+    Widget build(BuildContext context, WidgetRef ref) {
+      final userModel = ref.watch(userProvider);
+      final totalPrice = package.calculateTotalPrice(storeCount);
+
+      return Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with Custom Badge
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      package.name,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: textPrimaryColor,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.purple, Colors.deepPurple],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'CUSTOMIZABLE',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                package.description,
+                style: const TextStyle(
+                  color: textSecondaryColor,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Store Count Selector
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.purple.withOpacity(0.08),
+                      Colors.deepPurple.withOpacity(0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.purple.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Select Number of Stores',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: textPrimaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Store Count Controls
+                    Row(
+                      children: [
+                        // Decrease Button
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border:
+                                Border.all(color: Colors.purple.withOpacity(0.3)),
+                          ),
+                          child: IconButton(
+                            onPressed: storeCount > package.minimumStores
+                                ? () => onStoreCountChanged(storeCount - 1)
+                                : null,
+                            icon: const Icon(Icons.remove),
+                            color: Colors.purple,
+                            iconSize: 20,
+                          ),
+                        ),
+
+                        // Store Count Display
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: Colors.purple.withOpacity(0.3)),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  '$storeCount',
+                                  style: const TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.purple,
+                                  ),
+                                ),
+                                Text(
+                                  storeCount == 1 ? 'Store' : 'Stores',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.purple.shade600,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                    ],
-                  ),
-                ),
-                // Content Section
-                Expanded(
-                  flex: 3,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Package Name
-                        Text(
-                          widget.package.name,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: textPrimaryColor,
+
+                        // Increase Button
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border:
+                                Border.all(color: Colors.purple.withOpacity(0.3)),
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 8),
-                        // Price Range
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              const TextSpan(
-                                text: 'From ₹',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.purple,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              TextSpan(
-                                text:
-                                    '${widget.package.calculateTotalPrice(1).toInt()}',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.purple,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '₹${widget.package.pricePerStore.toInt()} per store',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: textSecondaryColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        // Feature Indicators
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.storefront,
-                                      size: 12, color: Colors.purple.shade600),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      '${widget.package.minimumStores}-${widget.package.maximumStores} stores',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.purple.shade600,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(Icons.apps,
-                                      size: 12, color: Colors.purple.shade600),
-                                  const SizedBox(width: 4),
-                                  const Expanded(
-                                    child: Text(
-                                      'All platforms',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.purple,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                          child: IconButton(
+                            onPressed: storeCount < package.maximumStores
+                                ? () => onStoreCountChanged(storeCount + 1)
+                                : null,
+                            icon: const Icon(Icons.add),
+                            color: Colors.purple,
+                            iconSize: 20,
                           ),
                         ),
                       ],
                     ),
+
+                    const SizedBox(height: 16),
+
+                    // Store Range Info
+                    Text(
+                      'Range: ${package.minimumStores} - ${package.maximumStores} stores',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: textSecondaryColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Price Breakdown
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.green.withOpacity(0.2),
+                    width: 1,
                   ),
                 ),
-              ],
-            ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Price Breakdown',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: textPrimaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Base Price
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Base Package:',
+                          style:
+                              TextStyle(fontSize: 14, color: textSecondaryColor),
+                        ),
+                        Text(
+                          '₹${package.basePrice.toInt()}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: textPrimaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Store Cost
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '$storeCount store${storeCount != 1 ? 's' : ''} × ₹${package.pricePerStore.toInt()}:',
+                          style: const TextStyle(
+                              fontSize: 14, color: textSecondaryColor),
+                        ),
+                        Text(
+                          '₹${(storeCount * package.pricePerStore).toInt()}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: textPrimaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const Divider(height: 20),
+
+                    // Total Price
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Total Price:',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: textPrimaryColor,
+                          ),
+                        ),
+                        Text(
+                          '₹${totalPrice.toInt()}',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Features Section
+              const Text(
+                'Included Features',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: textPrimaryColor,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: package.features
+                        .map(
+                          (feature) => Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: Colors.purple.withOpacity(0.2),
+                                  width: 1),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.purple.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Icon(
+                                    Icons.check,
+                                    color: Colors.purple,
+                                    size: 14,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    feature,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: textPrimaryColor,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Package details for ${package.name}'),
+                            backgroundColor: Colors.purple,
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.info_outline, size: 18),
+                      label: const Text('Details'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: Colors.purple, width: 1.5),
+                        foregroundColor: Colors.purple,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton.icon(
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              final mobile = userModel?.user?.mobile ?? '';
+
+                              if (mobile.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Mobile number not found'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              final url =
+                                  'https://greenbiller.in/paynow/$mobile/${package.id}';
+
+                              if (await canLaunchUrl(Uri.parse(url))) {
+                                await launchUrl(Uri.parse(url));
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Could not launch $url'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                      icon: isLoading
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.shopping_cart, size: 18),
+                      label: Text(
+                        isLoading ? 'Processing...' : 'Select Package',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: Colors.purple,
+                        foregroundColor: Colors.white,
+                        elevation: 3,
+                        shadowColor: Colors.purple.withOpacity(0.3),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 }
-
-class CustomizablePackageDetailsView extends ConsumerWidget {
-  final CustomizablePackage package;
-  final int storeCount;
-  final bool isLoading;
-  final Function(int) onStoreCountChanged;
-
-  const CustomizablePackageDetailsView({
-    super.key,
-    required this.package,
-    required this.storeCount,
-    required this.isLoading,
-    required this.onStoreCountChanged,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final userModel = ref.watch(userProvider);
-    final totalPrice = package.calculateTotalPrice(storeCount);
-
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with Custom Badge
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    package.name,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: textPrimaryColor,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Colors.purple, Colors.deepPurple],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'CUSTOMIZABLE',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              package.description,
-              style: const TextStyle(
-                color: textSecondaryColor,
-                fontSize: 14,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Store Count Selector
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.purple.withOpacity(0.08),
-                    Colors.deepPurple.withOpacity(0.05),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.purple.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Select Number of Stores',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: textPrimaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Store Count Controls
-                  Row(
-                    children: [
-                      // Decrease Button
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border:
-                              Border.all(color: Colors.purple.withOpacity(0.3)),
-                        ),
-                        child: IconButton(
-                          onPressed: storeCount > package.minimumStores
-                              ? () => onStoreCountChanged(storeCount - 1)
-                              : null,
-                          icon: const Icon(Icons.remove),
-                          color: Colors.purple,
-                          iconSize: 20,
-                        ),
-                      ),
-
-                      // Store Count Display
-                      Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 16),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                                color: Colors.purple.withOpacity(0.3)),
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                '$storeCount',
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.purple,
-                                ),
-                              ),
-                              Text(
-                                storeCount == 1 ? 'Store' : 'Stores',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.purple.shade600,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      // Increase Button
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border:
-                              Border.all(color: Colors.purple.withOpacity(0.3)),
-                        ),
-                        child: IconButton(
-                          onPressed: storeCount < package.maximumStores
-                              ? () => onStoreCountChanged(storeCount + 1)
-                              : null,
-                          icon: const Icon(Icons.add),
-                          color: Colors.purple,
-                          iconSize: 20,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Store Range Info
-                  Text(
-                    'Range: ${package.minimumStores} - ${package.maximumStores} stores',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: textSecondaryColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Price Breakdown
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.green.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Price Breakdown',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: textPrimaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Base Price
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Base Package:',
-                        style:
-                            TextStyle(fontSize: 14, color: textSecondaryColor),
-                      ),
-                      Text(
-                        '₹${package.basePrice.toInt()}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: textPrimaryColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Store Cost
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '$storeCount store${storeCount != 1 ? 's' : ''} × ₹${package.pricePerStore.toInt()}:',
-                        style: const TextStyle(
-                            fontSize: 14, color: textSecondaryColor),
-                      ),
-                      Text(
-                        '₹${(storeCount * package.pricePerStore).toInt()}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: textPrimaryColor,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const Divider(height: 20),
-
-                  // Total Price
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Total Price:',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: textPrimaryColor,
-                        ),
-                      ),
-                      Text(
-                        '₹${totalPrice.toInt()}',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Features Section
-            const Text(
-              'Included Features',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: textPrimaryColor,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: package.features
-                      .map(
-                        (feature) => Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                                color: Colors.purple.withOpacity(0.2),
-                                width: 1),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.purple.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Icon(
-                                  Icons.check,
-                                  color: Colors.purple,
-                                  size: 14,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  feature,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: textPrimaryColor,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Action Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Package details for ${package.name}'),
-                          backgroundColor: Colors.purple,
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.info_outline, size: 18),
-                    label: const Text('Details'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: Colors.purple, width: 1.5),
-                      foregroundColor: Colors.purple,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton.icon(
-                    onPressed: isLoading
-                        ? null
-                        : () async {
-                            final mobile = userModel?.user?.mobile ?? '';
-
-                            if (mobile.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Mobile number not found'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                              return;
-                            }
-
-                            final url =
-                                'https://greenbiller.in/paynow/$mobile/${package.id}';
-
-                            if (await canLaunchUrl(Uri.parse(url))) {
-                              await launchUrl(Uri.parse(url));
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Could not launch $url'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
-                          },
-                    icon: isLoading
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.shopping_cart, size: 18),
-                    label: Text(
-                      isLoading ? 'Processing...' : 'Select Package',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: Colors.purple,
-                      foregroundColor: Colors.white,
-                      elevation: 3,
-                      shadowColor: Colors.purple.withOpacity(0.3),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+*/
 }

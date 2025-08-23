@@ -292,13 +292,13 @@ class HomePage extends HookConsumerWidget {
                                       selectedIndex: selectedIndex.value,
                                       onTap: () => selectedIndex.value = 19,
                                     ),
-                                    _buildNavSubItem(
-                                      title: 'Sales\nby Item',
-                                      icon: Icons.inventory_2,
-                                      index: 20,
-                                      selectedIndex: selectedIndex.value,
-                                      onTap: () => selectedIndex.value = 20,
-                                    ),
+                                    // _buildNavSubItem(
+                                    //   title: 'Sales\nby Item',
+                                    //   icon: Icons.inventory_2,
+                                    //   index: 20,
+                                    //   selectedIndex: selectedIndex.value,
+                                    //   onTap: () => selectedIndex.value = 20,
+                                    // ),
                                     _buildNavSubItem(
                                       title: 'Sales\nby Customer',
                                       icon: Icons.person,
