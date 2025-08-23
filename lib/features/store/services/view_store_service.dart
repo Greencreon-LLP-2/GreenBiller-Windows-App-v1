@@ -12,19 +12,19 @@ Future<StoreModel> viewStoreService(String accessToken) async {
       Uri.parse(viewStoreUrl),
       headers: {
         "Authorization": "Bearer $accessToken",
-        "content-type": "application/json"
+        "Content-Type": "application/json",
       },
     );
-    final body = jsonDecode(response.body);
+
     if (response.statusCode == 200) {
-      return StoreModel.fromJson(json.decode(response.body));
+      final body = jsonDecode(response.body);
+      return StoreModel.fromJson(body as Map<String, dynamic>);
     } else {
-      // Handle API errors
-      throw Exception('API Error: ${response.statusCode}');
+      throw Exception('API Error: ${response.statusCode} - ${response.body}');
     }
-  } catch (e) {
-    log('API Call Failed: $e');
-    throw Exception('Failed to load stores');
+  } catch (e, st) {
+    log('API Call Failed: $e\n$st');
+    rethrow; // keeps the real error visible in Riverpod
   }
 }
 
@@ -63,15 +63,20 @@ Future<StoreModelById> newViewStoreServiceByStoreId(
         "content-type": "application/json"
       },
     );
+
     final body = jsonDecode(response.body);
+
     if (response.statusCode == 200) {
-      final storeModel = StoreModelById.fromJson(body);
-      return storeModel;
+      if (body["data"] != null && body["data"].isNotEmpty) {
+        return StoreModelById.fromJson(body["data"][0]); // 👈 FIX
+      } else {
+        throw Exception("No store found for id $storeId");
+      }
     } else {
-      throw Exception(body['message']);
+      throw Exception(body['message'] ?? 'Failed to fetch store');
     }
   } catch (e) {
-    log(e.toString());
-    throw Exception(e);
+    log("newViewStoreServiceByStoreId error: $e");
+    throw Exception('Failed to load store: $e');
   }
 }

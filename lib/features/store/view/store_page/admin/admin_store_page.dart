@@ -27,7 +27,7 @@ class AdminStorePage extends HookConsumerWidget {
 
     final accessToken = user?.accessToken;
     final userId = user?.user?.id.toString();
-    final storeAsync = ref.watch(storesProvider);
+    final storeAsync = ref.read(storesProvider);
 
     // Listen to tab changes
     useEffect(() {

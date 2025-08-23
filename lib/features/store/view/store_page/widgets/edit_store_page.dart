@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:green_biller/core/constants/colors.dart';
+import 'package:green_biller/features/auth/login/model/user_model.dart';
 import 'package:green_biller/features/store/controllers/edit_store_controller.dart';
 import 'package:green_biller/features/store/services/view_store_service.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class EditStorePage extends HookWidget {
+class EditStorePage extends HookConsumerWidget {
   final String storeId;
   final String accessToken;
 
@@ -15,10 +17,11 @@ class EditStorePage extends HookWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tabController = useTabController(initialLength: 4);
     final isLoading = useState<bool>(true);
-
+    final user = ref.watch(userProvider);
+    final userId = user?.user?.id.toString();
     final storeCodeController = useTextEditingController();
     final storeNameController = useTextEditingController();
     final emailController = useTextEditingController();
@@ -173,7 +176,7 @@ class EditStorePage extends HookWidget {
           postcode: postcodeController.text,
           gstNo: gstController.text,
           panNo: panController.text,
-          userId: "1",
+          userId: userId!,
           storeCode: storeCodeController.text,
           slug: "store-${storeCodeController.text}",
           storeName: storeNameController.text,

@@ -25,35 +25,8 @@ class AdminStoresTab extends HookConsumerWidget {
     final selectedFilter = useState('all');
     final userModel = ref.watch(userProvider);
     final accessToken = userModel?.accessToken;
-
-    if (accessToken == null) {
-      return const Scaffold(
-        body: Center(
-          child: Card(
-            margin: EdgeInsets.all(16),
-            child: Padding(
-              padding: EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.error_outline, size: 48, color: Colors.orange),
-                  SizedBox(height: 16),
-                  Text(
-                    'Authentication Required',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(height: 8),
-                  Text('Please login again to continue.'),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
     final storeAsync = ref.watch(storesProvider);
-
+   
     return Scaffold(
       body: Stack(
         children: [
@@ -231,7 +204,11 @@ class AdminStoresTab extends HookConsumerWidget {
               Expanded(
                 child: storeAsync.when(
                   loading: () => _buildLoadingState(),
-                  error: (err, st) => _buildErrorState(err, ref),
+                  error: (err, st){
+                    print(err,);
+                    print(st);
+                    return _buildErrorState(err, ref);
+                  },
                   data: (storeModel) {
                     final rawList = storeModel.data;
                     if (rawList == null || rawList.isEmpty) {
@@ -251,7 +228,7 @@ class AdminStoresTab extends HookConsumerWidget {
                         await ref.read(storesProvider.future);
                       },
                       child: _buildListView(
-                          filtered, accessToken, context, ref, isLoading),
+                          filtered, accessToken!, context, ref, isLoading),
                     );
                   },
                 ),
