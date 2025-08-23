@@ -11,9 +11,9 @@ class UserSettingsPage extends StatefulWidget {
   State<UserSettingsPage> createState() => _UserSettingsPageState();
 }
 
-class _UserSettingsPageState extends State<UserSettingsPage> {
+class _UserSettingsPageState extends State<UserSettingsPage>
+    with TickerProviderStateMixin {
   final List<User> users = [];
-
   String searchQuery = '';
   int? selectedUserId;
   String selectedFilter = 'All';
@@ -26,16 +26,44 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   bool _isActive = true;
 
   final List<String> _roles = [];
-
   final List<String> _stores = [];
-
   final List<String> _filters = ['All', 'Active', 'Inactive'];
+
+  late AnimationController _formAnimationController;
+  late Animation<double> _formAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _formAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _formAnimation = CurvedAnimation(
+      parent: _formAnimationController,
+      curve: Curves.easeInOut,
+    );
+    if (showAddUserForm) {
+      _formAnimationController.forward();
+    }
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _employeeCodeController.dispose();
+    _formAnimationController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant UserSettingsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (showAddUserForm) {
+      _formAnimationController.forward();
+    } else {
+      _formAnimationController.reverse();
+    }
   }
 
   List<User> get filteredUsers {
@@ -62,31 +90,62 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: GradientAppBar(
-        title: 'User Management',
-        subtitle: "Manage user accounts, roles and permissions",
-        gradientColor: accentColor,
-        actions: [
-          ElevatedButton.icon(
-            onPressed: () => setState(() => showAddUserForm = !showAddUserForm),
-            icon: Icon(showAddUserForm ? Icons.close : Icons.person_add,
-                size: 16, color: Colors.white),
-            label: Text(showAddUserForm ? 'Cancel' : 'Add User'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: accentColor.withOpacity(0.1),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: Container(
+          decoration: BoxDecoration(
+            color: accentColor,
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).primaryColor.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            ),
+            ],
           ),
-          const SizedBox(width: 8),
-        ],
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: false,
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'User Management',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Manage user accounts, roles and permissions',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 14,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: _buildActionButton(
+                  showAddUserForm ? 'Cancel' : 'Add User',
+                  showAddUserForm ? Icons.close : Icons.person_add,
+                  () => setState(() {
+                    showAddUserForm = !showAddUserForm;
+                  }),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: LayoutBuilder(
           builder: (context, constraints) {
             if (constraints.maxWidth > 1024) {
@@ -100,28 +159,64 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     );
   }
 
+  Widget _buildActionButton(
+      String label, IconData icon, VoidCallback onPressed) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onPressed,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDesktopLayout() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Left: User List and Filters
         Expanded(
           flex: 2,
           child: Column(
             children: [
               _buildStatsCard(),
+              const SizedBox(height: 16),
               _buildFiltersAndSearch(),
+              const SizedBox(height: 16),
               _buildUsersList(),
             ],
           ),
         ),
-        const SizedBox(width: 24),
-        // Right: Add User Form (when visible)
-        if (showAddUserForm)
+        if (showAddUserForm) ...[
+          const SizedBox(width: 20),
           Expanded(
             flex: 1,
             child: _buildAddUserForm(),
           ),
+        ],
       ],
     );
   }
@@ -130,11 +225,20 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     return Column(
       children: [
         _buildStatsCard(),
+        const SizedBox(height: 16),
         _buildFiltersAndSearch(),
-        if (showAddUserForm) ...[
-          _buildAddUserForm(),
-          const SizedBox(height: 24),
-        ],
+        const SizedBox(height: 16),
+        SizeTransition(
+          sizeFactor: _formAnimation,
+          child: Column(
+            children: [
+              if (showAddUserForm) ...[
+                _buildAddUserForm(),
+                const SizedBox(height: 16),
+              ],
+            ],
+          ),
+        ),
         _buildUsersList(),
       ],
     );
@@ -146,43 +250,45 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     required Widget child,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
+      margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 4,
-            offset: Offset(0, 1),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  icon,
-                  size: 20,
-                  color: accentColor,
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: accentColor, size: 24),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1F2937),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E293B),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             child,
           ],
         ),
@@ -201,7 +307,8 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
               'Total Users',
               users.length.toString(),
               Icons.group,
-              accentColor,
+              const Color(0xFF3B82F6),
+              '+${users.isNotEmpty ? (users.length / (users.length + 1) * 100).toStringAsFixed(0) : '0'}%',
             ),
           ),
           const SizedBox(width: 16),
@@ -210,7 +317,8 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
               'Active',
               activeUsersCount.toString(),
               Icons.check_circle,
-              Colors.green.shade600,
+              const Color(0xFF10B981),
+              '+${activeUsersCount > 0 ? '5' : '0'}%',
             ),
           ),
           const SizedBox(width: 16),
@@ -219,7 +327,8 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
               'Inactive',
               inactiveUsersCount.toString(),
               Icons.pause_circle,
-              Colors.orange.shade600,
+              const Color(0xFFEF4444),
+              '-${inactiveUsersCount > 0 ? '2' : '0'}%',
             ),
           ),
         ],
@@ -228,31 +337,67 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   }
 
   Widget _buildStatItem(
-      String label, String value, IconData icon, Color color) {
+      String label, String value, IconData icon, Color color, String trend) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  trend,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF10B981),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: 16),
           Text(
             label,
             style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF6B7280),
+              fontSize: 14,
+              color: Color(0xFF64748B),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
             ),
           ),
         ],
@@ -266,46 +411,44 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
       icon: Icons.search,
       child: Column(
         children: [
-          // Search Bar
-          TextFormField(
-            onChanged: (value) => setState(() => searchQuery = value),
-            decoration: InputDecoration(
-              hintText: 'Search by name, role, store, or employee code...',
-              prefixIcon:
-                  const Icon(Icons.search, size: 20, color: Color(0xFF9CA3AF)),
-              suffixIcon: searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, size: 20),
-                      onPressed: () => setState(() => searchQuery = ''),
-                    )
-                  : null,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: TextField(
+              onChanged: (value) => setState(() => searchQuery = value),
+              decoration: InputDecoration(
+                hintText: 'Search by name, role, store, or employee code...',
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF64748B)),
+                suffixIcon: searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: Color(0xFF64748B)),
+                        onPressed: () => setState(() => searchQuery = ''),
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: accentColor, width: 2),
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
           ),
-          const SizedBox(height: 16),
-          // Status Filters
+          const SizedBox(height: 20),
           Row(
             children: [
               const Text(
                 'Filter by Status:',
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF374151),
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1E293B),
                 ),
               ),
               const SizedBox(width: 12),
               ..._filters.map((filter) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.only(right: 12),
                     child: FilterChip(
                       label: Text(filter),
                       selected: selectedFilter == filter,
@@ -316,6 +459,21 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                       },
                       selectedColor: accentColor.withOpacity(0.2),
                       checkmarkColor: accentColor,
+                      labelStyle: TextStyle(
+                        color: selectedFilter == filter
+                            ? accentColor
+                            : const Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: selectedFilter == filter
+                              ? accentColor
+                              : const Color(0xFFE2E8F0),
+                        ),
+                      ),
                     ),
                   )),
             ],
@@ -327,7 +485,6 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
 
   Widget _buildUsersList() {
     final users = filteredUsers;
-
     return _buildCard(
       title: 'Users (${users.length})',
       icon: Icons.group,
@@ -338,110 +495,102 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: users.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (_, index) => _buildUserCard(users[index]),
+              itemBuilder: (_, index) => _buildUserCard(users[index], index),
             ),
     );
   }
 
-  Widget _buildUserCard(User user) {
+  Widget _buildUserCard(User user, int index) {
     final bool isSelected = selectedUserId == user.id;
+    final bool isEven = index % 2 == 0;
 
     return GestureDetector(
       onTap: () => setState(() {
         selectedUserId = isSelected ? null : user.id;
       }),
       child: Container(
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected
-              ? accentColor.withOpacity(0.05)
-              : const Color(0xFFF9FAFB),
+          color: isEven ? const Color(0xFFFAFAFA) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? accentColor : const Color(0xFFE5E7EB),
+            color: isSelected ? accentColor : const Color(0xFFE2E8F0),
             width: isSelected ? 2 : 1,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Avatar
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    (user.name ?? 'U').substring(0, 1).toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: accentColor,
-                    ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: accentColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Center(
+                child: Text(
+                  (user.name ?? 'U').substring(0, 1).toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: accentColor,
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
-              // User Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            user.name ?? 'Unknown User',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF1F2937),
-                            ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          user.name ?? 'Unknown User',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
                           ),
                         ),
-                        _buildStatusBadge(
-                            user.status == 'active' ? true : false),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    _buildUserDetail(
-                        'Role', user.userLevel ?? 'N/A', Icons.badge),
-                    const SizedBox(height: 4),
-                    _buildUserDetail(
-                        'Store', user.storeId ?? 'N/A', Icons.store),
-                    const SizedBox(height: 4),
-                    _buildUserDetail(
-                        'Code', user.employeeCode ?? 'N/A', Icons.qr_code),
-                  ],
-                ),
-              ),
-              // Actions
-              Column(
-                children: [
-                  IconButton(
-                    onPressed: () => _openEditDialog(user),
-                    icon: const Icon(Icons.edit, size: 20),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.blue.shade50,
-                      foregroundColor: Colors.blue.shade600,
-                    ),
+                      ),
+                      _buildStatusBadge(user.status ?? false),
+                    ],
                   ),
                   const SizedBox(height: 8),
-                  IconButton(
-                    onPressed: () => _confirmDelete(user),
-                    icon: const Icon(Icons.delete, size: 20),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.red.shade50,
-                      foregroundColor: Colors.red.shade600,
-                    ),
-                  ),
+                  _buildUserDetail(
+                      'Role', user.userLevel ?? 'N/A', Icons.badge),
+                  const SizedBox(height: 4),
+                  _buildUserDetail('Store', user.storeId ?? 'N/A', Icons.store),
+                  const SizedBox(height: 4),
+                  _buildUserDetail(
+                      'Code', user.employeeCode ?? 'N/A', Icons.qr_code),
                 ],
               ),
-            ],
-          ),
+            ),
+            Column(
+              children: [
+                IconButton(
+                  onPressed: () => _openEditDialog(user),
+                  icon: const Icon(Icons.edit, size: 20),
+                  style: IconButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6).withOpacity(0.1),
+                    foregroundColor: const Color(0xFF3B82F6),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                IconButton(
+                  onPressed: () => _confirmDelete(user),
+                  icon: const Icon(Icons.delete, size: 20),
+                  style: IconButton.styleFrom(
+                    backgroundColor: const Color(0xFFEF4444).withOpacity(0.1),
+                    foregroundColor: const Color(0xFFEF4444),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -450,21 +599,22 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   Widget _buildUserDetail(String label, String value, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: const Color(0xFF6B7280)),
-        const SizedBox(width: 6),
+        Icon(icon, size: 14, color: const Color(0xFF64748B)),
+        const SizedBox(width: 8),
         Text(
           '$label: ',
           style: const TextStyle(
             fontSize: 12,
-            color: Color(0xFF6B7280),
+            color: Color(0xFF64748B),
+            fontWeight: FontWeight.w500,
           ),
         ),
         Text(
           value,
           style: const TextStyle(
             fontSize: 12,
+            color: Color(0xFF1E293B),
             fontWeight: FontWeight.w500,
-            color: Color(0xFF374151),
           ),
         ),
       ],
@@ -473,26 +623,38 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
 
   Widget _buildStatusBadge(bool isActive) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isActive ? Colors.green.shade100 : Colors.orange.shade100,
-        borderRadius: BorderRadius.circular(12),
+        color: isActive
+            ? const Color(0xFF10B981).withOpacity(0.1)
+            : const Color(0xFFEF4444).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isActive
+              ? const Color(0xFF10B981).withOpacity(0.3)
+              : const Color(0xFFEF4444).withOpacity(0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            isActive ? Icons.check_circle : Icons.pause_circle,
-            size: 12,
-            color: isActive ? Colors.green.shade700 : Colors.orange.shade700,
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color:
+                  isActive ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+              borderRadius: BorderRadius.circular(3),
+            ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 6),
           Text(
             isActive ? 'Active' : 'Inactive',
             style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: isActive ? Colors.green.shade700 : Colors.orange.shade700,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color:
+                  isActive ? const Color(0xFF10B981) : const Color(0xFFEF4444),
             ),
           ),
         ],
@@ -550,30 +712,43 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
           Row(
             children: [
               Expanded(
-                child: ElevatedButton.icon(
+                child: TextButton(
                   onPressed: _clearForm,
-                  icon: const Icon(Icons.clear, size: 16),
-                  label: const Text('Clear'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey.shade500,
-                    foregroundColor: Colors.white,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                  ),
+                  child: const Text(
+                    'Clear',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF64748B),
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: ElevatedButton.icon(
+                child: ElevatedButton(
                   onPressed: _addUser,
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text('Add User'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accentColor,
                     foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Add User',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -591,36 +766,25 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     required String hint,
     required IconData icon,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '$label *',
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF374151),
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          hintText: hint,
+          labelText: '$label *',
+          prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+          labelStyle: const TextStyle(color: Color(0xFF64748B)),
         ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: hint,
-            prefixIcon: Icon(icon, size: 20, color: const Color(0xFF9CA3AF)),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: accentColor, width: 2),
-            ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -632,43 +796,32 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     required ValueChanged<String?> onChanged,
     required IconData icon,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '$label *',
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF374151),
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          labelText: '$label *',
+          hintText: hint,
+          prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          labelStyle: const TextStyle(color: Color(0xFF64748B)),
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
         ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          value: value,
-          onChanged: onChanged,
-          decoration: InputDecoration(
-            hintText: hint,
-            prefixIcon: Icon(icon, size: 20, color: const Color(0xFF9CA3AF)),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: accentColor, width: 2),
-            ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          ),
-          items: items.map((String item) {
-            return DropdownMenuItem<String>(
-              value: item,
-              child: Text(item),
-            );
-          }).toList(),
-        ),
-      ],
+        items: items.map((String item) {
+          return DropdownMenuItem<String>(
+            value: item,
+            child: Text(item),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -681,9 +834,9 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Row(
         children: [
@@ -695,8 +848,8 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                   title,
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF374151),
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1E293B),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -704,7 +857,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                   subtitle,
                   style: const TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF6B7280),
+                    color: Color(0xFF64748B),
                   ),
                 ),
               ],
@@ -714,6 +867,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
             value: value,
             onChanged: onChanged,
             activeColor: accentColor,
+            inactiveTrackColor: const Color(0xFFE2E8F0),
           ),
         ],
       ),
@@ -721,34 +875,77 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   }
 
   Widget _buildEmptyState() {
-    return Container(
-      padding: const EdgeInsets.all(48),
-      child: const Column(
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.group_off,
-            size: 64,
-            color: Color(0xFF9CA3AF),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(
+              Icons.group_off,
+              size: 48,
+              color: Color(0xFF94A3B8),
+            ),
           ),
-          SizedBox(height: 16),
-          Text(
+          const SizedBox(height: 20),
+          const Text(
             'No Users Found',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF374151),
+              color: Color(0xFF475569),
             ),
           ),
-          SizedBox(height: 8),
-          Text(
+          const SizedBox(height: 8),
+          const Text(
             'Try adjusting your search or filter criteria',
             style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF6B7280),
+              color: Color(0xFF94A3B8),
             ),
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: accentColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
       ),
     );
   }
@@ -765,12 +962,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
 
   void _addUser() {
     if (_nameController.text.isEmpty || _employeeCodeController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all required fields'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showErrorSnackBar('Please fill in all required fields');
       return;
     }
 
@@ -789,13 +981,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
     });
 
     _clearForm();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${newUser.name} added successfully'),
-        backgroundColor: accentColor,
-      ),
-    );
+    _showSuccessSnackBar('${newUser.name} added successfully');
   }
 
   void _openEditDialog(User user) async {
@@ -809,87 +995,150 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
         final index = users.indexWhere((u) => u.id == updatedUser.id);
         if (index != -1) users[index] = updatedUser;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${updatedUser.name} updated successfully'),
-          backgroundColor: accentColor,
-        ),
-      );
+      _showSuccessSnackBar('${updatedUser.name} updated successfully');
     }
   }
 
   void _confirmDelete(User user) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          'Confirm Delete',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Are you sure you want to delete this user?'),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.shade200),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.delete,
+                  color: Color(0xFFEF4444),
+                  size: 48,
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user.name ?? 'Unknown User',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+              const SizedBox(height: 20),
+              const Text(
+                'Confirm Delete',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFFEF4444).withOpacity(0.3),
                   ),
-                  Text('Role: ${user.userLevel ?? 'N/A'}'),
-                  Text('Store: ${user.storeId ?? 'N/A'}'),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.name ?? 'Unknown User',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Role: ${user.userLevel ?? 'N/A'}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                    Text(
+                      'Store: ${user.storeId ?? 'N/A'}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'This action cannot be undone.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFFEF4444),
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          users.removeWhere((u) => u.id == user.id);
+                          if (selectedUserId == user.id) {
+                            selectedUserId = null;
+                          }
+                        });
+                        Navigator.pop(context);
+                        _showErrorSnackBar('${user.name} deleted successfully');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFEF4444),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'This action cannot be undone.',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 12,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                users.removeWhere((u) => u.id == user.id);
-                if (selectedUserId == user.id) {
-                  selectedUserId = null;
-                }
-              });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${user.name} deleted successfully'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
       ),
     );
   }
