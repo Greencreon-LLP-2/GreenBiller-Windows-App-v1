@@ -137,8 +137,8 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
       backgroundColor: Colors.transparent,
       child: Container(
         constraints: const BoxConstraints(
-          maxWidth: 520,
-          maxHeight: 720,
+          maxWidth: 700,
+          maxHeight: 750,
         ),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -246,7 +246,7 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                             ),
                             const SizedBox(height: 12),
                             Container(
-                              width: 190,
+                              width: 200,
                               height: 190,
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade50,
@@ -464,7 +464,7 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                               const SizedBox(height: 16),
                               // Category and Stock Alert in a Row
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
                                   // Category Tag
                                   Container(

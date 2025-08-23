@@ -246,137 +246,105 @@ class _AddItemsPageState extends State<AddItemsPage>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isSmallScreen = constraints.maxWidth < 600;
-        final isMediumScreen = constraints.maxWidth < 800;
-        final isDesktop = constraints.maxWidth >= 1200;
-
-        return Scaffold(
-          backgroundColor: backgroundColor,
-          appBar: AppBar(
-            title: const Text(
-              "Add Item",
-              style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 20,
-                  color: Colors.white),
-            ),
-            backgroundColor: accentColor,
-            foregroundColor: Colors.white,
-            actions: isDesktop
-                ? [
-                    Tooltip(
-                      message: _importedFile != null &&
-                              _importedFile!['name'] != null
-                          ? 'Open ${_importedFile!['name']}'
-                          : 'No file selected',
-                      child: TextButton(
-                        onPressed: _openFile,
-                        style: ButtonStyle(
-                          foregroundColor: MaterialStateProperty.all(
-                              Colors.white), // Matches AppBar theme
-                          padding: MaterialStateProperty.all(
-                            const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                          ),
-                          minimumSize:
-                              MaterialStateProperty.all(const Size(0, 0)),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          overlayColor:
-                              MaterialStateProperty.resolveWith<Color?>(
-                            (states) {
-                              if (states.contains(MaterialState.hovered)) {
-                                return Colors.white.withOpacity(0.2);
-                              }
-                              if (states.contains(MaterialState.pressed)) {
-                                return Colors.white.withOpacity(0.3);
-                              }
-                              return null;
-                            },
-                          ),
-                          backgroundColor: MaterialStateProperty.all(
-                            _importedFile != null &&
-                                    _importedFile!['name'] != null
-                                ? Colors.transparent
-                                : Colors.white.withOpacity(0.1),
-                          ),
-                          shape: MaterialStateProperty.all(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (_importedFile != null &&
-                                _importedFile!['name'] != null) ...[
-                              const Icon(
-                                Icons.insert_drive_file,
-                                size: 16,
-                                color: Colors.white70,
-                              ),
-                              const SizedBox(width: 4),
-                            ],
-                            Flexible(
-                              child: Text(
-                                _importedFile != null &&
-                                        _importedFile!['name'] != null
-                                    ? _importedFile!['name']
-                                    : 'No File',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                  color: _importedFile != null &&
-                                          _importedFile!['name'] != null
-                                      ? Colors.white
-                                      : Colors.white70,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ),
-                          ],
-                        ),
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        title: const Text(
+          "Add Item",
+          style: TextStyle(
+              fontWeight: FontWeight.w600, fontSize: 20, color: Colors.white),
+        ),
+        backgroundColor: _calculatedProfit < 0 ? errorColor : accentColor,
+        foregroundColor: Colors.white,
+        actions: [
+          Tooltip(
+            message: _importedFile != null && _importedFile!['name'] != null
+                ? 'Open ${_importedFile!['name']}'
+                : 'No file selected',
+            child: TextButton(
+              onPressed: _openFile,
+              style: ButtonStyle(
+                foregroundColor: MaterialStateProperty.all(
+                    Colors.white), // Matches AppBar theme
+                padding: MaterialStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                ),
+                minimumSize: MaterialStateProperty.all(const Size(0, 0)),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                overlayColor: MaterialStateProperty.resolveWith<Color?>(
+                  (states) {
+                    if (states.contains(MaterialState.hovered)) {
+                      return Colors.white.withOpacity(0.2);
+                    }
+                    if (states.contains(MaterialState.pressed)) {
+                      return Colors.white.withOpacity(0.3);
+                    }
+                    return null;
+                  },
+                ),
+                backgroundColor: MaterialStateProperty.all(
+                  _importedFile != null && _importedFile!['name'] != null
+                      ? Colors.transparent
+                      : Colors.white.withOpacity(0.1),
+                ),
+                shape: MaterialStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_importedFile != null &&
+                      _importedFile!['name'] != null) ...[
+                    const Icon(
+                      Icons.insert_drive_file,
+                      size: 16,
+                      color: Colors.white70,
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                  Flexible(
+                    child: Text(
+                      _importedFile != null && _importedFile!['name'] != null
+                          ? _importedFile!['name']
+                          : 'No File',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: _importedFile != null &&
+                                _importedFile!['name'] != null
+                            ? Colors.white
+                            : Colors.white70,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.download_sharp),
-                      onPressed: _pickFile,
-                      tooltip: 'Import File',
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.help_outline),
-                      onPressed: () {},
-                      tooltip: 'Help',
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.settings),
-                      onPressed: () {},
-                      tooltip: 'Settings',
-                    ),
-                    const SizedBox(width: 8),
-                  ]
-                : null,
-            bottom: !isDesktop
-                ? TabBar(
-                    controller: _tabController,
-                    indicatorColor: Colors.white,
-                    tabs: const [
-                      Tab(text: "Basic Info"),
-                      Tab(text: "Pricing"),
-                      Tab(text: "Stock"),
-                    ],
-                  )
-                : null,
+                  ),
+                ],
+              ),
+            ),
           ),
-          body: isDesktop
-              ? _buildDesktopLayout(context)
-              : _buildMobileTabletLayout(context, isSmallScreen),
-          bottomNavigationBar: !isDesktop ? _buildBottomBar() : null,
-        );
-      },
+          IconButton(
+            icon: const Icon(Icons.download_sharp),
+            onPressed: _pickFile,
+            tooltip: 'Import File',
+          ),
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            onPressed: () {},
+            tooltip: 'Help',
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {},
+            tooltip: 'Settings',
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: _buildDesktopLayout(context),
     );
   }
 
@@ -992,7 +960,12 @@ class _AddItemsPageState extends State<AddItemsPage>
                         child: _buildInputField(
                           label: "Profit Margin (%)",
                           hint: "0.00",
-                          prefixIcon: Icons.trending_up,
+                          prefixIcon: _calculatedProfit < 0
+                              ? Icons.trending_down
+                              : Icons.trending_up,
+                          iconColor: _calculatedProfit < 0
+                              ? Colors.red
+                              : null,
                           controller: _profitMarginController,
                           keyboardType: TextInputType.number,
                         ),
@@ -1019,11 +992,12 @@ class _AddItemsPageState extends State<AddItemsPage>
                               const SizedBox(height: 8),
                               Text(
                                 "₹${_calculatedProfit.toStringAsFixed(2)}",
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: accentColor,
-                                ),
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: _calculatedProfit < 0
+                                        ? Colors.red
+                                        : accentColor),
                               ),
                             ],
                           ),
@@ -1055,7 +1029,9 @@ class _AddItemsPageState extends State<AddItemsPage>
                           SnackBar(
                             content: Text(
                                 'Profit calculated: ₹${_calculatedProfit.toStringAsFixed(2)}'),
-                            backgroundColor: Colors.green,
+                            backgroundColor: _calculatedProfit < 0
+                                ? errorColor
+                                : accentColor,
                           ),
                         );
                       } else {
@@ -1068,10 +1044,11 @@ class _AddItemsPageState extends State<AddItemsPage>
                         );
                       }
                     },
-                    icon: const Icon(Icons.calculate),
+                    icon: const Icon(Icons.calculate_outlined),
                     label: const Text("Calculate Profit"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: accentColor,
+                      backgroundColor:
+                          _calculatedProfit < 0 ? errorColor : accentColor,
                       foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 48),
                       elevation: 2,
@@ -1199,14 +1176,14 @@ class _AddItemsPageState extends State<AddItemsPage>
                           controller: _alertQuantityController,
                           keyboardType: TextInputType.number,
                         ),
-                        SwitchListTile(
-                          title: const Text("Enable Low Stock Alerts"),
-                          subtitle:
-                              const Text("Get notified when stock is low"),
-                          value: true,
-                          onChanged: (value) {},
-                          contentPadding: EdgeInsets.zero,
-                        ),
+                        // SwitchListTile(
+                        //   title: const Text("Enable Low Stock Alerts"),
+                        //   subtitle:
+                        //       const Text("Get notified when stock is low"),
+                        //   value: true,
+                        //   onChanged: (value) {},
+                        //   contentPadding: EdgeInsets.zero,
+                        // ),
                       ],
                     ),
                   ),
@@ -1516,7 +1493,9 @@ class _AddItemsPageState extends State<AddItemsPage>
                   _buildInputField(
                     label: "Profit Margin (%)",
                     hint: "0.00",
-                    prefixIcon: Icons.trending_up,
+                    prefixIcon: _calculatedProfit < 0
+                        ? Icons.trending_down
+                        : Icons.trending_up,
                     controller: _profitMarginController,
                     keyboardType: TextInputType.number,
                   ),
@@ -1762,18 +1741,13 @@ class _AddItemsPageState extends State<AddItemsPage>
     );
   }
 
-  /// Creates a standardized input field with validation
-  /// Parameters:
-  /// - label: Display label for the field
-  /// - hint: Placeholder text
-  /// - prefixIcon: Icon shown before the input
-  /// - required: Whether the field is mandatory
-  /// - maxLines: Number of lines for the input (default: 1)
-  /// - keyboardType: Type of keyboard to show (default: text)
+
   Widget _buildInputField({
     required String label,
     required String hint,
     required IconData prefixIcon,
+    IconData? suffixIcon,
+    Color? iconColor, 
     required TextEditingController controller,
     bool required = false,
     int maxLines = 1,
@@ -1809,10 +1783,20 @@ class _AddItemsPageState extends State<AddItemsPage>
             margin: const EdgeInsets.only(right: 8),
             child: Icon(
               prefixIcon,
-              color: accentColor.withOpacity(0.7),
+              color: iconColor ??
+                  accentColor,
               size: 20,
             ),
           ),
+          suffixIcon: suffixIcon != null
+              ? Icon(
+                  suffixIcon,
+                  color: iconColor ??
+                      accentColor.withOpacity(
+                          0.7), 
+                  size: 20,
+                )
+              : null,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           border: OutlineInputBorder(
@@ -1848,25 +1832,22 @@ class _AddItemsPageState extends State<AddItemsPage>
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('$label is required'),
-                      backgroundColor:
-                          Colors.redAccent, // optional: for success alert
+                      backgroundColor: Colors.redAccent,
                       duration: const Duration(seconds: 2),
-                      behavior: SnackBarBehavior
-                          .floating, // optional: floating above UI
+                      behavior: SnackBarBehavior.floating,
                     ),
                   );
                   return '$label is required';
                 }
                 if (keyboardType == TextInputType.number) {
-                  // Allow decimal numbers
                   if (double.tryParse(value) == null) {
-                    const SnackBar(
-                      content: Text('Enter valid number'),
-                      backgroundColor:
-                          Colors.redAccent, // optional: for success alert
-                      duration: Duration(seconds: 2),
-                      behavior: SnackBarBehavior
-                          .floating, // optional: floating above UI
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Enter valid number'),
+                        backgroundColor: Colors.redAccent,
+                        duration: Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                      ),
                     );
                     return 'Enter valid number';
                   }
@@ -1878,17 +1859,12 @@ class _AddItemsPageState extends State<AddItemsPage>
     );
   }
 
-  /// Creates a standardized dropdown field
-  /// Parameters:
-  /// - label: Display label for the dropdown
-  /// - items: List of items to show in dropdown
-  /// - prefixIcon: Icon shown before the dropdown
+
   Widget _buildDropdownField({
     required String label,
     required List<String> items,
     required IconData prefixIcon,
   }) {
-    // Determine which state variable to use based on the label
     String? selectedValue;
     void Function(String?) onChanged;
 
@@ -1907,6 +1883,9 @@ class _AddItemsPageState extends State<AddItemsPage>
         onChanged = (value) {
           setState(() {
             _selectedTaxType = value;
+            if (value == "None") {
+              _taxRateController.text = "0";
+            }
             _logger.d('$label dropdown changed to: $value');
           });
         };
@@ -1916,6 +1895,9 @@ class _AddItemsPageState extends State<AddItemsPage>
         onChanged = (value) {
           setState(() {
             _selectedDiscountType = value;
+            if (value == "None") {
+              _discountController.text = "0";
+            }
             _logger.d('$label dropdown changed to: $value');
           });
         };

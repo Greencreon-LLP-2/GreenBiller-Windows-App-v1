@@ -127,14 +127,11 @@ class _ItemGridViewCardWidgetState extends State<ItemGridViewCardWidget> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calculate dynamic sizes based on available width
         final double cardWidth = constraints.maxWidth;
-        final double headerHeight =
-            cardWidth * 0.30; // Reduced from 0.4 to 0.35
-        final double iconSize = cardWidth * 0.12; // Reduced from 0.15 to 0.12
-        final double fontSize = cardWidth * 0.055; // Reduced from 0.06 to 0.055
-        final double smallFontSize =
-            cardWidth * 0.04; // Reduced from 0.045 to 0.04
+        final double headerHeight = cardWidth * 0.23;
+        final double iconSize = cardWidth * 0.12;
+        final double fontSize = cardWidth * 0.055;
+        final double smallFontSize = cardWidth * 0.04;
 
         return Card(
           elevation: 1,

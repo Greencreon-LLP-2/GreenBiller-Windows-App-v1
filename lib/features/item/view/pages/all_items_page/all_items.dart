@@ -170,8 +170,6 @@ class AllItemsPage extends HookConsumerWidget {
           return;
         }
 
-
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Items imported successfully'),
@@ -197,8 +195,8 @@ class AllItemsPage extends HookConsumerWidget {
       appBar: AppBar(
         title: const Text(
           'All Items',
-          
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20,color: Colors.white),
+          style: TextStyle(
+              fontWeight: FontWeight.w600, fontSize: 20, color: Colors.white),
         ),
         backgroundColor: accentColor,
         foregroundColor: Colors.white,

@@ -231,9 +231,12 @@ class StockTransferItem extends HookConsumerWidget {
           selectedToStore.value == null ||
           selectedFromWarehouse.value == null ||
           selectedToWarehouse.value == null) {
-        _showErrorSnackBar(context, 'Please fill all required fields');
+        if (context.mounted) {
+          _showErrorSnackBar(context, 'Please fill all required fields');
+        }
         return;
       }
+
       try {
         final service = SalesViewService(accessToken);
         final payload = {
@@ -247,10 +250,18 @@ class StockTransferItem extends HookConsumerWidget {
           'status': '1',
         };
         await service.createStockTransferItem(payload);
-        _showSuccessSnackBar(
-            context, 'Stock transfered successfully!', Icons.check_circle);
+
+        if (context.mounted) {
+          _showSuccessSnackBar(
+            context,
+            'Stock transferred successfully!',
+            Icons.check_circle,
+          );
+        }
       } catch (e) {
-        _showErrorSnackBar(context, 'Error: ${e.toString()}');
+        if (context.mounted) {
+          _showErrorSnackBar(context, 'Error: ${e.toString()}');
+        }
       }
     }
 

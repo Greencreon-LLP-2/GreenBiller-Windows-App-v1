@@ -8,7 +8,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hooks_riverpod/legacy.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-// CUSTOM PACKAGE: Commented out CustomizablePackage class
 /*
 class CustomizablePackage {
   final String id;
@@ -840,7 +839,8 @@ class PackagesPage extends HookConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.green.shade50,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: accentColor,
+        foregroundColor: Colors.white,
         elevation: 4,
         shadowColor: primaryColor.withOpacity(0.3),
         leading: IconButton(
@@ -852,7 +852,7 @@ class PackagesPage extends HookConsumerWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(Icons.arrow_back_ios_new,
-                color: Colors.black, size: 16),
+                color: Colors.white, size: 16),
           ),
         ),
         title: Row(
@@ -873,7 +873,7 @@ class PackagesPage extends HookConsumerWidget {
                 Text(
                   'Available Packages',
                   style: TextStyle(
-                    color: Colors.black,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),
@@ -881,7 +881,7 @@ class PackagesPage extends HookConsumerWidget {
                 Text(
                   'Choose the perfect plan for you',
                   style: TextStyle(
-                    color: Colors.black,
+                    color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
                   ),

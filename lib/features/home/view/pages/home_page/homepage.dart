@@ -254,7 +254,7 @@ class HomePage extends HookConsumerWidget {
                                 _buildNavSubItem(
                                   title: 'Purchase Bills',
                                   icon: Icons.receipt,
-                                  index: 18,
+                                  index: 16,
                                   selectedIndex: selectedIndex.value,
                                   onTap: () => selectedIndex.value = 16,
                                 ),
@@ -512,22 +512,22 @@ class HomePage extends HookConsumerWidget {
                                 color: textPrimaryColor,
                               ),
                             ),
-                            const Spacer(),
-                            IconButton(
-                              icon: const Icon(Icons.search),
-                              onPressed: () {},
-                              color: textSecondaryColor,
-                            ),
-                            IconButton(
-                              icon: const Badge(
-                                label: Text("2"),
-                                child: Icon(Icons.notifications_outlined),
-                              ),
-                              onPressed: () {
-                                showNotificationOverlay(context);
-                              },
-                              color: textSecondaryColor,
-                            ),
+                            // const Spacer(),
+                            // IconButton(
+                            //   icon: const Icon(Icons.search),
+                            //   onPressed: () {},
+                            //   color: textSecondaryColor,
+                            // ),
+                            // IconButton(
+                            //   icon: const Badge(
+                            //     label: Text("2"),
+                            //     child: Icon(Icons.notifications_outlined),
+                            //   ),
+                            //   onPressed: () {
+                            //     showNotificationOverlay(context);
+                            //   },
+                            //   color: textSecondaryColor,
+                            // ),
                           ],
                         ),
                       ),
