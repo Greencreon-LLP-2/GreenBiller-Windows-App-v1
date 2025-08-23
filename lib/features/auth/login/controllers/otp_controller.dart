@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:green_biller/features/auth/login/model/user_model.dart';
 import 'package:green_biller/features/auth/login/services/auth_service.dart';
-import 'package:green_biller/features/auth/login/services/GoRouterNavigationService.dart';
+
 import 'package:green_biller/features/auth/login/services/otp_service.dart';
 import 'package:green_biller/features/auth/login/services/snackbar_service.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -26,6 +28,7 @@ class OtpController {
   }
 
   Future<void> verifyOtpController(
+    BuildContext context,
     String otp,
     String phoneNumber,
     String countryCode,
@@ -39,7 +42,6 @@ class OtpController {
       if (result['status'] == 'success') {
         final decodedData = result['data'];
         final isExistingUser = result['is_existing_user'] == true;
-
         if (isExistingUser) {
           final data = UserModel.fromJson(decodedData);
 
@@ -53,7 +55,7 @@ class OtpController {
 
           // Use safe navigation with delay
           try {
-            GoRouterNavigationService.goWithDelay('/homepage', replace: true);
+            context.go('/homepage');
           } catch (e, stack) {
             print(e);
             print(stack);

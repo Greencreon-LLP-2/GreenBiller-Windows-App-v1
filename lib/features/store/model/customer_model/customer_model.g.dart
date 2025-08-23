@@ -109,8 +109,8 @@ Map<String, dynamic> _$CustomerDataToJson(_CustomerData instance) =>
 _CustomerInsights _$CustomerInsightsFromJson(Map<String, dynamic> json) =>
     _CustomerInsights(
       totalCustomers: (json['total_customers'] as num?)?.toInt(),
-      newCustomersLast30Days:
-          (json['new_customers_last_30_days'] as num?)?.toInt(),
+      newCustomersLast30Days: (json['new_customers_last_30_days'] as num?)
+          ?.toInt(),
     );
 
 Map<String, dynamic> _$CustomerInsightsToJson(_CustomerInsights instance) =>

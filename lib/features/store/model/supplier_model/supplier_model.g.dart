@@ -93,8 +93,8 @@ Map<String, dynamic> _$SupplierDataToJson(_SupplierData instance) =>
 _SupplierInsights _$SupplierInsightsFromJson(Map<String, dynamic> json) =>
     _SupplierInsights(
       totalSuppliers: (json['total_suppliers'] as num?)?.toInt(),
-      newSuppliersLast30Days:
-          (json['new_suppliers_last_30_days'] as num?)?.toInt(),
+      newSuppliersLast30Days: (json['new_suppliers_last_30_days'] as num?)
+          ?.toInt(),
     );
 
 Map<String, dynamic> _$SupplierInsightsToJson(_SupplierInsights instance) =>

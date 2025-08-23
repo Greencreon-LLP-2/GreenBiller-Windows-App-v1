@@ -62,7 +62,7 @@ class _UserPermissionDialogState extends State<UserPermissionDialog> {
                 ),
                 onPressed: () {
                   final updatedUser = widget.user.copyWith(
-                    status: isActive,
+                    status: isActive ? 'active' : '',
                     userCard: canEditBills,
                     mobileVerify: canViewReports,
                   );

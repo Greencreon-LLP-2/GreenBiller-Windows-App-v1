@@ -11,17 +11,18 @@ class OtpVerificationWidget extends HookConsumerWidget {
   final Function(String, String) onSwitchToSignUp;
   final int phone;
   final String countryCode;
-
+  final BuildContext context;
   const OtpVerificationWidget({
     super.key,
     required this.onSwitchToLogin,
     required this.onSwitchToSignUp,
     required this.phone,
     required this.countryCode,
+    required this.context,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext worthlessContext, WidgetRef ref) {
     final digit1Controller = useTextEditingController();
     final digit2Controller = useTextEditingController();
     final digit3Controller = useTextEditingController();
@@ -61,6 +62,7 @@ class OtpVerificationWidget extends HookConsumerWidget {
 
       try {
         await OtpController().verifyOtpController(
+          worthlessContext,
           otp,
           phone.toString(),
           countryCode,

@@ -12,9 +12,7 @@ class UserSettingsPage extends StatefulWidget {
 }
 
 class _UserSettingsPageState extends State<UserSettingsPage> {
-  final List<User> users = [
-   
-  ];
+  final List<User> users = [];
 
   String searchQuery = '';
   int? selectedUserId;
@@ -27,13 +25,9 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
   String _selectedStore = 'Main Store';
   bool _isActive = true;
 
-  final List<String> _roles = [
-   
-  ];
+  final List<String> _roles = [];
 
-  final List<String> _stores = [
-  
-  ];
+  final List<String> _stores = [];
 
   final List<String> _filters = ['All', 'Active', 'Inactive'];
 
@@ -408,7 +402,8 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
                             ),
                           ),
                         ),
-                        _buildStatusBadge(user.status ?? false),
+                        _buildStatusBadge(
+                            user.status == 'active' ? true : false),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -785,7 +780,7 @@ class _UserSettingsPageState extends State<UserSettingsPage> {
       userLevel: _selectedRole,
       storeId: _selectedStore,
       employeeCode: _employeeCodeController.text,
-      status: _isActive,
+      status: _isActive ? 'active' : '',
     );
 
     setState(() {
