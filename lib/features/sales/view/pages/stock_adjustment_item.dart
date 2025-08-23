@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:green_biller/core/constants/colors.dart';
@@ -263,9 +264,9 @@ class StockAdjustmentItem extends HookConsumerWidget {
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: false,
-            leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context)),
+            // leading: IconButton(
+            //     icon: const Icon(Icons.arrow_back, color: Colors.white),
+            //     onPressed: () => Navigator.pop(context)),
             title: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

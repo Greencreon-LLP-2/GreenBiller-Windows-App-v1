@@ -574,7 +574,8 @@ class PurchaseSummary extends HookConsumerWidget {
           },
         ),
         title: const Text('Purchase Summary'),
-        backgroundColor: accentLightColor,
+        backgroundColor: accentColor,
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: Padding(

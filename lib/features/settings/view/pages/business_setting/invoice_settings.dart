@@ -4,6 +4,9 @@ import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/features/settings/services/invoice_settings_service.dart';
 import 'package:green_biller/features/store/controllers/view_store_controller.dart';
 import 'package:green_biller/utils/custom_appbar.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 class InvoiceSettingsPage extends StatefulWidget {
   final String accessToken;
@@ -46,6 +49,7 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
   String? _errorMessage = '';
   late InvoiceSettingsService _service;
   late Map<String, String> _storeMap;
+
   @override
   void initState() {
     super.initState();
@@ -131,7 +135,6 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-
         _errorMessage = 'Error fetching settings: $e';
       });
     }
@@ -200,7 +203,6 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
               ),
             ),
           );
-          // Refresh settings after saving
           await _fetchSettings();
         }
       } catch (e) {
@@ -300,11 +302,13 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
     return Column(
       children: [
         _buildStoreDropdown(),
+        const SizedBox(
+          height: 20,
+        ),
         if (_isshowSettings)
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Left: Settings Form
               Expanded(
                 flex: 2,
                 child: Form(
@@ -321,7 +325,6 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                 ),
               ),
               const SizedBox(width: 24),
-              // Right: Preview Panel
               Expanded(
                 flex: 1,
                 child: _buildPreviewCard(),
@@ -501,6 +504,9 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
         decoration: InputDecoration(
           hintText: "Select Store",
           prefixIcon: Icon(Icons.store, color: Colors.green.shade600),
+          border: InputBorder.none, 
+          enabledBorder: InputBorder.none, 
+          focusedBorder: InputBorder.none, 
         ),
       ),
     );
@@ -798,203 +804,208 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
     return _buildCard(
       title: 'Invoice Preview',
       icon: Icons.preview,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "INVOICE",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: accentColor,
-                  ),
-                ),
-                Text(
-                  "${_invoicePrefixController.text}${_startingNumberController.text}",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            if (_showLogo) ...[
-              Container(
-                height: 50,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: accentColor.withOpacity(0.3)),
-                ),
-                child: const Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.business, color: accentColor),
-                      SizedBox(width: 8),
-                      Text(
-                        "Your Logo Here",
-                        style: TextStyle(
-                            color: accentColor, fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-            Text(
-              _businessNameController.text.isEmpty
-                  ? "Your Business Name"
-                  : _businessNameController.text,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _businessAddressController.text.isEmpty
-                  ? "Your Business Address"
-                  : _businessAddressController.text,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Email: ${_businessEmailController.text.isEmpty ? "your@email.com" : _businessEmailController.text}",
-              style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-            ),
-            Text(
-              "Phone: ${_businessPhoneController.text.isEmpty ? "+1 (555) 123-4567" : _businessPhoneController.text}",
-              style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-            ),
-            if (_taxIdController.text.isNotEmpty) ...[
-              Text(
-                "Tax ID: ${_taxIdController.text}",
-                style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-              ),
-            ],
-            const Divider(height: 30),
-            const Text(
-              "Bill To:",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const Text(
-              "Sample Customer\n123 Customer Street\nCity, State 12345",
-              style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Row(
-                children: [
-                  Expanded(
-                      child: Text("Description",
-                          style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(
-                      child: Text("Qty",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(
-                      child: Text("Price",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontWeight: FontWeight.bold))),
-                  Expanded(
-                      child: Text("Total",
-                          textAlign: TextAlign.right,
-                          style: TextStyle(fontWeight: FontWeight.bold))),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildInvoiceItem("Sample Product A", "2", "₹500.00", "₹1,000.00"),
-            _buildInvoiceItem(
-                "Sample Service B", "1", "₹1,500.00", "₹1,500.00"),
-            const Divider(height: 20),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("Subtotal:",
-                    style: TextStyle(fontWeight: FontWeight.w500)),
-                Text("₹2,500.00",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-              ],
-            ),
-            if (_enableTax) ...[
-              const SizedBox(height: 8),
+      child: SingleChildScrollView(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "Tax (${_taxRateController.text.isEmpty ? "0" : _taxRateController.text}%):",
-                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  const Text(
+                    "INVOICE",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                    ),
                   ),
                   Text(
-                    "₹${_calculateTax().toStringAsFixed(2)}",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    "${_invoicePrefixController.text}${_startingNumberController.text}",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                 ],
               ),
-            ],
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
+              const SizedBox(height: 20),
+              if (_showLogo) ...[
+                Container(
+                  height: 50,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: accentColor.withOpacity(0.3)),
+                  ),
+                  child: const Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.business, color: accentColor),
+                        SizedBox(width: 8),
+                        Text(
+                          "Your Logo Here",
+                          style: TextStyle(
+                              color: accentColor, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+              Text(
+                _businessNameController.text.isEmpty
+                    ? "Your Business Name"
+                    : _businessNameController.text,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
-              child: Row(
+              const SizedBox(height: 8),
+              Text(
+                _businessAddressController.text.isEmpty
+                    ? "Your Business Address"
+                    : _businessAddressController.text,
+                style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Email: ${_businessEmailController.text.isEmpty ? "your@email.com" : _businessEmailController.text}",
+                style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+              ),
+              Text(
+                "Phone: ${_businessPhoneController.text.isEmpty ? "+1 (555) 123-4567" : _businessPhoneController.text}",
+                style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+              ),
+              if (_taxIdController.text.isNotEmpty) ...[
+                Text(
+                  "Tax ID: ${_taxIdController.text}",
+                  style:
+                      const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                ),
+              ],
+              const Divider(height: 30),
+              const Text(
+                "Bill To:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const Text(
+                "Sample Customer\n123 Customer Street\nCity, State 12345",
+                style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Row(
+                  children: [
+                    Expanded(
+                        child: Text("Description",
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    Expanded(
+                        child: Text("Qty",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    Expanded(
+                        child: Text("Price",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                    Expanded(
+                        child: Text("Total",
+                            textAlign: TextAlign.right,
+                            style: TextStyle(fontWeight: FontWeight.bold))),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildInvoiceItem(
+                  "Sample Product A", "2", "₹500.00", "₹1,000.00"),
+              _buildInvoiceItem(
+                  "Sample Service B", "1", "₹1,500.00", "₹1,500.00"),
+              const Divider(height: 20),
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Total:",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text(
-                    "₹${_calculateTotal().toStringAsFixed(2)}",
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: accentColor),
-                  ),
+                  Text("Subtotal:",
+                      style: TextStyle(fontWeight: FontWeight.w500)),
+                  Text("₹2,500.00",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
-            ),
-            if (_includeNotes && _invoiceNotesController.text.isNotEmpty) ...[
+              if (_enableTax) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Tax (${_taxRateController.text.isEmpty ? "0" : _taxRateController.text}%):",
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    Text(
+                      "₹${_calculateTax().toStringAsFixed(2)}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Total:",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(
+                      "₹${_calculateTotal().toStringAsFixed(2)}",
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: accentColor),
+                    ),
+                  ],
+                ),
+              ),
+              if (_includeNotes && _invoiceNotesController.text.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                const Text("Notes:",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text(
+                  _invoiceNotesController.text,
+                  style:
+                      const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                ),
+              ],
               const SizedBox(height: 20),
-              const Text("Notes:",
+              const Text("Payment Information:",
                   style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Text(
-                _invoiceNotesController.text,
+                _paymentDetailsController.text.isEmpty
+                    ? "Payment details will appear here"
+                    : _paymentDetailsController.text,
                 style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
               ),
             ],
-            const SizedBox(height: 20),
-            const Text("Payment Information:",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(
-              _paymentDetailsController.text.isEmpty
-                  ? "Payment details will appear here"
-                  : _paymentDetailsController.text,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -1033,6 +1044,270 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
 
   double _calculateTotal() {
     return 2500.0 + _calculateTax();
+  }
+
+  Future<void> _printInvoice() async {
+    final pdf = pw.Document();
+    // Load the custom font
+    final fontData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+    final ttf = pw.Font.ttf(fontData);
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(
+                    "INVOICE",
+                    style: pw.TextStyle(
+                      fontSize: 24,
+                      fontWeight: pw.FontWeight.bold,
+                      color:
+                          PdfColor.fromHex(accentColor.value.toRadixString(16)),
+                      font: ttf,
+                    ),
+                  ),
+                  pw.Text(
+                    "${_invoicePrefixController.text}${_startingNumberController.text}",
+                    style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold,
+                      fontSize: 16,
+                      font: ttf,
+                    ),
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 20),
+              if (_showLogo) ...[
+                pw.Container(
+                  height: 50,
+                  width: double.infinity,
+                  decoration: pw.BoxDecoration(
+                    color:
+                        PdfColor.fromHex(accentColor.value.toRadixString(16)),
+                    border: pw.Border.all(
+                        color: PdfColor.fromHex(
+                            accentColor.value.toRadixString(16))),
+                    borderRadius: pw.BorderRadius.circular(8),
+                  ),
+                  child: pw.Center(
+                    child: pw.Text(
+                      "Your Logo Here",
+                      style: pw.TextStyle(
+                        color: PdfColor.fromHex(
+                            accentColor.value.toRadixString(16)),
+                        fontWeight: pw.FontWeight.bold,
+                        font: ttf,
+                      ),
+                    ),
+                  ),
+                ),
+                pw.SizedBox(height: 20),
+              ],
+              pw.Text(
+                _businessNameController.text.isEmpty
+                    ? "Your Business Name"
+                    : _businessNameController.text,
+                style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 16,
+                  font: ttf,
+                ),
+              ),
+              pw.SizedBox(height: 8),
+              pw.Text(
+                _businessAddressController.text.isEmpty
+                    ? "Your Business Address"
+                    : _businessAddressController.text,
+                style: pw.TextStyle(
+                    fontSize: 12, color: PdfColors.grey, font: ttf),
+              ),
+              pw.SizedBox(height: 8),
+              pw.Text(
+                "Email: ${_businessEmailController.text.isEmpty ? "your@email.com" : _businessEmailController.text}",
+                style: pw.TextStyle(
+                    fontSize: 12, color: PdfColors.grey, font: ttf),
+              ),
+              pw.Text(
+                "Phone: ${_businessPhoneController.text.isEmpty ? "+1 (555) 123-4567" : _businessPhoneController.text}",
+                style: pw.TextStyle(
+                    fontSize: 12, color: PdfColors.grey, font: ttf),
+              ),
+              if (_taxIdController.text.isNotEmpty) ...[
+                pw.Text(
+                  "Tax ID: ${_taxIdController.text}",
+                  style: pw.TextStyle(
+                      fontSize: 12, color: PdfColors.grey, font: ttf),
+                ),
+              ],
+              pw.Divider(height: 30),
+              pw.Text(
+                "Bill To:",
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: ttf),
+              ),
+              pw.Text(
+                "Sample Customer\n123 Customer Street\nCity, State 12345",
+                style: pw.TextStyle(
+                    fontSize: 14, color: PdfColors.grey, font: ttf),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Container(
+                padding: const pw.EdgeInsets.all(12),
+                decoration: pw.BoxDecoration(
+                  color: PdfColor.fromHex(accentColor.value.toRadixString(16)),
+                  borderRadius: pw.BorderRadius.circular(6),
+                ),
+                child: pw.Row(
+                  children: [
+                    pw.Expanded(
+                        child: pw.Text("Description",
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold, font: ttf))),
+                    pw.Expanded(
+                        child: pw.Text("Qty",
+                            textAlign: pw.TextAlign.center,
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold, font: ttf))),
+                    pw.Expanded(
+                        child: pw.Text("Price",
+                            textAlign: pw.TextAlign.center,
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold, font: ttf))),
+                    pw.Expanded(
+                        child: pw.Text("Total",
+                            textAlign: pw.TextAlign.right,
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold, font: ttf))),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 8),
+              _buildPdfInvoiceItem(
+                  "Sample Product A", "2", "₹500.00", "₹1,000.00", ttf),
+              _buildPdfInvoiceItem(
+                  "Sample Service B", "1", "₹1,500.00", "₹1,500.00", ttf),
+              pw.Divider(height: 20),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text("Subtotal:",
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.normal, font: ttf)),
+                  pw.Text("₹2,500.00",
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold, font: ttf)),
+                ],
+              ),
+              if (_enableTax) ...[
+                pw.SizedBox(height: 8),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      "Tax (${_taxRateController.text.isEmpty ? "0" : _taxRateController.text}%):",
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.normal, font: ttf),
+                    ),
+                    pw.Text(
+                      "₹${_calculateTax().toStringAsFixed(2)}",
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold, font: ttf),
+                    ),
+                  ],
+                ),
+              ],
+              pw.SizedBox(height: 8),
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(vertical: 8),
+                decoration: const pw.BoxDecoration(
+                  border: pw.Border(top: pw.BorderSide(color: PdfColors.grey)),
+                ),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text("Total:",
+                        style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 16,
+                            font: ttf)),
+                    pw.Text(
+                      "₹${_calculateTotal().toStringAsFixed(2)}",
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 16,
+                          color: PdfColor.fromHex(
+                              accentColor.value.toRadixString(16)),
+                          font: ttf),
+                    ),
+                  ],
+                ),
+              ),
+              if (_includeNotes && _invoiceNotesController.text.isNotEmpty) ...[
+                pw.SizedBox(height: 20),
+                pw.Text("Notes:",
+                    style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold, font: ttf)),
+                pw.SizedBox(height: 8),
+                pw.Text(
+                  _invoiceNotesController.text,
+                  style: pw.TextStyle(
+                      fontSize: 12, color: PdfColors.grey, font: ttf),
+                ),
+              ],
+              pw.SizedBox(height: 20),
+              pw.Text("Payment Information:",
+                  style:
+                      pw.TextStyle(fontWeight: pw.FontWeight.bold, font: ttf)),
+              pw.SizedBox(height: 8),
+              pw.Text(
+                _paymentDetailsController.text.isEmpty
+                    ? "Payment details will appear here"
+                    : _paymentDetailsController.text,
+                style: pw.TextStyle(
+                    fontSize: 12, color: PdfColors.grey, font: ttf),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
+  }
+
+  pw.Widget _buildPdfInvoiceItem(
+      String desc, String qty, String price, String total, pw.Font font) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 4),
+      child: pw.Row(
+        children: [
+          pw.Expanded(
+              child:
+                  pw.Text(desc, style: pw.TextStyle(fontSize: 12, font: font))),
+          pw.Expanded(
+              child: pw.Text(qty,
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: 12, font: font))),
+          pw.Expanded(
+              child: pw.Text(price,
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: 12, font: font))),
+          pw.Expanded(
+              child: pw.Text(total,
+                  textAlign: pw.TextAlign.right,
+                  style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                      font: font))),
+        ],
+      ),
+    );
   }
 
   void _showTemplateSelector() {
@@ -1119,14 +1394,35 @@ class _InvoiceSettingsPageState extends State<InvoiceSettingsPage> {
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close),
+                    Row(
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: _printInvoice,
+                          icon: const Icon(Icons.print, size: 16),
+                          label: const Text("Print Invoice"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: accentColor,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
                     ),
                   ],
                 ),
                 const Divider(),
-                Expanded(child: _buildPreviewCard()),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: _buildPreviewCard(),
+                  ),
+                ),
               ],
             ),
           ),

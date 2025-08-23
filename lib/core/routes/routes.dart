@@ -18,7 +18,7 @@ import 'package:green_biller/features/payment/view/pages/all_payment_page/paymen
 import 'package:green_biller/features/purchase/view/pages/purchase_page/purchase_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_return_page/purchase_return_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_returns_view/purchase_return_view_page.dart';
-import 'package:green_biller/features/purchase/view/pages/purchase_view/purchase_view_page.dart';
+import 'package:green_biller/features/purchase/view/pages/purchase_view/purchase_bills.dart';
 import 'package:green_biller/features/reports/purchase_report/view/pages/purchase_item_report.dart';
 import 'package:green_biller/features/reports/purchase_report/view/pages/purchase_summary.dart';
 import 'package:green_biller/features/reports/purchase_report/view/pages/purchase_supplier_base_summary.dart';
@@ -267,8 +267,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const PurchaseSupplierBaseSummary(),
       ),
       GoRoute(
-        path: '/purchase-view',
-        builder: (context, state) => PurchaseViewPage(),
+        path: '/purchase-bills',
+        builder: (context, state) => PurchaseBills(),
       ),
       GoRoute(
         path: '/sales-view',
@@ -294,7 +294,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/active-log',
         builder: (context, state) => const ActiveLogPage(),
       ),
-    
       GoRoute(
         path: '/sale-list',
         builder: (context, state) => const SalesListPage(),

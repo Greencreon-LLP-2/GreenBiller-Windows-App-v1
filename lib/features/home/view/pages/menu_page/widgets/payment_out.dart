@@ -13,16 +13,16 @@ class PaymentOutPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: primaryColor,
+        backgroundColor: accentColor,
         elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios,
-              color: Color.fromARGB(255, 0, 0, 0)),
-        ),
+        // leading: IconButton(
+        //   onPressed: () => Navigator.pop(context),
+        //   icon: const Icon(Icons.arrow_back_ios,
+        //       color: Color.fromARGB(255, 0, 0, 0)),
+        // ),
         title: const Text(
           "Payment Out",
-          style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+          style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
@@ -42,8 +42,6 @@ class PaymentOutPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-
-      
             _buildSectionTitle("Payment Details"),
             CardContainer(
               child: Column(
@@ -56,8 +54,6 @@ class PaymentOutPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-
-  
             _buildSectionTitle("Additional Information"),
             CardContainer(
               child: Column(

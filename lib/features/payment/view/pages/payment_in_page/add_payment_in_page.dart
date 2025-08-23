@@ -125,11 +125,11 @@ class _AddPaymentInPageState extends ConsumerState<AddPaymentInPage> {
         backgroundColor: accentColor,
         elevation: 5,
         shadowColor: Colors.black.withOpacity(0.2),
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          splashRadius: 24,
-        ),
+        // leading: IconButton(
+        //   onPressed: () => Navigator.pop(context),
+        //   icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+        //   splashRadius: 24,
+        // ),
         title: const Text(
           "Payment In",
           style: TextStyle(
