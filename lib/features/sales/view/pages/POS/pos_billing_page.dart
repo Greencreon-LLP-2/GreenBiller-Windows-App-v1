@@ -492,13 +492,13 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
                             'Cart cleared successfully!', Icons.delete);
                       },
                     ),
-                    const SizedBox(width: 12),
-                    _buildActionButton(
-                      'Generate Receipt',
-                      Icons.receipt_long,
-                      secondaryColor,
-                      _generateReceipt,
-                    ),
+                    //  const SizedBox(width: 12),
+                    // _buildActionButton(
+                    //   'Generate Receipt',
+                    //   Icons.receipt_long,
+                    //   secondaryColor,
+                    //   _generateReceipt,
+                    // ),
                   ],
                 ),
               ),
@@ -1957,8 +1957,22 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Payment Completed'),
-        content: const Text(
-            'Would you like to print the receipt or proceed to the next order?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+                'Would you like to preview the receipt or proceed to the next order?'),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 400, // Adjust height as needed
+
+              width: 400,
+              child: _buildReceiptPreview(
+                  receiptItems), // Show receipt preview widget
+            ),
+          ],
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         actions: [
           TextButton(
@@ -1977,7 +1991,7 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              await _printReceipt(receiptItems);
+              await _printReceipt(receiptItems); // Print after preview
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: accentColor,
@@ -2430,50 +2444,50 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
     return pdf.save();
   }
 
-  void _generateReceipt() {
-    if (cartItems.isEmpty) {
-      _showErrorSnackBar('No items in cart to generate receipt');
-      return;
-    }
-    final List<CartItem> receiptItems = List.from(cartItems);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          'Receipt Preview',
-          style: TextStyle(color: Colors.black),
-        ),
-        content: SizedBox(
-          child: _buildReceiptPreview(receiptItems),
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _printReceipt(receiptItems);
-              _showPrintDialog(); // Show post-print dialog
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: accentColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text(
-              'Print Receipt',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // void _generateReceipt() {
+  //   if (cartItems.isEmpty) {
+  //     _showErrorSnackBar('No items in cart to generate receipt');
+  //     return;
+  //   }
+  //   final List<CartItem> receiptItems = List.from(cartItems);
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text(
+  //         'Receipt Preview',
+  //         style: TextStyle(color: Colors.black),
+  //       ),
+  //       content: SizedBox(
+  //         child: _buildReceiptPreview(receiptItems),
+  //       ),
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text(
+  //             'Cancel',
+  //           ),
+  //         ),
+  //         ElevatedButton(
+  //           onPressed: () async {
+  //             Navigator.pop(context);
+  //             await _printReceipt(receiptItems);
+  //             _showPrintDialog(); // Show post-print dialog
+  //           },
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: accentColor,
+  //             shape: RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.circular(8)),
+  //           ),
+  //           child: const Text(
+  //             'Print Receipt',
+  //             style: TextStyle(color: Colors.white),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
 
 class CartItem {
