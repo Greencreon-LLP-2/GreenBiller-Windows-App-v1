@@ -444,7 +444,7 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
             ],
           ),
           child: AppBar(
-            backgroundColor: Colors.transparent,
+            backgroundColor: accentColor,
             elevation: 0,
             centerTitle: false,
             leading: IconButton(
@@ -1011,7 +1011,7 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
             ],
           ),
           const SizedBox(height: 24),
-          Container(
+          SizedBox(
             height: 360,
             child: _buildCartTable(),
           ),
@@ -2439,10 +2439,9 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.transparent,
         title: const Text(
           'Receipt Preview',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.black),
         ),
         content: SizedBox(
           child: _buildReceiptPreview(receiptItems),
@@ -2451,8 +2450,9 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel',
-                style: TextStyle(color: Color.fromARGB(255, 254, 254, 254))),
+            child: const Text(
+              'Cancel',
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
