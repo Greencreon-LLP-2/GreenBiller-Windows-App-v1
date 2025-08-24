@@ -444,7 +444,7 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
             ],
           ),
           child: AppBar(
-            backgroundColor: Colors.transparent,
+            backgroundColor: accentColor,
             elevation: 0,
             centerTitle: false,
             leading: IconButton(
@@ -492,13 +492,13 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
                             'Cart cleared successfully!', Icons.delete);
                       },
                     ),
-                    const SizedBox(width: 12),
-                    _buildActionButton(
-                      'Generate Receipt',
-                      Icons.receipt_long,
-                      secondaryColor,
-                      _generateReceipt,
-                    ),
+                    //  const SizedBox(width: 12),
+                    // _buildActionButton(
+                    //   'Generate Receipt',
+                    //   Icons.receipt_long,
+                    //   secondaryColor,
+                    //   _generateReceipt,
+                    // ),
                   ],
                 ),
               ),
@@ -546,19 +546,17 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
   }
 
   Widget _buildReceiptPreview(List<CartItem> receiptItems) {
-    // Company details (same as in generateReceiptPDF)
+    // Build a receipt preview matching the attached sample (no extra features)
     const companyName = 'Green Biller';
     const companyMobile = '+91 1234567890';
     const companyEmail = 'contact@greenbiller.com';
     const companyLogoUrl = 'https://via.placeholder.com/100x100';
 
-    // Invoice details
     final invoiceNo = 'INV-${DateTime.now().millisecondsSinceEpoch}';
-    final invoiceDate = DateFormat('dd-MM-yyyy').format(DateTime.now());
+    final invoiceDate = DateFormat('dd.MM.yyyy').format(DateTime.now());
     final customerName = selectedCustomer ?? 'Walk-in Customer';
     final customerId = selectedCustomerId ?? 'N/A';
 
-    // Calculate totals
     final totalAmount = receiptItems.fold(
         0.0, (sum, item) => sum + (item.price * item.quantity));
     final totalDiscount =
@@ -574,254 +572,336 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
     const dueAmount = 0.0;
     final totalPayable = grandTotal;
 
+    // determine dominant tax rate for display (falls back to 0)
+    final Map<double, int> taxCount = {};
+    for (var it in receiptItems) {
+      final prod = productData.firstWhere((p) => p['itemName'] == it.name,
+          orElse: () => {'taxRate': 0.0});
+      final r = double.tryParse(prod['taxRate'].toString()) ?? 0.0;
+      taxCount[r] = (taxCount[r] ?? 0) + 1;
+    }
+    final displayTaxRate = taxCount.isNotEmpty
+        ? taxCount.entries.reduce((a, b) => a.value >= b.value ? a : b).key
+        : 0.0;
+
     return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Company Details
-          Center(
-            child: Column(
-              children: [
-                Image.network(
-                  companyLogoUrl,
-                  width: 80,
-                  height: 80,
-                  errorBuilder: (context, error, stackTrace) => const Text(
-                    '[Company Logo]',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  companyName,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Mobile: $companyMobile',
-                  style: const TextStyle(fontSize: 12),
-                ),
-                Text(
-                  'Email: $companyEmail',
-                  style: const TextStyle(fontSize: 10),
-                ),
-                const Divider(),
-              ],
-            ),
+      child: Center(
+        child: Container(
+          width: 380,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300),
           ),
-          // Invoice Details
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Invoice: $invoiceNo',
-                    style: const TextStyle(fontSize: 12)),
-                Text('Date: $invoiceDate',
-                    style: const TextStyle(fontSize: 12)),
-                Text('Customer: $customerName',
-                    style: const TextStyle(fontSize: 12)),
-                Text('Customer ID: $customerId',
-                    style: const TextStyle(fontSize: 12)),
-              ],
-            ),
-          ),
-          const Divider(),
-          // Item Header
-          Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Expanded(
-                  flex: 3,
-                  child: Text('Item',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 12))),
-              const Expanded(
-                  flex: 1,
-                  child: Text('Qty',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 12))),
-              const Expanded(
-                  flex: 2,
-                  child: Text('Price',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 12))),
-              const Expanded(
-                  flex: 2,
-                  child: Text('Total',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 12))),
-            ],
-          ),
-          const Divider(),
-          // Item List
-          ...receiptItems.map((item) {
-            final product = productData.firstWhere(
-                (p) => p['itemName'] == item.name,
-                orElse: () => {'taxRate': 0.0});
-            final taxRate =
-                double.tryParse(product['taxRate'].toString()) ?? 0.0;
-            final itemTotal = (item.price * item.quantity) -
-                item.discount +
-                ((item.price * item.quantity) * taxRate / 100);
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
+              Image.network(
+                companyLogoUrl,
+                width: 96,
+                height: 64,
+                fit: BoxFit.contain,
+                errorBuilder: (c, e, s) => const SizedBox.shrink(),
+              ),
+              const SizedBox(height: 8),
+              Text(companyName,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
+              Text('Phone Number: $companyMobile',
+                  style: const TextStyle(fontSize: 12)),
+              Text('Email: $companyEmail',
+                  style: const TextStyle(fontSize: 12)),
+              const SizedBox(height: 8),
+
+              // Tax Invoice center with dashed lines
+              Row(
                 children: [
                   Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(item.name, style: const TextStyle(fontSize: 10)),
-                        Text('Tax: ${taxRate.toStringAsFixed(2)}%',
-                            style: const TextStyle(
-                                fontSize: 8, color: Colors.grey)),
-                      ],
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // left side line
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: List.generate(
+                            (constraints.maxWidth / 6.64).floor(), // dash count
+                            (index) => const Text("-"),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text(
+                      "Tax Invoice",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                   ),
                   Expanded(
-                      flex: 1,
-                      child: Text(item.quantity.toString(),
-                          style: const TextStyle(fontSize: 10))),
-                  Expanded(
-                      flex: 2,
-                      child: Text(currencyFormatter.format(item.price),
-                          style: const TextStyle(fontSize: 10))),
-                  Expanded(
-                      flex: 2,
-                      child: Text(currencyFormatter.format(itemTotal),
-                          style: const TextStyle(fontSize: 10))),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // right side line
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: List.generate(
+                            (constraints.maxWidth / 6.64).floor(),
+                            (index) => const Text("-"),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
-            );
-          }),
-          const Divider(),
-          // Totals
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Subtotal', style: TextStyle(fontSize: 12)),
-                    Text(currencyFormatter.format(totalAmount),
-                        style: const TextStyle(fontSize: 12)),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Discount', style: TextStyle(fontSize: 12)),
-                    Text(currencyFormatter.format(totalDiscount),
-                        style: const TextStyle(fontSize: 12)),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Shipping', style: TextStyle(fontSize: 12)),
-                    Text(currencyFormatter.format(shipping),
-                        style: const TextStyle(fontSize: 12)),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Total Tax', style: TextStyle(fontSize: 12)),
-                    Text(currencyFormatter.format(totalTax),
-                        style: const TextStyle(fontSize: 12)),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Total Bill',
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.bold)),
-                    Text(currencyFormatter.format(grandTotal),
-                        style: const TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Due', style: TextStyle(fontSize: 12)),
-                    Text(currencyFormatter.format(dueAmount),
-                        style: const TextStyle(fontSize: 12)),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Total Payable',
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.bold)),
-                    Text(currencyFormatter.format(totalPayable),
-                        style: const TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade400),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Column(
+
+              const SizedBox(height: 10),
+
+              // Name and Customer Id (left / right)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Name: $customerName',
+                      style: const TextStyle(fontSize: 13)),
+                  Text('Customer Id: $customerId',
+                      style: const TextStyle(fontSize: 13)),
+                ],
+              ),
+              const SizedBox(height: 6),
+
+              // Invoice No and Date
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Invoice No: $invoiceNo',
+                      style: const TextStyle(fontSize: 13)),
+                  Text('Date: $invoiceDate',
+                      style: const TextStyle(fontSize: 13)),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Approx width of one dash char
+                      double dashWidth = 6.6;
+                      // how many dashes can fit in one line
+                      int dashCount =
+                          (constraints.maxWidth / dashWidth).floor();
+
+                      return Text(List.filled(dashCount, "-").join());
+                    },
+                  )),
+                ],
+              ),
+
+              // Header row for items
+              Row(
+                children: const [
+                  Expanded(
+                      flex: 6,
+                      child: Text('# Item',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13))),
+                  Expanded(
+                      flex: 2,
+                      child: Text('Price',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13))),
+                  Expanded(
+                      flex: 2,
+                      child: Text('Qty',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13))),
+                  Expanded(
+                      flex: 2,
+                      child: Text('Total',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13))),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Approx width of one dash char
+                      double dashWidth = 6.6;
+                      // how many dashes can fit in one line
+                      int dashCount =
+                          (constraints.maxWidth / dashWidth).floor();
+
+                      return Text(List.filled(dashCount, "-").join());
+                    },
+                  )),
+                ],
+              ),
+
+              // Items with numbering
+              ...receiptItems.asMap().entries.map((entry) {
+                final idx = entry.key + 1;
+                final item = entry.value;
+                final product = productData.firstWhere(
+                    (p) => p['itemName'] == item.name,
+                    orElse: () => {'taxRate': 0.0});
+                final taxRate =
+                    double.tryParse(product['taxRate'].toString()) ?? 0.0;
+                final itemTotal = (item.price * item.quantity) -
+                    item.discount +
+                    ((item.price * item.quantity) * taxRate / 100);
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Payment Method:',
-                              style: TextStyle(
-                                  fontSize: 10, fontWeight: FontWeight.bold)),
-                          Text(selectedPaymentMethod,
-                              style: const TextStyle(
-                                  fontSize: 10, color: Colors.blue)),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Amount Paid:',
-                              style: TextStyle(
-                                  fontSize: 10, fontWeight: FontWeight.bold)),
-                          Text(currencyFormatter.format(totalPayable),
-                              style: const TextStyle(fontSize: 10)),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Balance Due:',
-                              style: TextStyle(
-                                  fontSize: 10, fontWeight: FontWeight.bold)),
-                          Text(currencyFormatter.format(dueAmount),
-                              style: const TextStyle(fontSize: 10)),
-                        ],
-                      ),
+                      Expanded(
+                          flex: 6,
+                          child: Text('$idx. ${item.name}',
+                              style: const TextStyle(fontSize: 13))),
+                      Expanded(
+                          flex: 2,
+                          child: Text(currencyFormatter.format(item.price),
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(fontSize: 13))),
+                      Expanded(
+                          flex: 2,
+                          child: Text('${item.quantity}',
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(fontSize: 13))),
+                      Expanded(
+                          flex: 2,
+                          child: Text(currencyFormatter.format(itemTotal),
+                              textAlign: TextAlign.right,
+                              style: const TextStyle(fontSize: 13))),
                     ],
                   ),
-                ),
-              ],
-            ),
+                );
+              }).toList(),
+
+              Row(
+                children: [
+                  Expanded(child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Approx width of one dash char
+                      double dashWidth = 6.6;
+                      // how many dashes can fit in one line
+                      int dashCount =
+                          (constraints.maxWidth / dashWidth).floor();
+
+                      return Text(List.filled(dashCount, "-").join());
+                    },
+                  )),
+                ],
+              ),
+
+              // Totals aligned to right
+              Column(
+                children: [
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Sub Total :',
+                            style: const TextStyle(fontSize: 13)),
+                        Text(currencyFormatter.format(totalAmount),
+                            style: const TextStyle(fontSize: 13))
+                      ]),
+                  const SizedBox(height: 6),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Discount :',
+                            style: const TextStyle(fontSize: 13)),
+                        Text('-' + currencyFormatter.format(totalDiscount),
+                            style: const TextStyle(
+                              fontSize: 13,
+                            ))
+                      ]),
+                  const SizedBox(height: 6),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Shipping :',
+                            style: const TextStyle(fontSize: 13)),
+                        Text(currencyFormatter.format(shipping),
+                            style: const TextStyle(fontSize: 13))
+                      ]),
+                  const SizedBox(height: 6),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Tax (${displayTaxRate.toStringAsFixed(0)}%) :',
+                            style: const TextStyle(fontSize: 13)),
+                        Text(currencyFormatter.format(totalTax),
+                            style: const TextStyle(fontSize: 13))
+                      ]),
+                  const SizedBox(height: 6),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Total Bill :',
+                            style: const TextStyle(
+                              fontSize: 13,
+                            )),
+                        Text(currencyFormatter.format(grandTotal),
+                            style: const TextStyle(
+                              fontSize: 13,
+                            ))
+                      ]),
+                  const SizedBox(height: 6),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Due :', style: const TextStyle(fontSize: 13)),
+                        Text(currencyFormatter.format(dueAmount),
+                            style: const TextStyle(fontSize: 13))
+                      ]),
+                  const SizedBox(height: 6),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Total Payable :',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.bold)),
+                        Text(currencyFormatter.format(totalPayable),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ))
+                      ]),
+                ],
+              ),
+
+              Row(
+                children: [
+                  Expanded(child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Approx width of one dash char
+                      double dashWidth = 6.6;
+                      // how many dashes can fit in one line
+                      int dashCount =
+                          (constraints.maxWidth / dashWidth).floor();
+
+                      return Text(List.filled(dashCount, "-").join());
+                    },
+                  )),
+                ],
+              ),
+
+              const SizedBox(height: 8),
+              Text(
+                  '**VAT against this challan is payable through central registration. Thank you for your business!',
+                  style: const TextStyle(fontSize: 11),
+                  textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+            ],
           ),
-          // Footer
-          Center(
-            child: Column(
-              children: [
-                const Text('Thank you for your purchase!',
-                    style: TextStyle(fontSize: 12)),
-                Text('For any queries, contact us at $companyEmail.',
-                    style: const TextStyle(fontSize: 10)),
-                const Text('Software by Green Biller',
-                    style: TextStyle(fontSize: 10)),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -931,7 +1011,7 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
             ],
           ),
           const SizedBox(height: 24),
-          Container(
+          SizedBox(
             height: 360,
             child: _buildCartTable(),
           ),
@@ -1877,8 +1957,22 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Payment Completed'),
-        content: const Text(
-            'Would you like to print the receipt or proceed to the next order?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+                'Would you like to preview the receipt or proceed to the next order?'),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 400, // Adjust height as needed
+
+              width: 400,
+              child: _buildReceiptPreview(
+                  receiptItems), // Show receipt preview widget
+            ),
+          ],
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         actions: [
           TextButton(
@@ -1897,7 +1991,7 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              await _printReceipt(receiptItems);
+              await _printReceipt(receiptItems); // Print after preview
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: accentColor,
@@ -1999,7 +2093,7 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
                 pw.Center(
                   child: pw.Column(
                     children: [
-                      logoWidget, 
+                      logoWidget,
                       pw.SizedBox(height: 4),
                       pw.Text(
                         companyName,
@@ -2104,12 +2198,11 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
                             crossAxisAlignment: pw.CrossAxisAlignment.start,
                             children: [
                               pw.Text(
-                                item[
-                                    0], 
+                                item[0],
                                 style: const pw.TextStyle(fontSize: 7),
                               ),
                               pw.Text(
-                                'Tax: ${item[3]}', 
+                                'Tax: ${item[3]}',
                                 style: const pw.TextStyle(
                                   fontSize: 6,
                                   color: PdfColors.grey600,
@@ -2128,14 +2221,14 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
                         pw.Expanded(
                           flex: 2,
                           child: pw.Text(
-                            item[1], 
+                            item[1],
                             style: const pw.TextStyle(fontSize: 7),
                           ),
                         ),
                         pw.Expanded(
                           flex: 2,
                           child: pw.Text(
-                            item[4], 
+                            item[4],
                             style: const pw.TextStyle(fontSize: 7),
                           ),
                         ),
@@ -2272,7 +2365,7 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
                                   ),
                                 ),
                                 pw.Text(
-                                  'Cash', 
+                                  'Cash',
                                   style: pw.TextStyle(
                                     fontWeight: pw.FontWeight.bold,
                                     color: PdfColors.blue700,
@@ -2294,8 +2387,7 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
                                   ),
                                 ),
                                 pw.Text(
-                                  currencyFormatter.format(
-                                      totalPayable), 
+                                  currencyFormatter.format(totalPayable),
                                   style: const pw.TextStyle(fontSize: 8),
                                 ),
                               ],
@@ -2352,45 +2444,50 @@ class _POSBillingPageState extends ConsumerState<POSBillingPage> {
     return pdf.save();
   }
 
-  void _generateReceipt() {
-    if (cartItems.isEmpty) {
-      _showErrorSnackBar('No items in cart to generate receipt');
-      return;
-    }
-    final List<CartItem> receiptItems = List.from(cartItems);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Receipt Preview'),
-        content: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.8, 
-          height: MediaQuery.of(context).size.height * 0.6, 
-          child: _buildReceiptPreview(receiptItems),
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel',
-                style: TextStyle(color: Color(0xFF64748B))),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _printReceipt(receiptItems);
-              _showPrintDialog(); // Show post-print dialog
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: accentColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('Print Receipt'),
-          ),
-        ],
-      ),
-    );
-  }
+  // void _generateReceipt() {
+  //   if (cartItems.isEmpty) {
+  //     _showErrorSnackBar('No items in cart to generate receipt');
+  //     return;
+  //   }
+  //   final List<CartItem> receiptItems = List.from(cartItems);
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text(
+  //         'Receipt Preview',
+  //         style: TextStyle(color: Colors.black),
+  //       ),
+  //       content: SizedBox(
+  //         child: _buildReceiptPreview(receiptItems),
+  //       ),
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text(
+  //             'Cancel',
+  //           ),
+  //         ),
+  //         ElevatedButton(
+  //           onPressed: () async {
+  //             Navigator.pop(context);
+  //             await _printReceipt(receiptItems);
+  //             _showPrintDialog(); // Show post-print dialog
+  //           },
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: accentColor,
+  //             shape: RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.circular(8)),
+  //           ),
+  //           child: const Text(
+  //             'Print Receipt',
+  //             style: TextStyle(color: Colors.white),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }
 
 class CartItem {
