@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:green_biller/core/constants/colors.dart';
 
-enum FieldType {
-  text,
-  dropdown,
-  imagePicker,
-}
+enum FieldType { text, dropdown, imagePicker }
 
 class DialogField {
   final String label;
@@ -65,32 +61,24 @@ void showCustomEditDialog({
   Color primaryColor = accentColor,
   Color secondaryColor = accentColor,
   double maxWidth = 500,
-  double maxHeight = 700,
+  double maxHeight = 600,
   bool barrierDismissible = false,
 }) {
   showDialog(
     context: context,
     barrierDismissible: barrierDismissible,
     builder: (context) => Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       elevation: 10,
       clipBehavior: Clip.antiAlias,
       child: Container(
-        constraints: BoxConstraints(
-          maxWidth: maxWidth,
-          maxHeight: maxHeight,
-        ),
+        constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.white,
-              Color(0xFFF8FFF9),
-            ],
+            colors: [Colors.white, Color(0xFFF8FFF9)],
           ),
         ),
         child: StatefulBuilder(
@@ -100,8 +88,10 @@ void showCustomEditDialog({
               children: [
                 // Header
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -141,9 +131,7 @@ void showCustomEditDialog({
                           children: [
                             Text(
                               title,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
+                              style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -153,9 +141,7 @@ void showCustomEditDialog({
                             const SizedBox(height: 2),
                             Text(
                               subtitle,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
+                              style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(
                                     color: Colors.white.withOpacity(0.8),
                                     fontSize: 12,
@@ -208,10 +194,10 @@ void showCustomEditDialog({
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ...sections.map((section) => _buildCustomSection(
-                                  context,
-                                  section,
-                                )),
+                            ...sections.map(
+                              (section) =>
+                                  _buildCustomSection(context, section),
+                            ),
                           ],
                         ),
                       ),
@@ -305,18 +291,14 @@ Widget _buildCustomSection(BuildContext context, DialogSection section) {
     children: [
       Row(
         children: [
-          Icon(
-            section.icon,
-            size: 20,
-            color: const Color(0xFF4CAF50),
-          ),
+          Icon(section.icon, size: 20, color: const Color(0xFF4CAF50)),
           const SizedBox(width: 8),
           Text(
             section.title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                ),
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[700],
+            ),
           ),
         ],
       ),
@@ -361,51 +343,30 @@ Widget _buildTextField(BuildContext context, DialogField field) {
         color: field.enabled ? const Color(0xFF4CAF50) : Colors.grey[400],
         size: 20,
       ),
-      labelStyle: TextStyle(
-        color: Colors.grey[600],
-        fontSize: 14,
-      ),
+      labelStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(
-          color: Colors.grey.withOpacity(0.3),
-          width: 1,
-        ),
+        borderSide: BorderSide(color: Colors.grey.withOpacity(0.3), width: 1),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(
-          color: Color(0xFF4CAF50),
-          width: 2,
-        ),
+        borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
       ),
       disabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(
-          color: Colors.grey.withOpacity(0.2),
-          width: 1,
-        ),
+        borderSide: BorderSide(color: Colors.grey.withOpacity(0.2), width: 1),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(
-          color: Colors.red,
-          width: 1,
-        ),
+        borderSide: const BorderSide(color: Colors.red, width: 1),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(
-          color: Colors.red,
-          width: 2,
-        ),
+        borderSide: const BorderSide(color: Colors.red, width: 2),
       ),
       filled: true,
       fillColor: field.enabled ? Colors.grey[50] : Colors.grey[100],
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 16,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
   );
 }
@@ -416,19 +377,13 @@ Widget _buildDropdownField(BuildContext context, DialogField field) {
     children: [
       Text(
         field.label,
-        style: TextStyle(
-          color: Colors.grey[600],
-          fontSize: 14,
-        ),
+        style: TextStyle(color: Colors.grey[600], fontSize: 14),
       ),
       const SizedBox(height: 8),
       Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.grey.withOpacity(0.3),
-            width: 1,
-          ),
+          border: Border.all(color: Colors.grey.withOpacity(0.3), width: 1),
           color: Colors.grey[50],
         ),
         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -445,10 +400,7 @@ Widget _buildDropdownField(BuildContext context, DialogField field) {
             border: InputBorder.none,
           ),
           isExpanded: true,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[800],
-          ),
+          style: TextStyle(fontSize: 16, color: Colors.grey[800]),
         ),
       ),
     ],
@@ -461,31 +413,21 @@ Widget _buildImagePickerField(BuildContext context, DialogField field) {
     children: [
       Text(
         field.label,
-        style: TextStyle(
-          color: Colors.grey[600],
-          fontSize: 14,
-        ),
+        style: TextStyle(color: Colors.grey[600], fontSize: 14),
       ),
       const SizedBox(height: 8),
       Row(
         children: [
           ElevatedButton.icon(
             onPressed: field.onImagePressed,
-            icon: Icon(
-              field.icon,
-              size: 16,
-              color: Colors.white,
-            ),
+            icon: Icon(field.icon, size: 16, color: Colors.white),
             label: const Text(
               'Pick Photo',
               style: TextStyle(color: Colors.white),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4CAF50),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
           ),
           const SizedBox(width: 12),

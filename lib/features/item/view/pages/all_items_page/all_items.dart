@@ -71,7 +71,8 @@ class AllItemsPage extends HookConsumerWidget {
               'file': file,
             };
             _logger.i(
-                'File selected: ${_importedFile.value!['name']} at path: $filePath');
+              'File selected: ${_importedFile.value!['name']} at path: $filePath',
+            );
           } else {
             _logger.w('File does not exist at path: $filePath');
             ScaffoldMessenger.of(context).showSnackBar(
@@ -107,7 +108,8 @@ class AllItemsPage extends HookConsumerWidget {
           final file = _importedFile.value!['file'] as File;
           final filePath = file.path;
           _logger.d(
-              'Attempting to open file: ${_importedFile.value!['name']} at path: $filePath');
+            'Attempting to open file: ${_importedFile.value!['name']} at path: $filePath',
+          );
 
           if (await file.exists()) {
             final result = await OpenFile.open(filePath);
@@ -121,7 +123,8 @@ class AllItemsPage extends HookConsumerWidget {
               );
             } else {
               _logger.i(
-                  'File opened successfully: ${_importedFile.value!['name']}');
+                'File opened successfully: ${_importedFile.value!['name']}',
+              );
             }
           } else {
             _logger.w('File does not exist at path: $filePath');
@@ -196,14 +199,18 @@ class AllItemsPage extends HookConsumerWidget {
         title: const Text(
           'All Items',
           style: TextStyle(
-              fontWeight: FontWeight.w600, fontSize: 20, color: Colors.white),
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+            color: Colors.white,
+          ),
         ),
         backgroundColor: accentColor,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           Tooltip(
-            message: _importedFile.value != null &&
+            message:
+                _importedFile.value != null &&
                     _importedFile.value!['name'] != null
                 ? 'Open ${_importedFile.value!['name']}'
                 : 'No file selected',
@@ -216,17 +223,17 @@ class AllItemsPage extends HookConsumerWidget {
                 ),
                 minimumSize: MaterialStateProperty.all(const Size(0, 0)),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                  (states) {
-                    if (states.contains(MaterialState.hovered)) {
-                      return Colors.white.withOpacity(0.2);
-                    }
-                    if (states.contains(MaterialState.pressed)) {
-                      return Colors.white.withOpacity(0.3);
-                    }
-                    return null;
-                  },
-                ),
+                overlayColor: MaterialStateProperty.resolveWith<Color?>((
+                  states,
+                ) {
+                  if (states.contains(MaterialState.hovered)) {
+                    return Colors.white.withOpacity(0.2);
+                  }
+                  if (states.contains(MaterialState.pressed)) {
+                    return Colors.white.withOpacity(0.3);
+                  }
+                  return null;
+                }),
                 backgroundColor: MaterialStateProperty.all(
                   _importedFile.value != null &&
                           _importedFile.value!['name'] != null
@@ -260,7 +267,8 @@ class AllItemsPage extends HookConsumerWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
-                        color: _importedFile.value != null &&
+                        color:
+                            _importedFile.value != null &&
                                 _importedFile.value!['name'] != null
                             ? Colors.white
                             : Colors.white70,
@@ -283,9 +291,7 @@ class AllItemsPage extends HookConsumerWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const AddItemsPage(),
-                ),
+                MaterialPageRoute(builder: (context) => const AddItemsPage()),
               );
             },
             tooltip: 'Add New Item',
@@ -355,18 +361,24 @@ class AllItemsPage extends HookConsumerWidget {
                     controller: searchController,
                     decoration: InputDecoration(
                       hintText: 'Search items...',
-                      prefixIcon:
-                          const Icon(Icons.search, color: textSecondaryColor),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: textSecondaryColor,
+                      ),
                       suffixIcon: IconButton(
-                        icon:
-                            const Icon(Icons.clear, color: textSecondaryColor),
+                        icon: const Icon(
+                          Icons.clear,
+                          color: textSecondaryColor,
+                        ),
                         onPressed: () {
                           searchController.clear();
                         },
                       ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                 ),
@@ -427,8 +439,10 @@ class AllItemsPage extends HookConsumerWidget {
                           child: DropdownButton<String>(
                             value: selectedCategory.value,
                             isExpanded: true,
-                            icon: const Icon(Icons.keyboard_arrow_down,
-                                color: textSecondaryColor),
+                            icon: const Icon(
+                              Icons.keyboard_arrow_down,
+                              color: textSecondaryColor,
+                            ),
                             style: const TextStyle(color: textPrimaryColor),
                             items: categories.map((String category) {
                               return DropdownMenuItem<String>(
@@ -463,8 +477,10 @@ class AllItemsPage extends HookConsumerWidget {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: selectedSort.value,
-                          icon: const Icon(Icons.keyboard_arrow_down,
-                              color: textSecondaryColor),
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down,
+                            color: textSecondaryColor,
+                          ),
                           style: const TextStyle(color: textPrimaryColor),
                           items: sortOptions.map((String option) {
                             return DropdownMenuItem<String>(
@@ -487,25 +503,41 @@ class AllItemsPage extends HookConsumerWidget {
           ),
           // Items List/Grid
           Expanded(
-            child: _buildGridView(context, accessToken!, selectedStore.value,
-                userId.toString(), refreshKey, ref),
+            child: _buildGridView(
+              context,
+              accessToken!,
+              selectedStore.value,
+              userId.toString(),
+              refreshKey,
+              ref,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildGridView(BuildContext context, String accessToken,
-      String? storeId, String userId, int refreshKey, WidgetRef ref) {
+  Widget _buildGridView(
+    BuildContext context,
+    String accessToken,
+    String? storeId,
+    String userId,
+    int refreshKey,
+    WidgetRef ref,
+  ) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double screenWidth = constraints.maxWidth;
-        const double minCardWidth = 200;
-        int crossAxisCount = (screenWidth / minCardWidth).floor().clamp(1, 5);
+        const double minCardWidth = 300;
+        int crossAxisCount = (screenWidth / minCardWidth).floor().clamp(
+          1,
+          4,
+        ); 
 
         return FutureBuilder(
-          future: ViewAllItemsController(accessToken: accessToken)
-              .getAllItems(storeId),
+          future: ViewAllItemsController(
+            accessToken: accessToken,
+          ).getAllItems(storeId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
@@ -533,10 +565,7 @@ class AllItemsPage extends HookConsumerWidget {
                     SizedBox(height: 10),
                     Text(
                       "No items available for the selected store.\nPlease add some items to get started.",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -544,12 +573,12 @@ class AllItemsPage extends HookConsumerWidget {
               );
             }
             return GridView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(8), // Reduced padding
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
-                childAspectRatio: 1,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
+                childAspectRatio: 1, // Adjusted to give more vertical space
+                crossAxisSpacing: 8, // Reduced spacing
+                mainAxisSpacing: 8, // Reduced spacing
               ),
               itemCount: snapshot.data?.data.length ?? 5,
               itemBuilder: (context, index) {

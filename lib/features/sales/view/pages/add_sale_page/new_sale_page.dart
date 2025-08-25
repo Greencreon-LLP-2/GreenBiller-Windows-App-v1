@@ -17,6 +17,7 @@ import 'package:green_biller/features/sales/view/pages/add_sale_page/widgets/sal
 import 'package:green_biller/features/sales/view/pages/add_sale_page/widgets/sales_table_data_cell_widget.dart';
 import 'package:green_biller/features/sales/view/pages/add_sale_page/widgets/sales_table_header_widget.dart';
 import 'package:green_biller/features/sales/view/pages/add_sale_page/widgets/sales_topsection_widget.dart';
+import 'package:green_biller/features/sales/view/pages/add_sale_page/widgets/sku_edit_dialog.dart';
 import 'package:green_biller/main.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pdf/pdf.dart';
@@ -158,14 +159,22 @@ Future<Uint8List> generateRealisticInvoice({
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text("Invoice: $invoiceNo",
-                        style: const pw.TextStyle(fontSize: 8)),
-                    pw.Text("Date: ${invoiceDate.toString()}",
-                        style: const pw.TextStyle(fontSize: 8)),
-                    pw.Text("Customer: $customerName",
-                        style: const pw.TextStyle(fontSize: 8)),
-                    pw.Text("Payment: $paymentMode",
-                        style: const pw.TextStyle(fontSize: 8)),
+                    pw.Text(
+                      "Invoice: $invoiceNo",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
+                    pw.Text(
+                      "Date: ${invoiceDate.toString()}",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
+                    pw.Text(
+                      "Customer: $customerName",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
+                    pw.Text(
+                      "Payment: $paymentMode",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
                   ],
                 ),
               ),
@@ -174,27 +183,43 @@ Future<Uint8List> generateRealisticInvoice({
                 children: [
                   pw.Expanded(
                     flex: 3,
-                    child: pw.Text("Item",
-                        style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold, fontSize: 8)),
+                    child: pw.Text(
+                      "Item",
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 8,
+                      ),
+                    ),
                   ),
                   pw.Expanded(
                     flex: 1,
-                    child: pw.Text("Qty",
-                        style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold, fontSize: 8)),
+                    child: pw.Text(
+                      "Qty",
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 8,
+                      ),
+                    ),
                   ),
                   pw.Expanded(
                     flex: 2,
-                    child: pw.Text("Price",
-                        style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold, fontSize: 8)),
+                    child: pw.Text(
+                      "Price",
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 8,
+                      ),
+                    ),
                   ),
                   pw.Expanded(
                     flex: 2,
-                    child: pw.Text("Total",
-                        style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold, fontSize: 8)),
+                    child: pw.Text(
+                      "Total",
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 8,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -209,30 +234,40 @@ Future<Uint8List> generateRealisticInvoice({
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
                           children: [
-                            pw.Text(item.name,
-                                style: const pw.TextStyle(fontSize: 7)),
+                            pw.Text(
+                              item.name,
+                              style: const pw.TextStyle(fontSize: 7),
+                            ),
                             pw.Text(
                               "${item.unit} | ${item.taxName} ${item.taxRate}%",
                               style: const pw.TextStyle(
-                                  fontSize: 6, color: PdfColors.grey600),
+                                fontSize: 6,
+                                color: PdfColors.grey600,
+                              ),
                             ),
                           ],
                         ),
                       ),
                       pw.Expanded(
                         flex: 1,
-                        child: pw.Text(item.qty.toString(),
-                            style: const pw.TextStyle(fontSize: 7)),
+                        child: pw.Text(
+                          item.qty.toString(),
+                          style: const pw.TextStyle(fontSize: 7),
+                        ),
                       ),
                       pw.Expanded(
                         flex: 2,
-                        child: pw.Text(item.price.toStringAsFixed(2),
-                            style: const pw.TextStyle(fontSize: 7)),
+                        child: pw.Text(
+                          item.price.toStringAsFixed(2),
+                          style: const pw.TextStyle(fontSize: 7),
+                        ),
                       ),
                       pw.Expanded(
                         flex: 2,
-                        child: pw.Text(item.total.toStringAsFixed(2),
-                            style: const pw.TextStyle(fontSize: 7)),
+                        child: pw.Text(
+                          item.total.toStringAsFixed(2),
+                          style: const pw.TextStyle(fontSize: 7),
+                        ),
                       ),
                     ],
                   ),
@@ -261,15 +296,21 @@ Future<Uint8List> generateRealisticInvoice({
                             mainAxisAlignment:
                                 pw.MainAxisAlignment.spaceBetween,
                             children: [
-                              pw.Text("Payment Method:",
-                                  style: pw.TextStyle(
-                                      fontWeight: pw.FontWeight.bold,
-                                      fontSize: 6)),
-                              pw.Text(paymentMode,
-                                  style: pw.TextStyle(
-                                      fontWeight: pw.FontWeight.bold,
-                                      color: PdfColors.blue700,
-                                      fontSize: 6)),
+                              pw.Text(
+                                "Payment Method:",
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                  fontSize: 6,
+                                ),
+                              ),
+                              pw.Text(
+                                paymentMode,
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: PdfColors.blue700,
+                                  fontSize: 6,
+                                ),
+                              ),
                             ],
                           ),
                           pw.SizedBox(height: 4),
@@ -277,14 +318,17 @@ Future<Uint8List> generateRealisticInvoice({
                             mainAxisAlignment:
                                 pw.MainAxisAlignment.spaceBetween,
                             children: [
-                              pw.Text("Amount Paid:",
-                                  style: pw.TextStyle(
-                                      fontWeight: pw.FontWeight.bold,
-                                      fontSize: 6)),
+                              pw.Text(
+                                "Amount Paid:",
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                  fontSize: 6,
+                                ),
+                              ),
                               pw.Text(
                                 received.toStringAsFixed(2),
                                 style: const pw.TextStyle(fontSize: 8),
-                              )
+                              ),
                             ],
                           ),
                           pw.SizedBox(height: 4),
@@ -292,19 +336,22 @@ Future<Uint8List> generateRealisticInvoice({
                             mainAxisAlignment:
                                 pw.MainAxisAlignment.spaceBetween,
                             children: [
-                              pw.Text("Balance Due:",
-                                  style: pw.TextStyle(
-                                      fontWeight: pw.FontWeight.bold,
-                                      fontSize: 6)),
+                              pw.Text(
+                                "Balance Due:",
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                  fontSize: 6,
+                                ),
+                              ),
                               pw.Text(
                                 balance.toStringAsFixed(2),
                                 style: const pw.TextStyle(fontSize: 8),
-                              )
+                              ),
                             ],
                           ),
                         ],
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -336,8 +383,12 @@ Future<Uint8List> generateRealisticInvoice({
   return pdf.save();
 }
 
-pw.Widget _buildSummaryRow(String label, double value,
-    {bool isBold = false, double fontSize = 7}) {
+pw.Widget _buildSummaryRow(
+  String label,
+  double value, {
+  bool isBold = false,
+  double fontSize = 7,
+}) {
   final style = pw.TextStyle(
     fontSize: fontSize,
     fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
@@ -347,13 +398,7 @@ pw.Widget _buildSummaryRow(String label, double value,
     padding: const pw.EdgeInsets.symmetric(vertical: 2),
     child: pw.Row(
       children: [
-        pw.Expanded(
-          flex: 3,
-          child: pw.Text(
-            label,
-            style: style,
-          ),
-        ),
+        pw.Expanded(flex: 3, child: pw.Text(label, style: style)),
         pw.Expanded(
           flex: 2,
           child: pw.Text(
@@ -379,7 +424,7 @@ class AddNewSalePage extends HookConsumerWidget {
         body: Center(child: Text('User not found. Please login again.')),
       );
     }
-
+    final List<String> batchNo;
     final isLoadingStores = useState(false);
 
     final storeId = useState<String?>(null);
@@ -406,7 +451,8 @@ class AddNewSalePage extends HookConsumerWidget {
     final discountAmountControllers = useRef(<int, TextEditingController>{});
     final batchNoControllers = useRef(<int, TextEditingController>{});
     final unitControllers = useState<List<TextEditingController>>(
-        List.generate(10, (_) => TextEditingController()));
+      List.generate(10, (_) => TextEditingController()),
+    );
     final showDropdownRows = useState<Set<int>>({});
     final itemsList = useState<List<item_model.Item>>([]);
     final selectedItem = useState<item_model.Item?>(null);
@@ -432,12 +478,8 @@ class AddNewSalePage extends HookConsumerWidget {
 
     String getCurrentDateFormatted() {
       final now = DateTime.now();
-      final month = now.month
-          .toString()
-          .padLeft(2, '0'); // Ensures 2 digits (e.g., 03 for March)
-      final day = now.day
-          .toString()
-          .padLeft(2, '0'); // Ensures 2 digits (e.g., 05 for the 5th)
+      final month = now.month.toString().padLeft(2, '0');
+      final day = now.day.toString().padLeft(2, '0');
       final year = now.year.toString();
       return '$month/$day/$year'; // Format: MM/DD/YYYY
     }
@@ -491,35 +533,71 @@ class AddNewSalePage extends HookConsumerWidget {
     }, [accessToken]);
 
     void initControllers(int index) {
+      final skuCount = (rowFields.value[index]?['batchNo'] ?? '')
+          .split(',')
+          .where((s) => s.trim().isNotEmpty)
+          .length;
+      final price =
+          double.tryParse(rowFields.value[index]?['price'] ?? '0') ?? 0;
+      final quantity = rowFields.value[index]?['quantity'] != null
+          ? double.tryParse(rowFields.value[index]?['quantity'] ?? '0') ?? 0
+          : skuCount.toDouble();
+      final salesPrice = quantity * price;
+      final discountPercent =
+          double.tryParse(rowFields.value[index]?['discountPercent'] ?? '0') ??
+          0;
+      final discountAmount = (salesPrice * discountPercent) / 100;
+      final taxRate =
+          double.tryParse(rowFields.value[index]?['taxRate'] ?? '0') ?? 0;
+      final taxAmount = salesPrice * taxRate / 100;
+
       quantityControllers.value.putIfAbsent(
-          index,
-          () => TextEditingController(
-              text: rowFields.value[index]?['quantity'] ?? ''));
+        index,
+        () => TextEditingController(text: quantity.toString()),
+      );
       priceControllers.value.putIfAbsent(
-          index,
-          () => TextEditingController(
-              text: rowFields.value[index]?['price'] ?? ''));
+        index,
+        () =>
+            TextEditingController(text: rowFields.value[index]?['price'] ?? ''),
+      );
       salesPriceControllers.value.putIfAbsent(
-          index,
-          () => TextEditingController(
-              text: rowFields.value[index]?['salesPrice'] ?? ''));
+        index,
+        () => TextEditingController(text: salesPrice.toStringAsFixed(2)),
+      );
       discountPercentControllers.value.putIfAbsent(
-          index,
-          () => TextEditingController(
-              text: rowFields.value[index]?['discountPercent'] ?? ''));
+        index,
+        () => TextEditingController(
+          text: rowFields.value[index]?['discountPercent'] ?? '',
+        ),
+      );
       discountAmountControllers.value.putIfAbsent(
-          index,
-          () => TextEditingController(
-              text: rowFields.value[index]?['discountAmount'] ?? ''));
+        index,
+        () => TextEditingController(text: discountAmount.toStringAsFixed(2)),
+      );
       batchNoControllers.value.putIfAbsent(
-          index,
-          () => TextEditingController(
-              text: rowFields.value[index]?['batchNo'] ?? ''));
+        index,
+        () => TextEditingController(
+          text: rowFields.value[index]?['batchNo'] ?? '',
+        ),
+      );
       unitControllers.value[index].text = rowFields.value[index]?['unit'] ?? '';
       priceFocusNodes.value.putIfAbsent(index, () => FocusNode());
       itemInputFocusNode.value.putIfAbsent(index, () => FocusNode());
-      itemInputController.value
-          .putIfAbsent(index, () => TextEditingController());
+      itemInputController.value.putIfAbsent(
+        index,
+        () => TextEditingController(),
+      );
+
+      rowFields.value = {
+        ...rowFields.value,
+        index: {
+          ...?rowFields.value[index],
+          'quantity': quantity.toString(),
+          'salesPrice': salesPrice.toStringAsFixed(2),
+          'discountAmount': discountAmount.toStringAsFixed(2),
+          'taxAmount': taxAmount.toStringAsFixed(2),
+        },
+      };
     }
 
     double recalculateGrandTotal() {
@@ -556,14 +634,14 @@ class AddNewSalePage extends HookConsumerWidget {
               double.tryParse(fields['discountPercent'] ?? '0') ?? 0;
           if (percent > 0 && salesPrice > 0) {
             discountAmount = (salesPrice * percent) / 100;
-            discountAmountControllers.value[i]?.text =
-                discountAmount.toStringAsFixed(2);
+            discountAmountControllers.value[i]?.text = discountAmount
+                .toStringAsFixed(2);
             rowFields.value = {
               ...rowFields.value,
               i: {
                 ...?rowFields.value[i],
-                'discountAmount': discountAmount.toStringAsFixed(2)
-              }
+                'discountAmount': discountAmount.toStringAsFixed(2),
+              },
             };
           }
           discountSum += discountAmount;
@@ -574,7 +652,8 @@ class AddNewSalePage extends HookConsumerWidget {
     }
 
     Future<String> getBillNumber(
-        TextEditingController orderNoController) async {
+      TextEditingController orderNoController,
+    ) async {
       final prefs = await SharedPreferences.getInstance();
       final savedBillNo = prefs.getString('billNo') ?? '';
 
@@ -582,8 +661,8 @@ class AddNewSalePage extends HookConsumerWidget {
       String orderNo = orderNoController.text;
       if (orderNo.isEmpty) {
         final random = Random();
-        orderNo =
-            (10000 + random.nextInt(90000)).toString(); // 5-digit random number
+        orderNo = (10000 + random.nextInt(90000))
+            .toString(); // 5-digit random number
       }
 
       // Combine savedBillNo and orderNo
@@ -609,8 +688,9 @@ class AddNewSalePage extends HookConsumerWidget {
       final taxRate = double.tryParse(item.taxRate ?? '0') ?? 0;
       final taxAmount = salesPrice * taxRate / 100;
       final discountPercent = double.tryParse(item.discount ?? '0') ?? 0;
-      final discountAmount =
-          discountPercent > 0 ? (salesPrice * discountPercent) / 100 : 0;
+      final discountAmount = discountPercent > 0
+          ? (salesPrice * discountPercent) / 100
+          : 0;
 
       rowFields.value = {
         ...rowFields.value,
@@ -628,26 +708,27 @@ class AddNewSalePage extends HookConsumerWidget {
           'salesPrice': salesPrice.toStringAsFixed(2),
           'itemId': item.id.toString(),
           'taxAmount': taxAmount.toStringAsFixed(2),
-          'batchNo': item.sku,
-        }
+          'batchNo': item.sku ?? '',
+        },
       };
 
       quantityControllers.value[index]?.text = '1';
       priceControllers.value[index]?.text = item.salesPrice ?? '0';
       salesPriceControllers.value[index]?.text = salesPrice.toStringAsFixed(2);
       discountPercentControllers.value[index]?.text = item.discount ?? '0';
-      discountAmountControllers.value[index]?.text =
-          discountAmount.toStringAsFixed(2);
-      batchNoControllers.value[index]?.text = item.sku ?? '';
+      discountAmountControllers.value[index]?.text = discountAmount
+          .toStringAsFixed(2);
+      batchNoControllers.value[index]?.text =
+          item.sku ?? ''; // Or item.skus?.join(',') ?? ''
       unitControllers.value[index].text = item.unit ?? '';
 
       priceOldValues.value = {
         ...priceOldValues.value,
-        index: item.salesPrice ?? '0'
+        index: item.salesPrice ?? '0',
       };
       newSalesPrices.value = {
         ...newSalesPrices.value,
-        index: item.salesPrice ?? '0'
+        index: item.salesPrice ?? '0',
       };
       recalculateGrandTotal();
       recalculateTotalDiscount();
@@ -788,165 +869,182 @@ class AddNewSalePage extends HookConsumerWidget {
                   const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0, vertical: 8.0),
+                      horizontal: 8.0,
+                      vertical: 8.0,
+                    ),
                     child: Text(
                       "Sales Items",
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Colors.green.shade800,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        color: Colors.green.shade800,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
-                    child: LayoutBuilder(builder: (context, constraints) {
-                      const columnCount = 16;
-                      const itemFlex = 4;
-                      const discountFlex =
-                          3; // For Discount column (split into % and Amount)
-                      const totalFlex = 0.5 +
-                          itemFlex +
-                          0.75 +
-                          0.75 +
-                          1 +
-                          1 +
-                          1 +
-                          1 +
-                          discountFlex +
-                          1 +
-                          1 +
-                          1; // Sum of width multipliers
-                      final baseColumnWidth = constraints.maxWidth / totalFlex;
-                      final itemColumnWidth = baseColumnWidth * itemFlex;
-                      final discountColumnWidth =
-                          baseColumnWidth * (discountFlex / 2); // 3/2 = 1.5
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        const columnCount = 16;
+                        const itemFlex = 2;
+                        const discountFlex =
+                            1; // For Discount column (split into % and Amount)
+                        const totalFlex =
+                            0.5 +
+                            itemFlex +
+                            0.75 +
+                            0.75 +
+                            1 +
+                            1 +
+                            1 +
+                            1 +
+                            discountFlex +
+                            1 +
+                            1 +
+                            1; // Sum of width multipliers
+                        final baseColumnWidth =
+                            constraints.maxWidth / totalFlex;
+                        final itemColumnWidth = baseColumnWidth * itemFlex;
+                        final discountColumnWidth =
+                            baseColumnWidth * (discountFlex / 2); // 3/2 = 1.5
 
-                      return ConstrainedBox(
-                        constraints:
-                            BoxConstraints(minWidth: constraints.maxWidth),
-                        child: Column(
-                          children: [
-                            Container(
-                              color: Colors.green.shade200,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    width: baseColumnWidth * 0.5,
-                                    child: HeaderCellWidget(
+                        return ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: constraints.maxWidth,
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                color: Colors.green.shade200,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      width: baseColumnWidth * 0.5,
+                                      child: HeaderCellWidget(
                                         text: "#",
-                                        width: baseColumnWidth * 0.5),
-                                  ),
-                                  SizedBox(
-                                    width: itemColumnWidth,
-                                    child: HeaderCellWidget(
-                                        text: "Item", width: itemColumnWidth),
-                                  ),
-                                  SizedBox(
-                                    width: baseColumnWidth * 0.75,
-                                    child: HeaderCellWidget(
-                                        text: "SKU",
-                                        width: baseColumnWidth * 0.75),
-                                  ),
-                                  SizedBox(
-                                    width: baseColumnWidth * 0.75,
-                                    child: HeaderCellWidget(
-                                        text: "Qty",
-                                        width: baseColumnWidth * 0.75),
-                                  ),
-                                  SizedBox(
-                                    width: baseColumnWidth,
-                                    child: HeaderCellWidget(
-                                        text: "Unit", width: baseColumnWidth),
-                                  ),
-                                  SizedBox(
-                                    width: baseColumnWidth,
-                                    child: HeaderCellWidget(
-                                        text: "Price/Unit",
-                                        width: baseColumnWidth),
-                                  ),
-                                  SizedBox(
-                                    width: baseColumnWidth,
-                                    child: HeaderCellWidget(
-                                        text: "Sale Price",
-                                        width: baseColumnWidth),
-                                  ),
-                                  SizedBox(
-                                    width: baseColumnWidth * discountFlex,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          right: BorderSide(
-                                              color: Colors.green.shade100),
-                                        ),
+                                        width: baseColumnWidth * 0.5,
                                       ),
-                                      child: const Column(
-                                        children: [
-                                          Text(
-                                            "Discount",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
+                                    ),
+                                    SizedBox(
+                                      width: itemColumnWidth,
+                                      child: HeaderCellWidget(
+                                        text: "Item",
+                                        width: itemColumnWidth,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: baseColumnWidth * 1,
+                                      child: HeaderCellWidget(
+                                        text: "SKUs",
+                                        width: baseColumnWidth * 1,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: baseColumnWidth * 0.75,
+                                      child: HeaderCellWidget(
+                                        text: "Qty",
+                                        width: baseColumnWidth * 0.75,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: baseColumnWidth,
+                                      child: HeaderCellWidget(
+                                        text: "Unit",
+                                        width: baseColumnWidth,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: baseColumnWidth,
+                                      child: HeaderCellWidget(
+                                        text: "Price/Unit",
+                                        width: baseColumnWidth,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: baseColumnWidth,
+                                      child: HeaderCellWidget(
+                                        text: "Sale Price",
+                                        width: baseColumnWidth,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: baseColumnWidth * discountFlex,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            right: BorderSide(
+                                              color: Colors.green.shade100,
                                             ),
                                           ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceEvenly,
-                                            children: [
-                                              SizedBox(
-                                                child: Center(
-                                                  child: Text(
-                                                    "%",
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 12,
+                                        ),
+                                        child: const Column(
+                                          children: [
+                                            Text(
+                                              "Discount",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                SizedBox(
+                                                  child: Center(
+                                                    child: Text(
+                                                      "%",
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 12,
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                              SizedBox(
-                                                child: Center(
-                                                  child: Text(
-                                                    "Amt",
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 12,
+                                                SizedBox(
+                                                  child: Center(
+                                                    child: Text(
+                                                      "Amt",
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 12,
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  SizedBox(
-                                    width: baseColumnWidth,
-                                    child: HeaderCellWidget(
-                                        text: "Tax %", width: baseColumnWidth),
-                                  ),
-                                  SizedBox(
-                                    width: baseColumnWidth,
-                                    child: HeaderCellWidget(
-                                        text: "Tax Amt",
-                                        width: baseColumnWidth),
-                                  ),
-                                  SizedBox(
-                                    width: baseColumnWidth * 1.5,
-                                    child: HeaderCellWidget(
-                                      text: "Amount",
-                                      width: baseColumnWidth * 1.5,
+                                    SizedBox(
+                                      width: baseColumnWidth,
+                                      child: HeaderCellWidget(
+                                        text: "Tax %",
+                                        width: baseColumnWidth,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    SizedBox(
+                                      width: baseColumnWidth,
+                                      child: HeaderCellWidget(
+                                        text: "Tax Amt",
+                                        width: baseColumnWidth,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: baseColumnWidth * 1.5,
+                                      child: HeaderCellWidget(
+                                        text: "Amount",
+                                        width: baseColumnWidth * 1.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            ...List.generate(
-                              rowCount.value,
-                              (index) {
+                              ...List.generate(rowCount.value, (index) {
                                 initControllers(index);
                                 final itemName =
                                     rowFields.value[index]?['itemName'] ?? '';
@@ -955,11 +1053,14 @@ class AddNewSalePage extends HookConsumerWidget {
                                     color: Colors.white,
                                     border: Border(
                                       bottom: BorderSide(
-                                          color: Colors.green.shade100),
+                                        color: Colors.green.shade100,
+                                      ),
                                       left: BorderSide(
-                                          color: Colors.green.shade100),
+                                        color: Colors.green.shade100,
+                                      ),
                                       right: BorderSide(
-                                          color: Colors.green.shade100),
+                                        color: Colors.green.shade100,
+                                      ),
                                     ),
                                   ),
                                   child: Row(
@@ -967,8 +1068,9 @@ class AddNewSalePage extends HookConsumerWidget {
                                     children: [
                                       DataCellWidget(
                                         width: baseColumnWidth * 0.5,
-                                        child:
-                                            Center(child: Text("${index + 1}")),
+                                        child: Center(
+                                          child: Text("${index + 1}"),
+                                        ),
                                       ),
                                       DataCellWidget(
                                         width: itemColumnWidth,
@@ -976,39 +1078,71 @@ class AddNewSalePage extends HookConsumerWidget {
                                             ? Padding(
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                        horizontal: 9,
-                                                        vertical: 10),
+                                                      horizontal: 9,
+                                                      vertical: 10,
+                                                    ),
                                                 child: Text(
                                                   itemName,
                                                   style: const TextStyle(
-                                                      fontSize: 14),
+                                                    fontSize: 14,
+                                                  ),
                                                 ),
                                               )
                                             : input(rowIndex: index),
                                       ),
                                       DataCellWidget(
                                         width: baseColumnWidth * 0.75,
-                                        child: TextField(
-                                          controller:
-                                              batchNoControllers.value[index],
-                                          style: const TextStyle(fontSize: 14),
-                                          textAlign: TextAlign.center,
-                                          decoration: const InputDecoration(
-                                            isDense: true,
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 6),
-                                            border: InputBorder.none,
-                                          ),
-                                          onChanged: (value) {
-                                            rowFields.value = {
-                                              ...rowFields.value,
-                                              index: {
-                                                ...?rowFields.value[index],
-                                                'batchNo': value,
-                                              }
-                                            };
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return SkuEditDialog(
+                                                  initialSkus:
+                                                      (rowFields.value[index]?['batchNo'] ??
+                                                              '')
+                                                          .split(',')
+                                                          .where(
+                                                            (s) => s
+                                                                .trim()
+                                                                .isNotEmpty,
+                                                          )
+                                                          .toList(),
+                                                  batchNoController:
+                                                      batchNoControllers
+                                                          .value[index],
+                                                  quantityController:
+                                                      quantityControllers
+                                                          .value[index],
+                                                  salesPriceController:
+                                                      salesPriceControllers
+                                                          .value[index],
+                                                  rowFields: rowFields.value,
+                                                  index: index,
+                                                  onSave: () {
+                                                    rowFields.value = {
+                                                      ...rowFields.value,
+                                                    };
+                                                    recalculateGrandTotal();
+                                                    recalculateTotalDiscount();
+                                                  },
+                                                );
+                                              },
+                                            );
                                           },
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 6,
+                                            ),
+                                            minimumSize: const Size(0, 0),
+                                            textStyle: const TextStyle(
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '${(rowFields.value[index]?['batchNo'] ?? '').split(',').where((s) => s.trim().isNotEmpty).length} SKU${(rowFields.value[index]?['batchNo'] ?? '').split(',').where((s) => s.trim().isNotEmpty).length == 1 ? '' : 's'}',
+                                          ),
                                         ),
                                       ),
                                       DataCellWidget(
@@ -1023,41 +1157,44 @@ class AddNewSalePage extends HookConsumerWidget {
                                             isDense: true,
                                             contentPadding:
                                                 EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 6),
+                                                  horizontal: 8,
+                                                  vertical: 6,
+                                                ),
                                             border: InputBorder.none,
                                           ),
                                           onChanged: (value) {
                                             final quantity =
                                                 double.tryParse(value) ?? 0;
-                                            final price = double.tryParse(
-                                                    priceControllers
-                                                            .value[index]
-                                                            ?.text ??
-                                                        '0') ??
+                                            final price =
+                                                double.tryParse(
+                                                  priceControllers
+                                                          .value[index]
+                                                          ?.text ??
+                                                      '0',
+                                                ) ??
                                                 0;
                                             final salesPrice = quantity * price;
-                                            salesPriceControllers
-                                                    .value[index]?.text =
-                                                salesPrice.toStringAsFixed(2);
-                                            final percent = double.tryParse(
-                                                    discountPercentControllers
-                                                            .value[index]
-                                                            ?.text ??
-                                                        '0') ??
+                                            final discountPercent =
+                                                double.tryParse(
+                                                  discountPercentControllers
+                                                          .value[index]
+                                                          ?.text ??
+                                                      '0',
+                                                ) ??
                                                 0;
                                             final discountAmount =
-                                                (salesPrice * percent) / 100;
-                                            discountAmountControllers
-                                                    .value[index]?.text =
-                                                discountAmount
-                                                    .toStringAsFixed(2);
-                                            final taxRate = double.tryParse(
-                                                    rowFields.value[index]
-                                                            ?['taxRate'] ??
-                                                        '0') ??
+                                                (salesPrice * discountPercent) /
+                                                100;
+                                            final taxRate =
+                                                double.tryParse(
+                                                  rowFields
+                                                          .value[index]?['taxRate'] ??
+                                                      '0',
+                                                ) ??
                                                 0;
                                             final taxAmount =
                                                 salesPrice * taxRate / 100;
+
                                             rowFields.value = {
                                               ...rowFields.value,
                                               index: {
@@ -1065,12 +1202,20 @@ class AddNewSalePage extends HookConsumerWidget {
                                                 'quantity': value,
                                                 'salesPrice': salesPrice
                                                     .toStringAsFixed(2),
-                                                'taxAmount': taxAmount
-                                                    .toStringAsFixed(2),
                                                 'discountAmount': discountAmount
                                                     .toStringAsFixed(2),
-                                              }
+                                                'taxAmount': taxAmount
+                                                    .toStringAsFixed(2),
+                                              },
                                             };
+                                            salesPriceControllers
+                                                .value[index]
+                                                ?.text = salesPrice
+                                                .toStringAsFixed(2);
+                                            discountAmountControllers
+                                                .value[index]
+                                                ?.text = discountAmount
+                                                .toStringAsFixed(2);
                                             recalculateGrandTotal();
                                             recalculateTotalDiscount();
                                           },
@@ -1087,7 +1232,9 @@ class AddNewSalePage extends HookConsumerWidget {
                                             isDense: true,
                                             contentPadding:
                                                 EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 6),
+                                                  horizontal: 8,
+                                                  vertical: 6,
+                                                ),
                                             border: InputBorder.none,
                                           ),
                                           onChanged: (value) {
@@ -1096,7 +1243,7 @@ class AddNewSalePage extends HookConsumerWidget {
                                               index: {
                                                 ...?rowFields.value[index],
                                                 'unit': value,
-                                              }
+                                              },
                                             };
                                           },
                                         ),
@@ -1110,56 +1257,67 @@ class AddNewSalePage extends HookConsumerWidget {
                                                     null) {
                                               final oldPrice =
                                                   priceOldValues.value[index] ??
-                                                      '0';
-                                              priceControllers.value[index]
-                                                  ?.text = oldPrice;
+                                                  '0';
+                                              priceControllers
+                                                      .value[index]
+                                                      ?.text =
+                                                  oldPrice;
                                             }
                                           },
                                           child: TextField(
                                             controller:
                                                 priceControllers.value[index],
                                             keyboardType: TextInputType.number,
-                                            style:
-                                                const TextStyle(fontSize: 14),
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                            ),
                                             textAlign: TextAlign.center,
                                             decoration: const InputDecoration(
                                               isDense: true,
                                               contentPadding:
                                                   EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 6),
+                                                    horizontal: 8,
+                                                    vertical: 6,
+                                                  ),
                                               border: InputBorder.none,
                                             ),
                                             onChanged: (value) {
                                               final price =
                                                   double.tryParse(value) ?? 0;
-                                              final quantity = double.tryParse(
-                                                      quantityControllers
-                                                              .value[index]
-                                                              ?.text ??
-                                                          '0') ??
+                                              final quantity =
+                                                  double.tryParse(
+                                                    quantityControllers
+                                                            .value[index]
+                                                            ?.text ??
+                                                        '0',
+                                                  ) ??
                                                   0;
                                               final salesPrice =
                                                   quantity * price;
                                               salesPriceControllers
-                                                      .value[index]?.text =
-                                                  salesPrice.toStringAsFixed(2);
-                                              final percent = double.tryParse(
-                                                      discountPercentControllers
-                                                              .value[index]
-                                                              ?.text ??
-                                                          '0') ??
+                                                  .value[index]
+                                                  ?.text = salesPrice
+                                                  .toStringAsFixed(2);
+                                              final percent =
+                                                  double.tryParse(
+                                                    discountPercentControllers
+                                                            .value[index]
+                                                            ?.text ??
+                                                        '0',
+                                                  ) ??
                                                   0;
                                               final discountAmount =
                                                   (salesPrice * percent) / 100;
                                               discountAmountControllers
-                                                      .value[index]?.text =
-                                                  discountAmount
-                                                      .toStringAsFixed(2);
-                                              final taxRate = double.tryParse(
-                                                      rowFields.value[index]
-                                                              ?['taxRate'] ??
-                                                          '0') ??
+                                                  .value[index]
+                                                  ?.text = discountAmount
+                                                  .toStringAsFixed(2);
+                                              final taxRate =
+                                                  double.tryParse(
+                                                    rowFields
+                                                            .value[index]?['taxRate'] ??
+                                                        '0',
+                                                  ) ??
                                                   0;
                                               final taxAmount =
                                                   salesPrice * taxRate / 100;
@@ -1175,7 +1333,7 @@ class AddNewSalePage extends HookConsumerWidget {
                                                   'discountAmount':
                                                       discountAmount
                                                           .toStringAsFixed(2),
-                                                }
+                                                },
                                               };
                                               recalculateGrandTotal();
                                               recalculateTotalDiscount();
@@ -1195,7 +1353,9 @@ class AddNewSalePage extends HookConsumerWidget {
                                             isDense: true,
                                             contentPadding:
                                                 EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 6),
+                                                  horizontal: 8,
+                                                  vertical: 6,
+                                                ),
                                             border: InputBorder.none,
                                           ),
                                           readOnly: true,
@@ -1213,24 +1373,28 @@ class AddNewSalePage extends HookConsumerWidget {
                                             isDense: true,
                                             contentPadding:
                                                 EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 6),
+                                                  horizontal: 8,
+                                                  vertical: 6,
+                                                ),
                                             border: InputBorder.none,
                                           ),
                                           onChanged: (value) {
                                             final percent =
                                                 double.tryParse(value) ?? 0;
-                                            final salesPrice = double.tryParse(
-                                                    salesPriceControllers
-                                                            .value[index]
-                                                            ?.text ??
-                                                        '0') ??
+                                            final salesPrice =
+                                                double.tryParse(
+                                                  salesPriceControllers
+                                                          .value[index]
+                                                          ?.text ??
+                                                      '0',
+                                                ) ??
                                                 0;
                                             final discountAmount =
                                                 (salesPrice * percent) / 100;
                                             discountAmountControllers
-                                                    .value[index]?.text =
-                                                discountAmount
-                                                    .toStringAsFixed(2);
+                                                .value[index]
+                                                ?.text = discountAmount
+                                                .toStringAsFixed(2);
                                             rowFields.value = {
                                               ...rowFields.value,
                                               index: {
@@ -1238,7 +1402,7 @@ class AddNewSalePage extends HookConsumerWidget {
                                                 'discountPercent': value,
                                                 'discountAmount': discountAmount
                                                     .toStringAsFixed(2),
-                                              }
+                                              },
                                             };
                                             recalculateGrandTotal();
                                             recalculateTotalDiscount();
@@ -1257,32 +1421,37 @@ class AddNewSalePage extends HookConsumerWidget {
                                             isDense: true,
                                             contentPadding:
                                                 EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 6),
+                                                  horizontal: 8,
+                                                  vertical: 6,
+                                                ),
                                             border: InputBorder.none,
                                           ),
                                           onChanged: (value) {
                                             final amount =
                                                 double.tryParse(value) ?? 0;
-                                            final salesPrice = double.tryParse(
-                                                    salesPriceControllers
-                                                            .value[index]
-                                                            ?.text ??
-                                                        '0') ??
+                                            final salesPrice =
+                                                double.tryParse(
+                                                  salesPriceControllers
+                                                          .value[index]
+                                                          ?.text ??
+                                                      '0',
+                                                ) ??
                                                 0;
                                             final percent = salesPrice > 0
                                                 ? (amount / salesPrice) * 100
                                                 : 0;
                                             discountPercentControllers
-                                                    .value[index]?.text =
-                                                percent.toStringAsFixed(2);
+                                                .value[index]
+                                                ?.text = percent
+                                                .toStringAsFixed(2);
                                             rowFields.value = {
                                               ...rowFields.value,
                                               index: {
                                                 ...?rowFields.value[index],
-                                                'discountPercent':
-                                                    percent.toStringAsFixed(2),
+                                                'discountPercent': percent
+                                                    .toStringAsFixed(2),
                                                 'discountAmount': value,
-                                              }
+                                              },
                                             };
                                             recalculateGrandTotal();
                                             recalculateTotalDiscount();
@@ -1294,72 +1463,89 @@ class AddNewSalePage extends HookConsumerWidget {
                                         child: GestureDetector(
                                           onTap: () =>
                                               showDropdownRows.value = {
-                                            ...showDropdownRows.value,
-                                            index
-                                          },
-                                          child: showDropdownRows.value
-                                                  .contains(index)
+                                                ...showDropdownRows.value,
+                                                index,
+                                              },
+                                          child:
+                                              showDropdownRows.value.contains(
+                                                index,
+                                              )
                                               ? DropdownButtonFormField<String>(
-                                                  value: rowFields.value[index]
-                                                          ?['taxName'] ??
-                                                      (taxModel.value?.data
+                                                  value:
+                                                      rowFields
+                                                          .value[index]?['taxName'] ??
+                                                      (taxModel
+                                                                  .value
+                                                                  ?.data
                                                                   ?.isNotEmpty ??
                                                               false
                                                           ? taxModel
-                                                              .value!
-                                                              .data!
-                                                              .first
-                                                              .taxName
+                                                                .value!
+                                                                .data!
+                                                                .first
+                                                                .taxName
                                                           : null),
                                                   isExpanded: true,
                                                   decoration:
                                                       const InputDecoration(
-                                                    isDense: true,
-                                                    contentPadding:
-                                                        EdgeInsets.symmetric(
-                                                            horizontal: 8,
-                                                            vertical: 6),
-                                                    border: InputBorder.none,
-                                                  ),
+                                                        isDense: true,
+                                                        contentPadding:
+                                                            EdgeInsets.symmetric(
+                                                              horizontal: 8,
+                                                              vertical: 6,
+                                                            ),
+                                                        border:
+                                                            InputBorder.none,
+                                                      ),
                                                   items: taxModel.value?.data
                                                       ?.map((tax) {
-                                                    return DropdownMenuItem<
-                                                        String>(
-                                                      value: tax.taxName,
-                                                      child: Text(
-                                                        tax.taxName ?? '',
-                                                        style: const TextStyle(
-                                                            fontSize: 14),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                    );
-                                                  }).toList(),
+                                                        return DropdownMenuItem<
+                                                          String
+                                                        >(
+                                                          value: tax.taxName,
+                                                          child: Text(
+                                                            tax.taxName ?? '',
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontSize: 14,
+                                                                ),
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                          ),
+                                                        );
+                                                      })
+                                                      .toList(),
                                                   onChanged: (value) {
                                                     final selectedTax = taxModel
-                                                        .value?.data
+                                                        .value
+                                                        ?.data
                                                         ?.firstWhere(
-                                                      (e) => e.taxName == value,
-                                                      orElse: () => taxModel
-                                                          .value!.data!.first,
-                                                    );
-                                                    final salesPrice = double.tryParse(
-                                                            salesPriceControllers
-                                                                    .value[
-                                                                        index]
-                                                                    ?.text ??
-                                                                '0') ??
+                                                          (e) =>
+                                                              e.taxName ==
+                                                              value,
+                                                          orElse: () => taxModel
+                                                              .value!
+                                                              .data!
+                                                              .first,
+                                                        );
+                                                    final salesPrice =
+                                                        double.tryParse(
+                                                          salesPriceControllers
+                                                                  .value[index]
+                                                                  ?.text ??
+                                                              '0',
+                                                        ) ??
                                                         0;
                                                     final taxRate =
                                                         double.tryParse(
-                                                                selectedTax
-                                                                        ?.tax ??
-                                                                    '0') ??
-                                                            0;
+                                                          selectedTax?.tax ??
+                                                              '0',
+                                                        ) ??
+                                                        0;
                                                     final taxAmount =
                                                         salesPrice *
-                                                            taxRate /
-                                                            100;
+                                                        taxRate /
+                                                        100;
                                                     rowFields.value = {
                                                       ...rowFields.value,
                                                       index: {
@@ -1368,26 +1554,28 @@ class AddNewSalePage extends HookConsumerWidget {
                                                         'taxName': value ?? '',
                                                         'taxRate':
                                                             selectedTax?.tax ??
-                                                                '0',
+                                                            '0',
                                                         'taxAmount': taxAmount
                                                             .toStringAsFixed(2),
-                                                      }
+                                                      },
                                                     };
                                                     recalculateGrandTotal();
                                                   },
                                                 )
                                               : Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 10),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 10,
+                                                      ),
                                                   child: Text(
-                                                    rowFields.value[index]
-                                                            ?['taxRate'] ??
+                                                    rowFields
+                                                            .value[index]?['taxRate'] ??
                                                         '',
                                                     style: const TextStyle(
-                                                        fontSize: 14,
-                                                        color: Colors.grey),
+                                                      fontSize: 14,
+                                                      color: Colors.grey,
+                                                    ),
                                                     textAlign: TextAlign.center,
                                                   ),
                                                 ),
@@ -1397,9 +1585,11 @@ class AddNewSalePage extends HookConsumerWidget {
                                         width: baseColumnWidth,
                                         child: TextField(
                                           controller: TextEditingController(
-                                              text: rowFields.value[index]
-                                                      ?['taxAmount'] ??
-                                                  ''),
+                                            text:
+                                                rowFields
+                                                    .value[index]?['taxAmount'] ??
+                                                '',
+                                          ),
                                           readOnly: true,
                                           style: const TextStyle(fontSize: 14),
                                           textAlign: TextAlign.center,
@@ -1407,7 +1597,9 @@ class AddNewSalePage extends HookConsumerWidget {
                                             isDense: true,
                                             contentPadding:
                                                 EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 6),
+                                                  horizontal: 8,
+                                                  vertical: 6,
+                                                ),
                                             border: InputBorder.none,
                                           ),
                                         ),
@@ -1419,24 +1611,28 @@ class AddNewSalePage extends HookConsumerWidget {
                                             text: (() {
                                               final salesPrice =
                                                   double.tryParse(
-                                                          salesPriceControllers
-                                                                  .value[index]
-                                                                  ?.text ??
-                                                              '0') ??
-                                                      0;
-                                              final discountAmount =
-                                                  double.tryParse(rowFields
-                                                                  .value[index]
-                                                              ?[
-                                                              'discountAmount'] ??
-                                                          '0') ??
-                                                      0;
-                                              final taxAmount = double.tryParse(
-                                                      rowFields.value[index]
-                                                              ?['taxAmount'] ??
-                                                          '0') ??
+                                                    salesPriceControllers
+                                                            .value[index]
+                                                            ?.text ??
+                                                        '0',
+                                                  ) ??
                                                   0;
-                                              final amount = salesPrice +
+                                              final discountAmount =
+                                                  double.tryParse(
+                                                    rowFields
+                                                            .value[index]?['discountAmount'] ??
+                                                        '0',
+                                                  ) ??
+                                                  0;
+                                              final taxAmount =
+                                                  double.tryParse(
+                                                    rowFields
+                                                            .value[index]?['taxAmount'] ??
+                                                        '0',
+                                                  ) ??
+                                                  0;
+                                              final amount =
+                                                  salesPrice +
                                                   taxAmount -
                                                   discountAmount;
                                               return amount.toStringAsFixed(2);
@@ -1449,7 +1645,9 @@ class AddNewSalePage extends HookConsumerWidget {
                                             isDense: true,
                                             contentPadding:
                                                 EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 6),
+                                                  horizontal: 8,
+                                                  vertical: 6,
+                                                ),
                                             border: InputBorder.none,
                                           ),
                                         ),
@@ -1457,16 +1655,14 @@ class AddNewSalePage extends HookConsumerWidget {
                                     ],
                                   ),
                                 );
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
+                              }),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   SalesPageBottomSectionWidget(
                     subTotal: tempSubTotal.value,
                     totalDiscount: tempTotalDiscount.value,
@@ -1559,7 +1755,8 @@ class AddNewSalePage extends HookConsumerWidget {
 
                       final double otherChargesValue =
                           double.tryParse(otherChargesController.text) ?? 0;
-                      final double grandTotal = tempSubTotal.value +
+                      final double grandTotal =
+                          tempSubTotal.value +
                           tempTotalTax.value +
                           otherChargesValue -
                           tempTotalDiscount.value;
@@ -1605,16 +1802,17 @@ class AddNewSalePage extends HookConsumerWidget {
                         final paymentResponse =
                             await SalesPaymentCreateController()
                                 .salesPaymentCreateController(
-                          accessToken: accessToken,
-                          storeId: storeMap.value[storeId.value]!,
-                          salesId: saleId,
-                          customerId: customerMap.value[customerId.value]!,
-                          paymentMethod: salesType.value ?? "Cash",
-                          paymentAmount: paidAmountController.text,
-                          paymentDate: getCurrentDateFormatted(),
-                          paymentNote: salesNoteController.text,
-                          accountId: "",
-                        );
+                                  accessToken: accessToken,
+                                  storeId: storeMap.value[storeId.value]!,
+                                  salesId: saleId,
+                                  customerId:
+                                      customerMap.value[customerId.value]!,
+                                  paymentMethod: salesType.value ?? "Cash",
+                                  paymentAmount: paidAmountController.text,
+                                  paymentDate: getCurrentDateFormatted(),
+                                  paymentNote: salesNoteController.text,
+                                  accountId: "",
+                                );
 
                         final customerName = customerMap.value.entries
                             .firstWhere(
@@ -1674,11 +1872,13 @@ class AddNewSalePage extends HookConsumerWidget {
                             ),
                           );
                           return InvoiceItem(
-                            name: actualItem.itemName,
+                            name:
+                                '${actualItem.itemName} (SKUs: ${item.batchNo})',
                             qty: int.tryParse(item.purchaseQty) ?? 0,
                             unit: item.unit,
                             price: double.tryParse(item.pricePerUnit) ?? 0,
-                            total: (double.tryParse(item.totalCost) ?? 0) +
+                            total:
+                                (double.tryParse(item.totalCost) ?? 0) +
                                 (double.tryParse(item.taxAmount) ?? 0) -
                                 (double.tryParse(item.discountAmount) ?? 0),
                             taxName: item.taxName,
@@ -1687,11 +1887,13 @@ class AddNewSalePage extends HookConsumerWidget {
                         }).toList();
 
                         final double calculatedSubTotal = tempSubTotal.value;
-                        final double calculatedGrandTotal = calculatedSubTotal +
+                        final double calculatedGrandTotal =
+                            calculatedSubTotal +
                             tempTotalTax.value +
                             otherChargesValue -
                             tempTotalDiscount.value;
-                        final double calculatedBalance = calculatedGrandTotal -
+                        final double calculatedBalance =
+                            calculatedGrandTotal -
                             (double.tryParse(paidAmountController.text) ?? 0);
 
                         final pdfBytes = await generateRealisticInvoice(
@@ -1728,8 +1930,9 @@ class AddNewSalePage extends HookConsumerWidget {
 
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content:
-                                Text("Sale saved and printed successfully"),
+                            content: Text(
+                              "Sale saved and printed successfully",
+                            ),
                             backgroundColor: Colors.green,
                           ),
                         );
@@ -1754,8 +1957,10 @@ class AddNewSalePage extends HookConsumerWidget {
                   },
                   child: isLoadingSavePrint.value
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Save & Print",
-                          style: TextStyle(color: Colors.white)),
+                      : const Text(
+                          "Save & Print",
+                          style: TextStyle(color: Colors.white),
+                        ),
                 ),
               ),
               const SizedBox(width: 30),
@@ -1830,7 +2035,8 @@ class AddNewSalePage extends HookConsumerWidget {
 
                       final double otherChargesValue =
                           double.tryParse(otherChargesController.text) ?? 0;
-                      final double grandTotal = tempSubTotal.value +
+                      final double grandTotal =
+                          tempSubTotal.value +
                           tempTotalTax.value +
                           otherChargesValue -
                           tempTotalDiscount.value;
@@ -1876,16 +2082,17 @@ class AddNewSalePage extends HookConsumerWidget {
                         final paymentResponse =
                             await SalesPaymentCreateController()
                                 .salesPaymentCreateController(
-                          accessToken: accessToken,
-                          storeId: storeMap.value[storeId.value]!,
-                          salesId: saleId,
-                          customerId: customerMap.value[customerId.value]!,
-                          paymentMethod: salesType.value ?? "Cash",
-                          paymentAmount: paidAmountController.text,
-                          paymentDate: getCurrentDateFormatted(),
-                          paymentNote: salesNoteController.text,
-                          accountId: "1",
-                        );
+                                  accessToken: accessToken,
+                                  storeId: storeMap.value[storeId.value]!,
+                                  salesId: saleId,
+                                  customerId:
+                                      customerMap.value[customerId.value]!,
+                                  paymentMethod: salesType.value ?? "Cash",
+                                  paymentAmount: paidAmountController.text,
+                                  paymentDate: getCurrentDateFormatted(),
+                                  paymentNote: salesNoteController.text,
+                                  accountId: "1",
+                                );
 
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -1914,8 +2121,10 @@ class AddNewSalePage extends HookConsumerWidget {
                   },
                   child: isLoadingSave.value
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Save",
-                          style: TextStyle(color: Colors.white)),
+                      : const Text(
+                          "Save",
+                          style: TextStyle(color: Colors.white),
+                        ),
                 ),
               ),
             ],
