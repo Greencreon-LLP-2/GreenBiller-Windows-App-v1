@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 class SalesPageBottomSectionWidget extends HookConsumerWidget {
   final double subTotal;
   final double totalDiscount;
+  final double totalTax; // Add this
   final TextEditingController orderNoController;
   final TextEditingController paidAmountController;
   final TextEditingController otherChargesController;
@@ -17,6 +18,7 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
     required this.orderNoController,
     required this.subTotal,
     required this.totalDiscount,
+    required this.totalTax, // Add this
     required this.paidAmountController,
     required this.otherChargesController,
     required this.purchaseNoteController,
@@ -50,7 +52,8 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
       return () => paidAmountController.removeListener(listener);
     }, [paidAmountController]);
 
-    final grandTotal = subTotal + otherCharges.value - totalDiscount;
+    // Include totalTax in grandTotal calculation
+    final grandTotal = subTotal + totalTax + otherCharges.value - totalDiscount;
     final balance = grandTotal - paidAmount.value;
 
     return Container(
@@ -126,24 +129,17 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                           child: DropdownButtonFormField<String>(
                             value: purchaseType,
                             items: const [
-                              DropdownMenuItem(
-                                  value: "Cash", child: Text('Cash')),
-                              DropdownMenuItem(
-                                  value: "Upi", child: Text('UPI')),
-                              DropdownMenuItem(
-                                  value: "Cheque", child: Text('Cheque')),
-                              DropdownMenuItem(
-                                  value: "Bank Transfer",
-                                  child: Text('Bank Transfer')),
+                              DropdownMenuItem(value: "Cash", child: Text('Cash')),
+                              DropdownMenuItem(value: "Upi", child: Text('UPI')),
+                              DropdownMenuItem(value: "Cheque", child: Text('Cheque')),
+                              DropdownMenuItem(value: "Bank Transfer", child: Text('Bank Transfer')),
                             ],
-                            onChanged: (value) =>
-                                onPurchaseTypeChanged?.call(value),
+                            onChanged: (value) => onPurchaseTypeChanged?.call(value),
                             decoration: InputDecoration(
                               hintText: "Select Payment Type",
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 14),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                               border: InputBorder.none,
                               prefixIcon: Icon(
                                 Icons.payment,
@@ -160,9 +156,8 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 20),
-                    // Sales Note
+                    // Sales Bill ID
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -200,16 +195,12 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                                 ),
                               ),
                             ),
-                            onChanged: (value) {
-                              // Save value to a variable or state for API usage
-                              // Example: ref.read(purchaseNoteProvider.notifier).state = value;
-                            },
                           ),
                         ),
                       ],
                     ),
-                    // Sales Note
                     const SizedBox(height: 20),
+                    // Sales Note
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -248,10 +239,6 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                                 ),
                               ),
                             ),
-                            onChanged: (value) {
-                              // Save value to a variable or state for API usage
-                              // Example: ref.read(purchaseNoteProvider.notifier).state = value;
-                            },
                           ),
                         ),
                       ],
@@ -259,9 +246,7 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                   ],
                 ),
               ),
-
               const SizedBox(width: 24),
-
               // Right Column - Financial Summary
               Expanded(
                 flex: 2,
@@ -295,7 +280,6 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 16),
-
                       // Subtotal
                       _buildSummaryRow(
                         "Subtotal",
@@ -303,7 +287,13 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                         isReadOnly: true,
                       ),
                       const SizedBox(height: 12),
-
+                      // Total Tax
+                      _buildSummaryRow(
+                        "Total Tax",
+                        "₹${totalTax.toStringAsFixed(2)}",
+                        isReadOnly: true,
+                      ),
+                      const SizedBox(height: 12),
                       // Other Charges
                       _buildSummaryRowWithInput(
                         "Other Charges",
@@ -311,7 +301,6 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                         Icons.add_circle_outline,
                       ),
                       const SizedBox(height: 12),
-
                       // Total Discount
                       _buildSummaryRow(
                         "Total Discount",
@@ -320,11 +309,9 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                         color: Colors.red.shade600,
                       ),
                       const SizedBox(height: 16),
-
                       // Divider
                       Divider(color: Colors.green.shade300, thickness: 1),
                       const SizedBox(height: 8),
-
                       // Grand Total
                       _buildSummaryRow(
                         "Grand Total",
@@ -334,7 +321,6 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                         fontSize: 18,
                       ),
                       const SizedBox(height: 16),
-
                       // Paid Amount
                       _buildSummaryRowWithInput(
                         "Paid Amount",
@@ -342,7 +328,6 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                         Icons.account_balance_wallet,
                       ),
                       const SizedBox(height: 16),
-
                       // Balance
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -385,7 +370,7 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                                       ? "Credit Balance"
                                       : balance > 0
                                           ? "Balance Due"
-                                          : "",
+                                          : "Balanced",
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -487,8 +472,7 @@ class SalesPageBottomSectionWidget extends HookConsumerWidget {
                 hintText: "0.00",
                 hintStyle: TextStyle(color: Colors.grey.shade400),
                 isDense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 border: InputBorder.none,
                 prefixIcon: Icon(
                   icon,

@@ -933,10 +933,10 @@ class AddNewSalePage extends HookConsumerWidget {
                                       ),
                                     ),
                                     SizedBox(
-                                      width: baseColumnWidth * 1,
+                                      width: baseColumnWidth * 0.75,
                                       child: HeaderCellWidget(
                                         text: "SKUs",
-                                        width: baseColumnWidth * 1,
+                                        width: baseColumnWidth * 0.75,
                                       ),
                                     ),
                                     SizedBox(
@@ -1666,6 +1666,7 @@ class AddNewSalePage extends HookConsumerWidget {
                   SalesPageBottomSectionWidget(
                     subTotal: tempSubTotal.value,
                     totalDiscount: tempTotalDiscount.value,
+                    totalTax: tempTotalTax.value,
                     otherChargesController: otherChargesController,
                     paidAmountController: paidAmountController,
                     purchaseNoteController: salesNoteController,
