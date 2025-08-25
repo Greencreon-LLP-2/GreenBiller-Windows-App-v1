@@ -270,7 +270,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/business-profile',
-        builder: (context, state) => const BusinessProfilePage(),
+        builder: (context, state) => BusinessProfilePage(
+          accessToken: lastUser?.accessToken != null
+              ? lastUser!.accessToken!
+              : '',
+        ),
       ),
       GoRoute(
         path: '/users-settings',

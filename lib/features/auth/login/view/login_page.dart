@@ -29,7 +29,7 @@ class LoginPage extends HookConsumerWidget {
     final countryCodeForOtp = useState<String>('+91');
     final message = useState<String?>(null);
     final isError = useState<bool>(false);
-    final appStatus = ref.watch(appStatusProvider);
+   
 
     // Centralized message handler
     void showMessage(String msg, {bool error = false}) {
@@ -100,7 +100,7 @@ class LoginPage extends HookConsumerWidget {
                           child: LogoHeaderWidget(
                             message: message,
                             isError: isError,
-                            imageUrl:appStatus.settings != null ? appStatus.settings!.appLogo :'' ,
+                            imageUrl:'assets/images/logo_image.png',
                           ),
                         ),
                         const SizedBox(width: 20),
@@ -160,18 +160,16 @@ class LogoHeaderWidget extends HookWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: 120,
-          height: 120,
+          width: 250,
+          height: 250,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: accentColor.withOpacity(0.1),
           ),
-          child: const Icon(Icons.store, size: 60, color: accentColor),
+          child:  Image.asset(imageUrl!),
         ),
         const SizedBox(height: 24),
-        Container(
-          child: Image.network(imageUrl!),
-        ),
+      
         Text(
           'Green Biller',
           style: AppTextStyles.h1.copyWith(

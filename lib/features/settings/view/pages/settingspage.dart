@@ -27,13 +27,14 @@ class SettingsPage extends ConsumerWidget {
 
     // Define settings pages, passing accessToken to InvoiceSettingsPage
     final List<Widget> settingsPages = [
-      const BusinessProfilePage(),
+      BusinessProfilePage(accessToken: accessToken!),
       const AccountSettingsPage(),
       const SalesSettingsPage(),
       accessToken != null
           ? InvoiceSettingsPage(accessToken: accessToken)
           : const Center(
-              child: Text('Please log in to access invoice settings')),
+              child: Text('Please log in to access invoice settings'),
+            ),
       const UserSettingsPage(),
       const ActiveLogPage(),
       const Placeholder(), // Theme
@@ -124,9 +125,17 @@ class SettingsPage extends ConsumerWidget {
                       _buildNavItem(ref, 0, "Business Profile", Icons.business),
                       _buildNavItem(ref, 1, "Accounts", Icons.account_circle),
                       _buildNavItem(
-                          ref, 2, "Sales Setting", Icons.receipt_long),
+                        ref,
+                        2,
+                        "Sales Setting",
+                        Icons.receipt_long,
+                      ),
                       _buildNavItem(
-                          ref, 3, "Invoice Settings", Icons.description),
+                        ref,
+                        3,
+                        "Invoice Settings",
+                        Icons.description,
+                      ),
                       _buildSectionHeader("USER MANAGEMENT"),
                       _buildNavItem(ref, 4, "Users", Icons.people_outline),
                       _buildNavItem(ref, 5, "Activity Log", Icons.history),
@@ -163,9 +172,7 @@ class SettingsPage extends ConsumerWidget {
                 ),
 
                 // Content Area
-                Expanded(
-                  child: settingsPages[safeIndex],
-                ),
+                Expanded(child: settingsPages[safeIndex]),
               ],
             ),
           ),
@@ -176,12 +183,7 @@ class SettingsPage extends ConsumerWidget {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(
-        top: 24,
-        left: 24,
-        right: 24,
-        bottom: 8,
-      ),
+      padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 8),
       child: Text(
         title,
         style: const TextStyle(
@@ -203,13 +205,11 @@ class SettingsPage extends ConsumerWidget {
           ref.read(selectedIndexProvider.notifier).state = index;
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 12,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
-            color:
-                isSelected ? accentColor.withOpacity(0.1) : Colors.transparent,
+            color: isSelected
+                ? accentColor.withOpacity(0.1)
+                : Colors.transparent,
             border: Border(
               left: BorderSide(
                 color: isSelected ? accentColor : Colors.transparent,

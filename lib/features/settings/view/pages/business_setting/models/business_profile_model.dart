@@ -12,7 +12,7 @@ class BusinessProfile {
   final String? profileImagePath;
   final String? signatureImagePath;
   final String? businessName;
-  final String? mobile;
+  
 
   BusinessProfile({
     required this.name,
@@ -28,7 +28,7 @@ class BusinessProfile {
     this.profileImagePath,
     this.signatureImagePath,
     this.businessName,
-    this.mobile,
+
   });
 
   factory BusinessProfile.fromJson(Map<String, dynamic> json) =>
@@ -45,8 +45,8 @@ class BusinessProfile {
         gst: json['gst'],
         profileImagePath: json['profileImagePath'],
         signatureImagePath: json['signatureImagePath'],
-        businessName: json['businessName'],
-        mobile: json['mobile'],
+        businessName: json['bussiness_name'],
+       
       );
 
   Map<String, dynamic> toJson() => {
@@ -63,6 +63,6 @@ class BusinessProfile {
         'profileImagePath': profileImagePath,
         'signatureImagePath': signatureImagePath,
         'businessName': businessName,
-        'mobile': mobile,
+    
       };
 }

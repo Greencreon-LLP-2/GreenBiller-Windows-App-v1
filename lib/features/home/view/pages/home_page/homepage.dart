@@ -8,8 +8,6 @@ import 'package:green_biller/features/auth/login/services/snackbar_service.dart'
 import 'package:green_biller/features/home/view/pages/darshboard_page.dart';
 import 'package:green_biller/features/home/view/pages/home_page/utils/trail_version_container.dart';
 import 'package:green_biller/features/home/view/pages/home_page/widgets/build_home_content.dart';
-
-import 'package:green_biller/features/home/view/pages/menu_page/widgets/payment_out.dart';
 import 'package:green_biller/features/item/view/pages/add_items_page/add_items_page.dart';
 import 'package:green_biller/features/item/view/pages/all_items_page/all_items.dart';
 import 'package:green_biller/features/item/view/pages/brand/brand_page.dart';
@@ -18,10 +16,7 @@ import 'package:green_biller/features/item/view/pages/items_page.dart';
 import 'package:green_biller/features/item/view/pages/units/units_page.dart';
 import 'package:green_biller/features/payment/view/pages/all_payment_page/all_payment_in_page.dart';
 import 'package:green_biller/features/payment/view/pages/all_payment_page/all_payment_out_page.dart';
-
-import 'package:green_biller/features/payment/view/pages/payment_in_page/add_payment_in_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_page/purchase_page.dart';
-
 import 'package:green_biller/features/purchase/view/pages/purchase_returns_view/purchase_return_view_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_view/purchase_bills.dart';
 import 'package:green_biller/features/reports/purchase_report/view/pages/purchase_item_report.dart';
@@ -705,7 +700,7 @@ class HomePage extends HookConsumerWidget {
                           const CategoriesPage(), //27
                           const BrandPage(), //28
                           const UnitsPage(), //29
-                          const BusinessProfilePage(), //30
+                          BusinessProfilePage(accessToken: accessToken!), //30
                           const AccountSettingsPage(), //31
                           const SalesSettingsPage(), //32
                           InvoiceSettingsPage(accessToken: accessToken), //33
