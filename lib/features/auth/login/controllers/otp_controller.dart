@@ -5,6 +5,7 @@ import 'package:green_biller/features/auth/login/services/auth_service.dart';
 
 import 'package:green_biller/features/auth/login/services/otp_service.dart';
 import 'package:green_biller/features/auth/login/services/snackbar_service.dart';
+import 'package:green_biller/main.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class OtpController {
@@ -16,8 +17,10 @@ class OtpController {
     Function(String, String) onSwitchToOtp,
   ) async {
     try {
-      final statusCode =
-          await _otpService.sendOtpService(phoneNumber, countryCode);
+      final statusCode = await _otpService.sendOtpService(
+        phoneNumber,
+        countryCode,
+      );
       if (statusCode == 200) {
         SnackBarService.showSuccess('OTP sent successfully');
         onSwitchToOtp(phoneNumber, countryCode);
@@ -36,8 +39,11 @@ class OtpController {
     WidgetRef ref,
   ) async {
     try {
-      final result =
-          await _otpService.verifyOtpService(otp, phoneNumber, countryCode);
+      final result = await _otpService.verifyOtpService(
+        otp,
+        phoneNumber,
+        countryCode,
+      );
 
       if (result['status'] == 'success') {
         final decodedData = result['data'];
@@ -51,15 +57,15 @@ class OtpController {
           // Save user data
           await AuthService().saveUserData(data);
 
+          
+          // Use safe navigation with delay
+          Future.delayed(const Duration(seconds: 1), () {
+            if (!navigatorKey.currentContext!.mounted) return;
+            navigatorKey.currentContext!.go('/homepage');
+          });
+
           SnackBarService.showSuccess('Login successful');
 
-          // Use safe navigation with delay
-          try {
-            context.go('/homepage');
-          } catch (e, stack) {
-            print(e);
-            print(stack);
-          }
         } else {
           SnackBarService.showSuccess('Please create your account');
           onSwitchToSignUp(countryCode, phoneNumber);

@@ -16,7 +16,7 @@ import 'package:green_biller/features/item/view/pages/brand/brand_page.dart';
 import 'package:green_biller/features/item/view/pages/categories/categories_page.dart';
 import 'package:green_biller/features/item/view/pages/items_page.dart';
 import 'package:green_biller/features/item/view/pages/units/units_page.dart';
-import 'package:green_biller/features/notifications/views/notification_page.dart';
+
 import 'package:green_biller/features/payment/view/pages/payment_in_page/add_payment_in_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_page/purchase_page.dart';
 
@@ -122,6 +122,21 @@ class HomePage extends HookConsumerWidget {
                               selectedIndex: selectedIndex.value,
                               onTap: () => selectedIndex.value = 0,
                             ),
+                           
+                            const Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 8,
+                              ),
+                              child: Text(
+                                "QUICK ACTIONS",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: textSecondaryColor,
+                                ),
+                              ),
+                            ),
                             _buildNavItem(
                               title: 'Stores',
                               icon: Icons.store,
@@ -147,29 +162,29 @@ class HomePage extends HookConsumerWidget {
                               onTap: () => selectedIndex.value = 5,
                             ),
                             _buildNavItem(
-                              title: 'Parties',
+                              title: 'Contacts',
                               icon: Icons.person_2_outlined,
                               selectedIcon: Icons.person_2,
                               index: 7,
                               selectedIndex: selectedIndex.value,
                               onTap: () => selectedIndex.value = 7,
                             ),
-                            _buildNavItem(
-                              title: 'Users',
-                              icon: Icons.person_outline,
-                              selectedIcon: Icons.person,
-                              index: 8,
-                              selectedIndex: selectedIndex.value,
-                              onTap: () => selectedIndex.value = 8,
-                            ),
+                            // _buildNavItem(
+                            //   title: 'Users',
+                            //   icon: Icons.person_outline,
+                            //   selectedIcon: Icons.person,
+                            //   index: 8,
+                            //   selectedIndex: selectedIndex.value,
+                            //   onTap: () => selectedIndex.value = 8,
+                            // ),
                             const Divider(height: 32),
                             const Padding(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 24,
-                                vertical: 8,
+                                vertical: 0,
                               ),
                               child: Text(
-                                "QUICK ACTIONS",
+                                "MANAGE",
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -398,6 +413,14 @@ class HomePage extends HookConsumerWidget {
                               selectedIcon: Icons.settings,
                               selectedIndex: selectedIndex.value,
                               subItems: [
+                                _buildNavSubItem(
+                                  title: 'Users',
+                                  icon: Icons.person_outline,
+
+                                  index: 8,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 8,
+                                ),
                                 _buildNavSubItem(
                                   title: 'Business Settings',
                                   icon: Icons.business,

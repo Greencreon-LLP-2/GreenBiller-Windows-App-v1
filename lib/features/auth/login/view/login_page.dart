@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:green_biller/features/auth/login/services/snackbar_service.dart';
+import 'package:green_biller/main.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:green_biller/core/constants/colors.dart';
@@ -22,7 +24,7 @@ class LoginPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentPage = useState<AuthPage>(AuthPage.login);
-    final phoneForOtp = useState<String>(''); 
+    final phoneForOtp = useState<String>('');
     final countryCodeForOtp = useState<String>('+91');
     final message = useState<String?>(null);
     final isError = useState<bool>(false);
@@ -38,6 +40,11 @@ class LoginPage extends HookConsumerWidget {
           isError.value = false;
         }
       });
+      if(error){
+        SnackBarService.showError(msg);
+      }else{
+        SnackBarService.showSuccess(msg);
+      }
     }
 
     // Navigation functions
@@ -154,11 +161,7 @@ class LogoHeaderWidget extends HookWidget {
             shape: BoxShape.circle,
             color: accentColor.withOpacity(0.1),
           ),
-          child: const Icon(
-            Icons.store,
-            size: 60,
-            color: accentColor,
-          ),
+          child: const Icon(Icons.store, size: 60, color: accentColor),
         ),
         const SizedBox(height: 24),
         Text(
@@ -171,9 +174,7 @@ class LogoHeaderWidget extends HookWidget {
         const SizedBox(height: 12),
         Text(
           'Manage your business with ease',
-          style: AppTextStyles.bodyLarge.copyWith(
-            color: textSecondaryColor,
-          ),
+          style: AppTextStyles.bodyLarge.copyWith(color: textSecondaryColor),
         ),
         const SizedBox(height: 16),
         AnimatedOpacity(
@@ -181,9 +182,14 @@ class LogoHeaderWidget extends HookWidget {
           duration: const Duration(milliseconds: 300),
           child: message.value != null
               ? Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: isError.value ? Colors.red.withOpacity(0.1) : Colors.green.withOpacity(0.1),
+                    color: isError.value
+                        ? Colors.red.withOpacity(0.1)
+                        : Colors.green.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -259,8 +265,8 @@ class LoginFormWidget extends StatelessWidget {
             currentPage.value == AuthPage.login
                 ? 'Welcome Back'
                 : currentPage.value == AuthPage.signup
-                    ? 'Create Account'
-                    : 'Verify OTP',
+                ? 'Create Account'
+                : 'Verify OTP',
             style: AppTextStyles.h2.copyWith(
               color: textPrimaryColor,
               fontWeight: FontWeight.bold,
@@ -282,7 +288,8 @@ class LoginFormWidget extends StatelessWidget {
                   countryCode: countryCodeForOtp.value,
                   phone: phoneForOtp.value,
                   onSwitchToLogin: switchToLogin,
-                  onSwitchToOtp: (phone) => switchToOtp(phone, countryCodeForOtp.value),
+                  onSwitchToOtp: (phone) =>
+                      switchToOtp(phone, countryCodeForOtp.value),
                   showMessage: showMessage,
                   parentContext: parentContext,
                 ),
@@ -349,27 +356,28 @@ class LoginFormContentWidget extends HookConsumerWidget {
                         .getAll()
                         .where((c) => c.phoneCode.isNotEmpty)
                         .map((country) {
-                      return DropdownMenuItem<String>(
-                        value: '+${country.phoneCode}',
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              country.flagEmoji,
-                              style: const TextStyle(fontSize: 16),
+                          return DropdownMenuItem<String>(
+                            value: '+${country.phoneCode}',
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  country.flagEmoji,
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    '+${country.phoneCode}',
+                                    style: const TextStyle(fontSize: 14),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                '+${country.phoneCode}',
-                                style: const TextStyle(fontSize: 14),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
+                          );
+                        })
+                        .toList(),
                     onChanged: (value) {
                       if (value != null) selectedCountryCode.value = value;
                     },
@@ -428,7 +436,9 @@ class LoginFormContentWidget extends HookConsumerWidget {
                   isPasswordLogin.value = !isPasswordLogin.value;
                 },
                 child: Text(
-                  isPasswordLogin.value ? 'Use OTP Login' : 'Use Password Login',
+                  isPasswordLogin.value
+                      ? 'Use OTP Login'
+                      : 'Use Password Login',
                   style: AppTextStyles.labelMedium.copyWith(color: accentColor),
                 ),
               ),
@@ -444,8 +454,10 @@ class LoginFormContentWidget extends HookConsumerWidget {
                 : () async {
                     if (mobileController.text.isEmpty ||
                         mobileController.text.length < 10) {
-                      showMessage('Please enter a valid 10-digit mobile number',
-                          error: true);
+                      showMessage(
+                        'Please enter a valid 10-digit mobile number',
+                        error: true,
+                      );
                       return;
                     }
                     if (isPasswordLogin.value &&
@@ -480,8 +492,9 @@ class LoginFormContentWidget extends HookConsumerWidget {
                       }
                     } catch (e) {
                       showMessage(
-                          e.toString().replaceAll('Exception: ', ''),
-                          error: true);
+                        e.toString().replaceAll('Exception: ', ''),
+                        error: true,
+                      );
                     } finally {
                       isLoading.value = false;
                     }
@@ -489,8 +502,10 @@ class LoginFormContentWidget extends HookConsumerWidget {
           ),
           const SizedBox(height: 24),
           TextButton(
-            onPressed: () =>
-                onSwitchToSignup(selectedCountryCode.value, mobileController.text),
+            onPressed: () => onSwitchToSignup(
+              selectedCountryCode.value,
+              mobileController.text,
+            ),
             child: const Text('Don\'t have an account? Sign up'),
           ),
         ],
@@ -557,12 +572,16 @@ class SignupFormContentWidget extends HookConsumerWidget {
             final data = UserModel.fromJson(result);
             await AuthService().saveUserData(data);
             ref.read(userProvider.notifier).state = data;
-            showMessage('Login successful', error: false);
-            parentContext.go('/homepage');
+            Future.delayed(const Duration(seconds: 1), () {
+              if (!navigatorKey.currentContext!.mounted) return;
+              navigatorKey.currentContext!.go('/homepage');
+              showMessage('Login successful', error: false);
+            });
           } else {
             showMessage(
-                result['errors']?.toString() ?? 'Something went wrong',
-                error: true);
+              result['errors']?.toString() ?? 'Something went wrong',
+              error: true,
+            );
           }
         } else {
           showMessage(result['errors'] ?? 'Email Already Exist', error: true);
@@ -610,7 +629,9 @@ class SignupFormContentWidget extends HookConsumerWidget {
               if (value == null || value.isEmpty) {
                 return 'Email is required';
               }
-              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+              if (!RegExp(
+                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+              ).hasMatch(value)) {
                 return 'Enter a valid email';
               }
               return null;
@@ -623,7 +644,8 @@ class SignupFormContentWidget extends HookConsumerWidget {
             prefixIcon: Icons.lock_outline,
             isPassword: true,
             passwordVisible: passwordVisible.value,
-            onToggleVisibility: () => passwordVisible.value = !passwordVisible.value,
+            onToggleVisibility: () =>
+                passwordVisible.value = !passwordVisible.value,
             controller: passwordController,
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -639,7 +661,8 @@ class SignupFormContentWidget extends HookConsumerWidget {
             prefixIcon: Icons.lock_outline,
             isPassword: true,
             passwordVisible: confPassVisible.value,
-            onToggleVisibility: () => confPassVisible.value = !confPassVisible.value,
+            onToggleVisibility: () =>
+                confPassVisible.value = !confPassVisible.value,
             controller: confirmPasswordController,
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -796,9 +819,13 @@ class OtpVerificationWidget extends HookConsumerWidget {
                   ),
                   onChanged: (value) {
                     if (value.length == 1 && index < 3) {
-                      FocusScope.of(context).requestFocus(focusNodes[index + 1]);
+                      FocusScope.of(
+                        context,
+                      ).requestFocus(focusNodes[index + 1]);
                     } else if (value.isEmpty && index > 0) {
-                      FocusScope.of(context).requestFocus(focusNodes[index - 1]);
+                      FocusScope.of(
+                        context,
+                      ).requestFocus(focusNodes[index - 1]);
                     }
                     if (value.length == 1 && index == 3) {
                       FocusScope.of(context).unfocus();
@@ -873,6 +900,7 @@ class CustomTextFieldWidget extends HookWidget {
       void onFocusChange() {
         isFocused.value = focusNode.hasFocus;
       }
+
       focusNode.addListener(onFocusChange);
       return () => focusNode.removeListener(onFocusChange);
     }, [focusNode]);
@@ -898,7 +926,9 @@ class CustomTextFieldWidget extends HookWidget {
           ),
           prefixIcon: Icon(
             prefixIcon,
-            color: isFocused.value ? accentColor : textSecondaryColor.withOpacity(0.7),
+            color: isFocused.value
+                ? accentColor
+                : textSecondaryColor.withOpacity(0.7),
           ),
           suffixIcon: isPassword
               ? IconButton(
