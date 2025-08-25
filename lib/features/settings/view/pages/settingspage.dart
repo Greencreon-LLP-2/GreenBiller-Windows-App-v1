@@ -29,7 +29,7 @@ class SettingsPage extends ConsumerWidget {
     final List<Widget> settingsPages = [
       BusinessProfilePage(accessToken: accessToken!),
       const AccountSettingsPage(),
-      const SalesSettingsPage(),
+      SalesSettingsPage(accessToken: accessToken),
       accessToken != null
           ? InvoiceSettingsPage(accessToken: accessToken)
           : const Center(

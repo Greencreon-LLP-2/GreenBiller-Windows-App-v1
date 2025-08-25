@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:green_biller/core/constants/colors.dart';
+import 'package:green_biller/features/settings/services/sales_settings_service.dart';
 import 'package:green_biller/utils/custom_appbar.dart';
 
 class SalesSettingsPage extends StatefulWidget {
-  const SalesSettingsPage({super.key});
+  final String accessToken;
+  const SalesSettingsPage({super.key, required this.accessToken});
 
   @override
   State<SalesSettingsPage> createState() => _SalesSettingsPageState();
 }
 
 class _SalesSettingsPageState extends State<SalesSettingsPage> {
+  late SalesSettingsService _service;
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  int? _existingSettingsId;
 
   // Controllers
   final _salesDiscountController = TextEditingController();
@@ -38,7 +43,7 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
     'Bank Account - SBI',
     'Petty Cash',
     'Sales Account',
-    'Revenue Account'
+    'Revenue Account',
   ];
 
   final List<String> _invoiceFormatOptions = [
@@ -46,30 +51,83 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
     'Detailed Format',
     'Compact Format',
     'Professional Format',
-    'Custom Format'
+    'Custom Format',
   ];
 
   final List<String> _posInvoiceFormatOptions = [
     'Thermal 58mm',
     'Thermal 80mm',
     'A4 Format',
-    'Custom POS Format'
+    'Custom POS Format',
   ];
 
   final List<String> _numberToWordsOptions = [
     'Default',
     'Indian GST Format',
-    'International Format'
+    'International Format',
   ];
 
   @override
   void initState() {
     super.initState();
+    _service = SalesSettingsService(accessToken: widget.accessToken);
     _loadSettings();
   }
 
-  void _loadSettings() {
-    // Load existing settings here
+  Future<void> _loadSettings() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await _service.getSalesSettings();
+
+      if (response['status'] == 1 &&
+          response['data'] is List &&
+          response['data'].isNotEmpty) {
+        final settings = response['data'][0]; // Get first settings record
+        _populateForm(settings);
+      } else {
+        // No existing settings, set default values
+        _setDefaultValues();
+      }
+    } catch (e) {
+      print('Error loading settings: $e');
+      _setDefaultValues();
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _populateForm(Map<String, dynamic> settings) {
+    setState(() {
+      _existingSettingsId = settings['id'];
+      _selectedDefaultAccount = settings['account'] ?? _accountOptions.first;
+      _salesDiscountController.text =
+          settings['discount']?.toString() ?? '0.00';
+      _showMRPColumn = bool.parse(settings['show_mrp']) ?? true;
+      _showPaidAmount = bool.parse(settings['show_paidamount']) ?? true;
+      _showChangeReturn = bool.parse(settings['show_return']) ?? true;
+      _salesInvoiceFooterController.text =
+          settings['footer_text'] ?? 'Thank you for your business!';
+      _selectedSalesInvoiceFormat =
+          settings['sale_invoice'] ?? _invoiceFormatOptions.first;
+      _selectedPOSInvoiceFormat =
+          settings['pos_invoice'] ?? _posInvoiceFormatOptions.first;
+      _selectedNumberToWordsFormat =
+          settings['number_to_word'] ?? _numberToWordsOptions.first;
+      _showPreviousBalance = bool.parse(settings['show_previous_balance']) ?? false;
+      _showTermsOnInvoice = bool.parse(settings['show_invoice']) ?? true;
+      _showTermsOnPOS = bool.parse(settings['show_pos_invoice']) ?? false;
+      _termsConditionsController.text =
+          settings['term_conditions'] ??
+          '1. Payment is due within 30 days\n2. Late payments may incur additional charges\n3. Goods once sold cannot be returned without prior approval';
+    });
+  }
+
+  void _setDefaultValues() {
     setState(() {
       _selectedDefaultAccount = _accountOptions.first;
       _selectedSalesInvoiceFormat = _invoiceFormatOptions.first;
@@ -79,7 +137,85 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
       _salesInvoiceFooterController.text = 'Thank you for your business!';
       _termsConditionsController.text =
           '1. Payment is due within 30 days\n2. Late payments may incur additional charges\n3. Goods once sold cannot be returned without prior approval';
+      _showMRPColumn = true;
+      _showPaidAmount = true;
+      _showChangeReturn = true;
+      _showPreviousBalance = false;
+      _showTermsOnInvoice = true;
+      _showTermsOnPOS = false;
     });
+  }
+
+  Future<void> _saveSettings() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final Map<String, dynamic> requestData = {
+          'account': _selectedDefaultAccount,
+          'discount': double.tryParse(_salesDiscountController.text) ?? 0.0,
+          'show_mrp': _showMRPColumn,
+          'show_paidamount': _showPaidAmount,
+          'show_return': _showChangeReturn,
+          'footer_text': _salesInvoiceFooterController.text,
+          'sale_invoice': _selectedSalesInvoiceFormat,
+          'pos_invoice': _selectedPOSInvoiceFormat,
+          'number_to_word': _selectedNumberToWordsFormat,
+          'show_previous_balance': _showPreviousBalance,
+          'show_invoice': _showTermsOnInvoice,
+          'show_pos_invoice': _showTermsOnPOS,
+          'term_conditions': _termsConditionsController.text,
+        };
+
+        Map<String, dynamic> response;
+
+        if (_existingSettingsId != null) {
+          // Update existing settings
+          response = await _service.updateSalesSettings(
+            _existingSettingsId!,
+            requestData,
+          );
+        } else {
+          // Create new settings
+          response = await _service.createSalesSettings(requestData);
+        }
+
+        if (response['status'] == 1) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                _existingSettingsId != null
+                    ? 'Sales settings updated successfully!'
+                    : 'Sales settings created successfully!',
+              ),
+              backgroundColor: accentColor,
+            ),
+          );
+
+          // Reload settings to get the ID if it was a create operation
+          if (_existingSettingsId == null) {
+            _loadSettings();
+          }
+        } else {
+          throw Exception(response['message'] ?? 'Failed to save settings');
+        }
+      } catch (e,stack) {
+        print(e);
+        print(stack);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving settings: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -99,80 +235,80 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
         subtitle: "Configure sales preferences and invoice formats",
         gradientColor: accentColor,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    if (constraints.maxWidth > 768) {
-                      return _buildDesktopLayout();
-                    } else {
-                      return _buildMobileLayout();
-                    }
-                  },
-                ),
-              ),
-            ),
-          ),
-
-          // Bottom Action Bar
-          Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                top: BorderSide(color: Color(0xFFE5E7EB)),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x0A000000),
-                  blurRadius: 4,
-                  offset: Offset(0, -2),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.all(16),
-            child: Row(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _resetToDefaults,
-                    icon: const Icon(Icons.restore),
-                    label: const Text('Reset to Defaults'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF6B7280),
-                      side: const BorderSide(color: Color(0xFFD1D5DB)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Form(
+                      key: _formKey,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          if (constraints.maxWidth > 768) {
+                            return _buildDesktopLayout();
+                          } else {
+                            return _buildMobileLayout();
+                          }
+                        },
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _updateSettings,
-                    icon: const Icon(Icons.save, size: 16),
-                    label: const Text('Update Settings'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accentColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+
+                // Bottom Action Bar
+                Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(top: BorderSide(color: Color(0xFFE5E7EB))),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x0A000000),
+                        blurRadius: 4,
+                        offset: Offset(0, -2),
                       ),
-                    ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _isLoading ? null : _resetToDefaults,
+                          icon: const Icon(Icons.restore),
+                          label: const Text('Reset to Defaults'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF6B7280),
+                            side: const BorderSide(color: Color(0xFFD1D5DB)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _isLoading ? null : _saveSettings,
+                          icon: const Icon(Icons.save, size: 16),
+                          label: const Text('Save Settings'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: accentColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -205,7 +341,8 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
                           label: 'Default Sales Discount (%)',
                           hint: 'Enter default discount percentage',
                           keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
+                            decimal: true,
+                          ),
                           suffixText: '%',
                         ),
                       ],
@@ -229,7 +366,8 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
                           hint: 'Select invoice format',
                           items: _invoiceFormatOptions,
                           onChanged: (value) => setState(
-                              () => _selectedSalesInvoiceFormat = value),
+                            () => _selectedSalesInvoiceFormat = value,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         _buildDropdown(
@@ -307,7 +445,8 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
                           hint: 'Select format',
                           items: _numberToWordsOptions,
                           onChanged: (value) => setState(
-                              () => _selectedNumberToWordsFormat = value),
+                            () => _selectedNumberToWordsFormat = value,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         _buildSwitchTile(
@@ -430,8 +569,9 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
                 controller: _salesDiscountController,
                 label: 'Default Sales Discount (%)',
                 hint: 'Enter default discount percentage',
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 suffixText: '%',
               ),
             ],
@@ -610,11 +750,7 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
           children: [
             Row(
               children: [
-                Icon(
-                  icon,
-                  size: 20,
-                  color: accentColor,
-                ),
+                Icon(icon, size: 20, color: accentColor),
                 const SizedBox(width: 8),
                 Text(
                   title,
@@ -669,8 +805,10 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: accentColor, width: 2),
             ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
             fillColor: const Color(0xFFFAFAFA),
             filled: true,
           ),
@@ -711,16 +849,15 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: accentColor, width: 2),
             ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
             fillColor: const Color(0xFFFAFAFA),
             filled: true,
           ),
           items: items.map((String item) {
-            return DropdownMenuItem<String>(
-              value: item,
-              child: Text(item),
-            );
+            return DropdownMenuItem<String>(value: item, child: Text(item));
           }).toList(),
         ),
       ],
@@ -750,10 +887,7 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF6B7280),
-                ),
+                style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
               ),
             ],
           ),
@@ -768,25 +902,11 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
     );
   }
 
-  void _updateSettings() {
-    if (_formKey.currentState!.validate()) {
-      // Handle settings update logic here
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sales settings updated successfully!'),
-          backgroundColor: accentColor,
-        ),
-      );
-    }
-  }
-
   void _resetToDefaults() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text(
           'Reset to Defaults',
           style: TextStyle(fontWeight: FontWeight.w600),
@@ -802,7 +922,13 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _performReset();
+              _setDefaultValues();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Settings reset to defaults'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,

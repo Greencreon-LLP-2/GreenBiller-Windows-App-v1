@@ -52,7 +52,7 @@ class HomePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = useState(0);
     final userModel = ref.watch(userProvider);
-    final accessToken = userModel?.accessToken;
+    final accessToken = userModel?.accessToken ?? '';
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -700,9 +700,9 @@ class HomePage extends HookConsumerWidget {
                           const CategoriesPage(), //27
                           const BrandPage(), //28
                           const UnitsPage(), //29
-                          BusinessProfilePage(accessToken: accessToken!), //30
+                          BusinessProfilePage(accessToken: accessToken), //30
                           const AccountSettingsPage(), //31
-                          const SalesSettingsPage(), //32
+                           SalesSettingsPage(accessToken: accessToken), //32
                           InvoiceSettingsPage(accessToken: accessToken), //33
                           const UserSettingsPage(), //34
                           const ActiveLogPage(), //35
