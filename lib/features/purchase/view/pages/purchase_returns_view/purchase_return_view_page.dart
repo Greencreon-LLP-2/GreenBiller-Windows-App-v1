@@ -12,8 +12,11 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
   PurchaseReturnViewPage({super.key});
 
   // Formatter for currency
-  final currencyFormatter =
-      NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 2);
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'en_IN',
+    symbol: '₹',
+    decimalDigits: 2,
+  );
   // Formatter for date
   final dateFormatter = DateFormat('dd MMM yyyy');
 
@@ -44,7 +47,10 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
   }
 
   void _showSuccessSnackBar(
-      BuildContext context, String message, IconData icon) {
+    BuildContext context,
+    String message,
+    IconData icon,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -63,7 +69,11 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
   }
 
   Widget _buildActionButton(
-      String label, IconData icon, Color color, VoidCallback onPressed) {
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onPressed,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.2),
@@ -184,10 +194,7 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
           const SizedBox(height: 8),
           const Text(
             'Your purchase return history will appear here',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF94A3B8),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF94A3B8)),
           ),
         ],
       ),
@@ -223,10 +230,7 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
           const SizedBox(height: 8),
           const Text(
             'Please check your internet connection and try again',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF94A3B8),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF94A3B8)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
@@ -263,9 +267,7 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
           horizontalMargin: 40,
           headingRowHeight: 60,
           dataRowHeight: 72,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-          ),
+          decoration: const BoxDecoration(color: Colors.white),
           headingTextStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -298,8 +300,9 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        dateFormatter
-                            .format(purchase.purchaseDate ?? DateTime.now()),
+                        dateFormatter.format(
+                          purchase.purchaseDate ?? DateTime.now(),
+                        ),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -318,8 +321,10 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
                 ),
                 DataCell(
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF3B82F6).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -382,8 +387,9 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
                 ),
                 DataCell(
                   Text(
-                    currencyFormatter
-                        .format(double.tryParse(purchase.subtotal ?? '0') ?? 0),
+                    currencyFormatter.format(
+                      double.tryParse(purchase.subtotal ?? '0') ?? 0,
+                    ),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -394,8 +400,8 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
                 DataCell(
                   Text(
                     currencyFormatter.format(
-                        double.tryParse(purchase.totDiscountToAllAmt ?? '0') ??
-                            0),
+                      double.tryParse(purchase.totDiscountToAllAmt ?? '0') ?? 0,
+                    ),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -406,7 +412,8 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
                 DataCell(
                   Text(
                     currencyFormatter.format(
-                        double.tryParse(purchase.paidAmount ?? '0') ?? 0),
+                      double.tryParse(purchase.paidAmount ?? '0') ?? 0,
+                    ),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -417,7 +424,8 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
                 DataCell(
                   Text(
                     currencyFormatter.format(
-                        double.tryParse(purchase.grandTotal ?? '0') ?? 0),
+                      double.tryParse(purchase.grandTotal ?? '0') ?? 0,
+                    ),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -427,17 +435,19 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
                 ),
                 DataCell(
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: _getPaymentStatusColor(
-                              purchase.paymentStatus ?? 'pending')
-                          .withOpacity(0.1),
+                        purchase.paymentStatus ?? 'pending',
+                      ).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: _getPaymentStatusColor(
-                                purchase.paymentStatus ?? 'pending')
-                            .withOpacity(0.3),
+                          purchase.paymentStatus ?? 'pending',
+                        ).withOpacity(0.3),
                       ),
                     ),
                     child: Row(
@@ -448,17 +458,20 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
                           height: 6,
                           decoration: BoxDecoration(
                             color: _getPaymentStatusColor(
-                                purchase.paymentStatus ?? 'pending'),
+                              purchase.paymentStatus ?? 'pending',
+                            ),
                             borderRadius: BorderRadius.circular(3),
                           ),
                         ),
                         const SizedBox(width: 6),
                         Text(
                           _getPaymentStatusText(
-                              purchase.paymentStatus ?? 'pending'),
+                            purchase.paymentStatus ?? 'pending',
+                          ),
                           style: TextStyle(
                             color: _getPaymentStatusColor(
-                                purchase.paymentStatus ?? 'pending'),
+                              purchase.paymentStatus ?? 'pending',
+                            ),
                             fontWeight: FontWeight.w600,
                             fontSize: 12,
                           ),
@@ -499,12 +512,12 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
     // Load data when the page is first built
     useEffect(() {
       if (accessToken != null) {
-        purchaseFuture.value =
-            ViewPurchaseController().getViewPurchaseReturnController(
-          accessToken,
-          DateTime.now().toString(),
-          DateTime.now().toString(),
-        );
+        purchaseFuture.value = ViewPurchaseController()
+            .getViewPurchaseReturnController(
+              accessToken,
+              DateTime.now().toString(),
+              DateTime.now().toString(),
+            );
       }
       return null;
     }, [accessToken]);
@@ -558,13 +571,24 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
                         if (accessToken != null) {
                           purchaseFuture.value = ViewPurchaseController()
                               .getViewPurchaseReturnController(
-                            accessToken,
-                            DateTime.now().toString(),
-                            DateTime.now().toString(),
+                                accessToken,
+                                DateTime.now().toString(),
+                                DateTime.now().toString(),
+                              );
+                          _showSuccessSnackBar(
+                            context,
+                            'Data refreshed successfully!',
+                            Icons.refresh,
                           );
-                          _showSuccessSnackBar(context,
-                              'Data refreshed successfully!', Icons.refresh);
                         }
+                      },
+                    ),
+                    _buildActionButton(
+                      'New Purchase',
+                      Icons.add_shopping_cart,
+                      secondaryColor,
+                      () {
+                        context.push('/purchasepage');
                       },
                     ),
                   ],
@@ -585,46 +609,49 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
                   padding: const EdgeInsets.all(20),
                   child: Row(
                     children: List.generate(
-                        4,
-                        (index) => Expanded(
-                              child: Container(
-                                margin:
-                                    EdgeInsets.only(right: index < 3 ? 16 : 0),
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
+                      4,
+                      (index) => Expanded(
+                        child: Container(
+                          margin: EdgeInsets.only(right: index < 3 ? 16 : 0),
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 20,
+                                offset: const Offset(0, 4),
                               ),
-                            )),
+                            ],
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 );
               }
 
               final data = snapshot.data!.data!;
               final totalAmount = data.fold<double>(
-                  0,
-                  (sum, item) =>
-                      sum + (double.tryParse(item.grandTotal ?? '0') ?? 0));
+                0,
+                (sum, item) =>
+                    sum + (double.tryParse(item.grandTotal ?? '0') ?? 0),
+              );
               final totalPaid = data.fold<double>(
-                  0,
-                  (sum, item) =>
-                      sum + (double.tryParse(item.paidAmount ?? '0') ?? 0));
+                0,
+                (sum, item) =>
+                    sum + (double.tryParse(item.paidAmount ?? '0') ?? 0),
+              );
               final totalDiscount = data.fold<double>(
-                  0,
-                  (sum, item) =>
-                      sum +
-                      (double.tryParse(item.totDiscountToAllAmt ?? '0') ?? 0));
+                0,
+                (sum, item) =>
+                    sum +
+                    (double.tryParse(item.totDiscountToAllAmt ?? '0') ?? 0),
+              );
               final pendingAmount = totalAmount - totalPaid;
 
               return Container(
@@ -713,7 +740,9 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
                             final count = snapshot.data?.data?.length ?? 0;
                             return Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
                                 color: accentColor.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(20),
@@ -739,7 +768,8 @@ class PurchaseReturnViewPage extends HookConsumerWidget {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
                           return const Center(
-                              child: CircularProgressIndicator());
+                            child: CircularProgressIndicator(),
+                          );
                         }
 
                         if (snapshot.hasError) {

@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:green_biller/core/constants/colors.dart';
 import 'package:green_biller/core/widgets/card_container.dart';
 import 'package:green_biller/features/payment/controller/payment_data_providers.dart';
-import 'package:green_biller/features/payment/view/pages/payment_in_page/add_payment_in_page.dart';
 import 'package:green_biller/features/payment/view/pages/payment_out_page/add_payment_out_page.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class PaymentOutPage extends ConsumerWidget {
-  const PaymentOutPage({super.key});
+class AllPaymentOutPage extends ConsumerWidget {
+  const AllPaymentOutPage({super.key});
 
   Widget _buildSummaryCard(
     String title,
@@ -252,41 +251,41 @@ class PaymentOutPage extends ConsumerWidget {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                _buildQuickActionButton(
-                  "Add Payment",
-                  Icons.add,
-                  accentColor,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const AddPaymentOutPage()),
-                    );
-                  },
-                ),
-                const SizedBox(width: 12),
-                _buildQuickActionButton(
-                  "Filter",
-                  Icons.filter_list,
-                  accentColor,
-                  () {},
-                ),
-                const SizedBox(width: 12),
-                _buildQuickActionButton(
-                  "Export",
-                  Icons.download,
-                  accentColor,
-                  () {},
-                ),
-                const Spacer(),
-                _buildDateFilter(),
-              ],
-            ),
-          ),
+          // Container(
+          //   padding: const EdgeInsets.symmetric(horizontal: 20),
+          //   child: Row(
+          //     children: [
+          //       _buildQuickActionButton(
+          //         "Add Payment",
+          //         Icons.add,
+          //         accentColor,
+          //         () {
+          //           Navigator.push(
+          //             context,
+          //             MaterialPageRoute(
+          //                 builder: (context) => const AddAllPaymentOutPage()),
+          //           );
+          //         },
+          //       ),
+          //       const SizedBox(width: 12),
+          //       _buildQuickActionButton(
+          //         "Filter",
+          //         Icons.filter_list,
+          //         accentColor,
+          //         () {},
+          //       ),
+          //       const SizedBox(width: 12),
+          //       _buildQuickActionButton(
+          //         "Export",
+          //         Icons.download,
+          //         accentColor,
+          //         () {},
+          //       ),
+          //       const Spacer(),
+          //       _buildDateFilter(),
+          //     ],
+          //   ),
+          // ),
           const SizedBox(height: 20),
           Expanded(
             child: CardContainer(

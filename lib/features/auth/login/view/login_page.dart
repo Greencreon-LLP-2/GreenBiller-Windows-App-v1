@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:green_biller/core/app_management/app_status_provider.dart';
 import 'package:green_biller/features/auth/login/services/snackbar_service.dart';
 import 'package:green_biller/main.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -28,6 +29,7 @@ class LoginPage extends HookConsumerWidget {
     final countryCodeForOtp = useState<String>('+91');
     final message = useState<String?>(null);
     final isError = useState<bool>(false);
+    final appStatus = ref.watch(appStatusProvider);
 
     // Centralized message handler
     void showMessage(String msg, {bool error = false}) {
@@ -40,9 +42,9 @@ class LoginPage extends HookConsumerWidget {
           isError.value = false;
         }
       });
-      if(error){
+      if (error) {
         SnackBarService.showError(msg);
-      }else{
+      } else {
         SnackBarService.showSuccess(msg);
       }
     }
@@ -98,6 +100,7 @@ class LoginPage extends HookConsumerWidget {
                           child: LogoHeaderWidget(
                             message: message,
                             isError: isError,
+                            imageUrl:appStatus.settings != null ? appStatus.settings!.appLogo :'' ,
                           ),
                         ),
                         const SizedBox(width: 20),
@@ -130,9 +133,11 @@ class LoginPage extends HookConsumerWidget {
 class LogoHeaderWidget extends HookWidget {
   final ValueNotifier<String?> message;
   final ValueNotifier<bool> isError;
+  final String? imageUrl;
 
   const LogoHeaderWidget({
     super.key,
+    required this.imageUrl,
     required this.message,
     required this.isError,
   });
@@ -164,6 +169,9 @@ class LogoHeaderWidget extends HookWidget {
           child: const Icon(Icons.store, size: 60, color: accentColor),
         ),
         const SizedBox(height: 24),
+        Container(
+          child: Image.network(imageUrl!),
+        ),
         Text(
           'Green Biller',
           style: AppTextStyles.h1.copyWith(

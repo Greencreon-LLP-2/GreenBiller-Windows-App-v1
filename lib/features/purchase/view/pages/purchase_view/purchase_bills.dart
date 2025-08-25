@@ -596,10 +596,7 @@ class PurchaseBills extends HookConsumerWidget {
                       Icons.add_shopping_cart,
                       secondaryColor,
                       () {
-                        _showSuccessSnackBar(
-                            context,
-                            'New purchase feature coming soon!',
-                            Icons.info_outline);
+                     context.go('/purchasepage');
                       },
                     ),
                   ],

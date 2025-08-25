@@ -16,6 +16,8 @@ import 'package:green_biller/features/item/view/pages/brand/brand_page.dart';
 import 'package:green_biller/features/item/view/pages/categories/categories_page.dart';
 import 'package:green_biller/features/item/view/pages/items_page.dart';
 import 'package:green_biller/features/item/view/pages/units/units_page.dart';
+import 'package:green_biller/features/payment/view/pages/all_payment_page/all_payment_in_page.dart';
+import 'package:green_biller/features/payment/view/pages/all_payment_page/all_payment_out_page.dart';
 
 import 'package:green_biller/features/payment/view/pages/payment_in_page/add_payment_in_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_page/purchase_page.dart';
@@ -122,7 +124,7 @@ class HomePage extends HookConsumerWidget {
                               selectedIndex: selectedIndex.value,
                               onTap: () => selectedIndex.value = 0,
                             ),
-                           
+
                             const Padding(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 24,
@@ -137,14 +139,7 @@ class HomePage extends HookConsumerWidget {
                                 ),
                               ),
                             ),
-                            _buildNavItem(
-                              title: 'Stores',
-                              icon: Icons.store,
-                              selectedIcon: Icons.store,
-                              index: 2,
-                              selectedIndex: selectedIndex.value,
-                              onTap: () => selectedIndex.value = 2,
-                            ),
+
                             _buildNavItem(
                               title: 'New Sale',
                               icon: Icons.add_circle_outline,
@@ -422,6 +417,14 @@ class HomePage extends HookConsumerWidget {
                                   onTap: () => selectedIndex.value = 8,
                                 ),
                                 _buildNavSubItem(
+                                  title: 'Stores',
+                                  icon: Icons.store,
+
+                                  index: 2,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 2,
+                                ),
+                                _buildNavSubItem(
                                   title: 'Business Settings',
                                   icon: Icons.business,
                                   index: 30,
@@ -681,7 +684,7 @@ class HomePage extends HookConsumerWidget {
                           const SalesListPage(), //5
                           const PartiesPage(), //6
                           const UserCreationPage(), //7
-                          const AddPaymentInPage(), //8
+                          const AllPaymentInPage(), //8
                           const SalesReturnPage(), //9
                           const SalesOrderPage(), //10
                           StockAdjustmentItem(), //11
@@ -690,7 +693,7 @@ class HomePage extends HookConsumerWidget {
                           AddSalesOrderPage(), //14
                           PurchaseBills(), //15
                           PurchaseReturnViewPage(), //16
-                          const PaymentOutPage(), //17
+                          const AllPaymentOutPage(), //17
                           const SalesSummaryPage(), //18
                           const SalesByItemPage(), //19
                           const SalesByCustomerPage(), //20

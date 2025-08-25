@@ -14,7 +14,8 @@ import 'package:green_biller/features/item/view/pages/items_page.dart';
 import 'package:green_biller/features/item/view/pages/units/units_page.dart';
 import 'package:green_biller/features/packages/view/pages/packages_page.dart';
 import 'package:green_biller/features/payment/view/pages/all_payment_page/all_payment_in_page.dart';
-import 'package:green_biller/features/payment/view/pages/all_payment_page/payment_out_page.dart';
+import 'package:green_biller/features/payment/view/pages/all_payment_page/all_payment_out_page.dart';
+import 'package:green_biller/features/payment/view/pages/payment_out_page/add_payment_out_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_page/purchase_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_return_page/purchase_return_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_returns_view/purchase_return_view_page.dart';
@@ -213,7 +214,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/payment-out',
-        builder: (context, state) => const PaymentOutPage(),
+        builder: (context, state) => const AddPaymentOutPage(),
       ),
       GoRoute(
         path: '/stock-summary',
@@ -289,7 +290,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/payment-out',
-        builder: (context, state) => const PaymentOutPage(),
+        builder: (context, state) => const AllPaymentOutPage(),
       ),
       GoRoute(
         path: '/sales-return',
