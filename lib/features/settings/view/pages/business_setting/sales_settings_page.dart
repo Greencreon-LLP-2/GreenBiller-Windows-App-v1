@@ -102,14 +102,25 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
   }
 
   void _populateForm(Map<String, dynamic> settings) {
+    bool parseBool(String? value, {bool defaultValue = false}) {
+      if (value == null) return defaultValue;
+      return value == '1' || value.toLowerCase() == 'true';
+    }
+
     setState(() {
       _existingSettingsId = settings['id'];
       _selectedDefaultAccount = settings['account'] ?? _accountOptions.first;
       _salesDiscountController.text =
           settings['discount']?.toString() ?? '0.00';
-      _showMRPColumn = bool.parse(settings['show_mrp']) ?? true;
-      _showPaidAmount = bool.parse(settings['show_paidamount']) ?? true;
-      _showChangeReturn = bool.parse(settings['show_return']) ?? true;
+      _showMRPColumn = parseBool(settings['show_mrp'], defaultValue: true);
+      _showPaidAmount = parseBool(
+        settings['show_paidamount'],
+        defaultValue: true,
+      );
+      _showChangeReturn = parseBool(
+        settings['show_return'],
+        defaultValue: true,
+      );
       _salesInvoiceFooterController.text =
           settings['footer_text'] ?? 'Thank you for your business!';
       _selectedSalesInvoiceFormat =
@@ -118,12 +129,17 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
           settings['pos_invoice'] ?? _posInvoiceFormatOptions.first;
       _selectedNumberToWordsFormat =
           settings['number_to_word'] ?? _numberToWordsOptions.first;
-      _showPreviousBalance = bool.parse(settings['show_previous_balance']) ?? false;
-      _showTermsOnInvoice = bool.parse(settings['show_invoice']) ?? true;
-      _showTermsOnPOS = bool.parse(settings['show_pos_invoice']) ?? false;
+      _showPreviousBalance = parseBool(settings['show_previous_balance']);
+      _showTermsOnInvoice = parseBool(
+        settings['show_invoice'],
+        defaultValue: true,
+      );
+      _showTermsOnPOS = parseBool(settings['show_pos_invoice']);
       _termsConditionsController.text =
           settings['term_conditions'] ??
-          '1. Payment is due within 30 days\n2. Late payments may incur additional charges\n3. Goods once sold cannot be returned without prior approval';
+          '1. Payment is due within 30 days\n'
+              '2. Late payments may incur additional charges\n'
+              '3. Goods once sold cannot be returned without prior approval';
     });
   }
 
@@ -201,7 +217,7 @@ class _SalesSettingsPageState extends State<SalesSettingsPage> {
         } else {
           throw Exception(response['message'] ?? 'Failed to save settings');
         }
-      } catch (e,stack) {
+      } catch (e, stack) {
         print(e);
         print(stack);
         ScaffoldMessenger.of(context).showSnackBar(
