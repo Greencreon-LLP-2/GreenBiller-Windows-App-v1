@@ -17,6 +17,7 @@ import 'package:green_biller/features/item/view/pages/categories/categories_page
 import 'package:green_biller/features/item/view/pages/items_page.dart';
 import 'package:green_biller/features/item/view/pages/units/units_page.dart';
 import 'package:green_biller/features/notifications/views/notification_page.dart';
+import 'package:green_biller/features/payment/view/pages/all_payment_page/all_payment_in_page.dart';
 import 'package:green_biller/features/payment/view/pages/payment_in_page/add_payment_in_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_page/purchase_page.dart';
 
@@ -658,7 +659,7 @@ class HomePage extends HookConsumerWidget {
                           const SalesListPage(), //5
                           const PartiesPage(), //6
                           const UserCreationPage(), //7
-                          const AddPaymentInPage(), //8
+                          const AllPaymentInPage(), //8
                           const SalesReturnPage(), //9
                           const SalesOrderPage(), //10
                           StockAdjustmentItem(), //11
