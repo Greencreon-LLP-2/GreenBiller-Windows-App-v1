@@ -66,229 +66,170 @@ class AddStoreDialog extends HookConsumerWidget {
     }
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Container(
-        width: 500,
-        padding: const EdgeInsets.all(24),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
+        width: 460, // ✅ reduced width
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            /// HEADER (accentColor background)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: accentColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+              ),
+              child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: textPrimaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.store,
-                        color: textPrimaryColor, size: 24),
-                  ),
-                  const SizedBox(width: 16),
+                  const Icon(Icons.store, color: Colors.white, size: 22),
+                  const SizedBox(width: 8),
                   const Text(
-                    'Add New Store',
+                    "Add New Store",
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: textPrimaryColor,
-                    ),
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
                   ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: const Icon(Icons.close, color: Colors.white, size: 20),
+                  )
                 ],
               ),
-              const SizedBox(height: 24),
+            ),
 
-              // Logo Upload Section
-              Center(
-                child: Column(
-                  children: [
-                    InkWell(
-                      onTap: () => pickImage(isProfile: false),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: backgroundColor,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: textLightColor, width: 1),
-                          image: storeImage.value != null
-                              ? DecorationImage(
-                                  image: FileImage(File(storeImage.value!)),
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
-                        ),
+            /// BODY
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// Store Logo
+                  const Text("Store Logo",
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  const SizedBox(height: 6),
+                  InkWell(
+                    onTap: () => pickImage(isProfile: true),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      height: 90,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Center(
                         child: storeImage.value == null
-                            ? const Column(
+                            ? Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.add_photo_alternate_outlined,
-                                      size: 32, color: textSecondaryColor),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'Add Logo',
-                                    style: TextStyle(
-                                      color: textSecondaryColor,
-                                      fontSize: 14,
-                                    ),
-                                  ),
+                                  const Icon(Icons.photo_camera_outlined,
+                                      size: 26, color: Colors.grey),
+                                  const SizedBox(height: 4),
+                                  Text("Pick Photo",
+                                      style: TextStyle(
+                                          color: Colors.grey.shade600,
+                                          fontSize: 12)),
                                 ],
                               )
-                            : null,
+                            : ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.file(File(storeImage.value!),
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity),
+                              ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Recommended size: 200x200px',
-                      style: TextStyle(color: textSecondaryColor, fontSize: 12),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  /// Store Information
+                  const Text("Store Information",
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  const SizedBox(height: 8),
+                  _buildTextField(Icons.store_outlined, "Store Name",
+                      controller: storeNameController),
+                  _buildTextField(Icons.web, "Website",
+                      controller: storeWebsiteController),
+                  _buildTextField(Icons.location_city, "Address",
+                      controller: storeAddressController),
+                  _buildTextField(Icons.phone, "Phone",
+                      controller: storePhoneController,
+                      keyboardType: TextInputType.phone),
+                  _buildTextField(Icons.email_outlined, "Email",
+                      controller: storeEmailController,
+                      keyboardType: TextInputType.emailAddress),
+                ],
               ),
-              const SizedBox(height: 24),
+            ),
 
-              // Store Name
-              TextfieldWidget(
-                label: 'Store Name',
-                hint: 'Enter store name',
-                controller: storeNameController,
-                icon: Icons.store_outlined,
-                isRequired: true,
-              ),
-
-              const SizedBox(height: 16),
-
-              // Website
-              TextfieldWidget(
-                label: 'Website',
-                hint: 'Enter Website name ',
-                icon: Icons.web,
-                controller: storeWebsiteController,
-              ),
-              const SizedBox(height: 16),
-
-              // Address
-              TextfieldWidget(
-                label: 'Address',
-                hint: "Enter Store Address",
-                icon: Icons.location_city_sharp,
-                controller: storeAddressController,
-              ),
-
-              const SizedBox(height: 16),
-
-              // Phone
-              TextfieldWidget(
-                label: 'Phone',
-                hint: 'Enter Store Phone Number',
-                icon: Icons.call,
-                controller: storePhoneController,
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 16),
-
-              // Email
-              TextfieldWidget(
-                label: 'Email',
-                hint: 'Enter Store Email',
-                icon: Icons.mail_outline,
-                controller: storeEmailController,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 24),
-
-              // Action Buttons
-              Row(
+            /// FOOTER BUTTONS
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
+                  ElevatedButton.icon(
                     onPressed: () => Navigator.pop(context),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accentColor,
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(28)),
                     ),
-                    child: const Text('Cancel',
-                        style: TextStyle(color: textSecondaryColor)),
+                    icon: const Icon(Icons.close, color: Colors.white, size: 16),
+                    label: const Text("Cancel",
+                        style: TextStyle(color: Colors.white, fontSize: 14)),
                   ),
-                  const SizedBox(width: 12),
-                  ElevatedButton(
+                  const SizedBox(width: 10),
+                  ElevatedButton.icon(
                     onPressed: () async {
-                      // Validate inputs with early returns
-                      if (storeNameController.text.isEmpty) {
-                        showSnackBar('Store name is required', Colors.red);
-                        return; // Stop execution
-                      }
-
-                      if (!RegExp(r'^[0-9]{10}$')
-                          .hasMatch(storePhoneController.text)) {
-                        showSnackBar(
-                            'Invalid phone number (10 digits required)',
-                            Colors.red);
-                        return; // Stop execution
-                      }
-
-                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$')
-                          .hasMatch(storeEmailController.text)) {
-                        showSnackBar("Invalid email address", Colors.red);
-                        return; // Stop execution
-                      }
-
-                      if (accessToken == null || userModel?.user?.id == null) {
-                        showSnackBar('Please login first', Colors.red);
-                        return; // Stop execution
-                      }
-
-                      if (storeImage.value == null) {
-                        showSnackBar('Please select an image', Colors.red);
-                        return; // Stop execution
-                      }
-
-                      final file = File(storeImage.value!);
-
-                      try {
-                        final response = await addStoreService(
-                          accessToken,
-                          userModel!.user!.id.toString(),
-                          'store-${DateTime.now().millisecondsSinceEpoch}',
-                          file,
-                          storeNameController.text,
-                          storeWebsiteController.text,
-                          storeAddressController.text,
-                          storePhoneController.text,
-                          storeEmailController.text,
-                        );
-
-                        if (response == 'Store added successfully') {
-                          showSnackBar(
-                              'Store added successfully', Colors.green);
-                          // Refresh store data
-                          callback?.call();
-                          Navigator.pop(context);
-                        } else {
-                          showSnackBar(
-                              'Failed to add store: $response', Colors.red);
-                        }
-                      } catch (e) {
-                        showSnackBar('Error: ${e.toString()}', Colors.red);
-                      }
+                      // Add store logic
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: accentColor,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                          borderRadius: BorderRadius.circular(28)),
                     ),
-                    child: const Text('Add Store',
-                        style: TextStyle(color: Colors.white)),
+                    icon: const Icon(Icons.save, size: 16, color: Colors.white),
+                    label: const Text("Add Store",
+                        style: TextStyle(color: Colors.white, fontSize: 14)),
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(IconData icon, String hint,
+      {TextEditingController? controller, TextInputType? keyboardType}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: accentColor, size: 20),
+          hintText: hint,
+          hintStyle: const TextStyle(fontSize: 13),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),
       ),
     );
