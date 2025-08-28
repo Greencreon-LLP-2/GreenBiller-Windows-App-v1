@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:green_biller/core/app_management/app_status_provider.dart';
+import 'package:green_biller/features/auth/login/services/country_code_service.dart';
 import 'package:green_biller/features/auth/login/services/snackbar_service.dart';
 import 'package:green_biller/main.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -29,7 +30,6 @@ class LoginPage extends HookConsumerWidget {
     final countryCodeForOtp = useState<String>('+91');
     final message = useState<String?>(null);
     final isError = useState<bool>(false);
-   
 
     // Centralized message handler
     void showMessage(String msg, {bool error = false}) {
@@ -100,7 +100,7 @@ class LoginPage extends HookConsumerWidget {
                           child: LogoHeaderWidget(
                             message: message,
                             isError: isError,
-                            imageUrl:'assets/images/logo_image.png',
+                            imageUrl: 'assets/images/logo_image.png',
                           ),
                         ),
                         const SizedBox(width: 20),
@@ -166,10 +166,10 @@ class LogoHeaderWidget extends HookWidget {
             shape: BoxShape.circle,
             color: accentColor.withOpacity(0.1),
           ),
-          child:  Image.asset(imageUrl!),
+          child: Image.asset(imageUrl!),
         ),
         const SizedBox(height: 24),
-      
+
         Text(
           'Green Biller',
           style: AppTextStyles.h1.copyWith(
@@ -339,6 +339,21 @@ class LoginFormContentWidget extends HookConsumerWidget {
     final selectedCountryCode = useState<String>('+91');
     final isLoading = useState(false);
 
+    final countryCodesAsync = ref.watch(countryCodesProvider);
+
+    useEffect(() {
+      countryCodesAsync.whenData((codes) {
+        print('Backend Country Codes: $codes');
+        print('Codes length: ${codes.length}'); 
+        if (codes.isNotEmpty) {
+          if (!codes.contains(selectedCountryCode.value)) {
+            selectedCountryCode.value = codes.first;
+          }
+        }
+      });
+      return null;
+    }, [countryCodesAsync]);
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,42 +369,50 @@ class LoginFormContentWidget extends HookConsumerWidget {
                   border: Border.all(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: selectedCountryCode.value,
-                    isExpanded: true,
-                    items: CountryService()
-                        .getAll()
-                        .where((c) => c.phoneCode.isNotEmpty)
-                        .map((country) {
-                          return DropdownMenuItem<String>(
-                            value: '+${country.phoneCode}',
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  country.flagEmoji,
-                                  style: const TextStyle(fontSize: 16),
+                child: countryCodesAsync.when(
+                  data: (backendCountryCodes) => DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: selectedCountryCode.value,
+                      isExpanded: true,
+                      items: backendCountryCodes.map((countryCode) {
+                        final country = getCountryByPhoneCode(countryCode);
+                        return DropdownMenuItem<String>(
+                          value: countryCode,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                country?.flagEmoji ?? '',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  countryCode,
+                                  style: const TextStyle(fontSize: 14),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    '+${country.phoneCode}',
-                                    style: const TextStyle(fontSize: 14),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        })
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) selectedCountryCode.value = value;
-                    },
-                    icon: const Icon(Icons.arrow_drop_down, size: 20),
-                    style: const TextStyle(fontSize: 14, color: Colors.black),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) selectedCountryCode.value = value;
+                      },
+                      icon: const Icon(Icons.arrow_drop_down, size: 20),
+                      style: const TextStyle(fontSize: 14, color: Colors.black),
+                    ),
                   ),
+                  loading: () => const Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                  error: (error, stack) =>
+                      const Icon(Icons.error, color: Colors.red),
                 ),
               ),
               const SizedBox(width: 12),
@@ -479,7 +502,7 @@ class LoginFormContentWidget extends HookConsumerWidget {
                         final response = await signInService.signInWithPassword(
                           ref,
                           mobileController.text,
-                          selectedCountryCode.value.replaceAll('+', ''),
+                          selectedCountryCode.value,
                           passwordController.text,
                         );
                         if (response == 1) {
@@ -567,7 +590,7 @@ class SignupFormContentWidget extends HookConsumerWidget {
         final result = await SignUpService().signUpApi(
           fullnameController.text,
           emailController.text,
-          countryCode.replaceAll('+', ''),
+          countryCode,
           phone,
           passwordController.text,
           referralController.text,
