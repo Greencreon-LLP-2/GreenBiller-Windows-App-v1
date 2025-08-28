@@ -1,117 +1,121 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:green_biller/core/constants/colors.dart';
-// import 'package:green_biller/core/styles/text_styles.dart';
 import 'package:green_biller/core/theme/text_styles.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
+
+
+  Future<Map<String, dynamic>> fetchDashboardData() async {
+    await Future.delayed(const Duration(seconds: 1)); 
+    return {
+      "totalSales": 25000,
+      "totalDue": 12000,
+      "totalItems": 200,
+      "customers": 55,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text(
-          "Dashboard",
-          style: AppTextStyles.h2,
-        ),
+        title: Text("Dashboard", style: AppTextStyles.h2),
         backgroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          // IconButton(
-          //   icon: const Icon(Icons.calendar_today),
-          //   onPressed: () {},
-          //   color: textPrimaryColor,
-          // ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-            color: textPrimaryColor,
-          ),
-        ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildOverviewCards(),
-            const SizedBox(height: 24),
-            _buildChartSection(),
-            const SizedBox(height: 24),
-            _buildRecentTransactions(),
-            const SizedBox(height: 24),
-            _buildQuickActions(),
-          ],
-        ),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: fetchDashboardData(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          }
+
+          final data = snapshot.data ?? {};
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildOverviewCards(data), 
+                SizedBox(height: 24),
+                _buildChartSection(),
+                SizedBox(height: 24),
+                _buildRecentTransactions(),
+                SizedBox(height: 24),
+                _buildQuickActions(),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildOverviewCards() {
+  
+  Widget _buildOverviewCards(Map<String, dynamic> data) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Business Overview",
-            style: AppTextStyles.h3,
-          ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
-              final childAspectRatio = constraints.maxWidth > 600 ? 1.8 : 1.5;
-
-              return GridView.count(
-                shrinkWrap: true,
-                crossAxisCount: crossAxisCount,
-                childAspectRatio: childAspectRatio,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildOverviewCard(
-                    "Total Sales",
-                    "₹1,50,000",
-                    Icons.trending_up,
-                    "+12.5%",
-                    true,
-                    [accentColor, accentColor.withOpacity(0.8)],
-                  ),
-                  _buildOverviewCard(
-                    "Total Due",
-                    "₹25,000",
-                    Icons.trending_down,
-                    "-5.2%",
-                    false,
-                    [errorColor, errorColor.withOpacity(0.8)],
-                  ),
-                  _buildOverviewCard(
-                    "Total Items",
-                    "156",
-                    Icons.inventory,
-                    "+8 New",
-                    true,
-                    [successColor, successColor.withOpacity(0.8)],
-                  ),
-                  _buildOverviewCard(
-                    "Customers",
-                    "45",
-                    Icons.people,
-                    "+3 New",
-                    true,
-                    [secondaryColor, secondaryColor.withOpacity(0.8)],
-                  ),
-                ],
-              );
-            },
+          Text("Business Overview", style: AppTextStyles.h3),
+          SizedBox(height: 16),
+          GridView.count(
+            shrinkWrap: true,
+            crossAxisCount: 2,
+            childAspectRatio: 1.5,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            physics: NeverScrollableScrollPhysics(),
+            children: [
+              _buildOverviewCard(
+                "Total Sales",
+                "₹${data['totalSales'] ?? 0}",
+                Icons.trending_up,
+                "+12.5%",
+                true,
+                [accentColor, accentColor.withOpacity(0.8)],
+              ),
+              _buildOverviewCard(
+                "Total Dues",
+                "₹${data['totalDue'] ?? 0}",
+                Icons.trending_down,
+                "-5.2%",
+                false,
+                [errorColor, errorColor.withOpacity(0.8)],
+              ),
+              _buildOverviewCard(
+                "Total Items",
+                "${data['totalItems'] ?? 0}",
+                Icons.inventory,
+                "+8 New",
+                true,
+                [successColor, successColor.withOpacity(0.8)],
+              ),
+              _buildOverviewCard(
+                "Customers",
+                "${data['customers'] ?? 0}",
+                Icons.people,
+                "+3 New",
+                true,
+                [secondaryColor, secondaryColor.withOpacity(0.8)],
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+
+  
+
+
 
   Widget _buildOverviewCard(
     String title,
@@ -475,4 +479,5 @@ class DashboardPage extends StatelessWidget {
       ],
     );
   }
+
 }
