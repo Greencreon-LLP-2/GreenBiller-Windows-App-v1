@@ -56,40 +56,29 @@ class SessionService {
   }
 
   void _handleStatusUpdate(AppStatusModel newStatus) {
-    // 🚨 Maintenance/server errors → skip logout
-    if (newStatus.maintenanceData != null &&
-        (newStatus.status == 500 ||
-            newStatus.status == 501 ||
-            newStatus.status == 502 ||
-            newStatus.status == 503)) {
-      logger.w(
-        'Server maintenance mode: ${newStatus.maintenanceData?.message}',
+    print("🔍 Handling status update: $newStatus");
+
+    // Maintenance or shutdown → go to maintenance screen
+    if (newStatus.shutdown == true ||
+        newStatus.settings?.appMaintenanceMode == true) {
+      print(
+        "⚡ Navigating to MaintenanceScreen (reason: "
+        "${newStatus.shutdown == true ? 'shutdown' : 'maintenance'})",
       );
 
-      // Show maintenance UI/snackbar
-      Get.snackbar(
-        'Maintenance',
-        newStatus.maintenanceData?.message ?? 'Server under maintenance',
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 5),
-      );
-
-      return; // ✅ don’t call logout
+      Get.offAllNamed('/maintenance'); // or Get.to(() => MaintenanceScreen())
+      return;
     }
 
-    // 🔑 Only run logout checks for auth/session issues
+    // Normal login flow
     if (_shouldLogoutUser(newStatus)) {
-      logger.i('Session invalid, logging out user');
-      // _logoutUser();
-    } else if (_shouldUpdateStatus(newStatus)) {
-      logger.i('Session status updated: ${newStatus.message}');
-      Get.snackbar(
-        'Status Update',
-        newStatus.message ?? 'Session status updated',
-        backgroundColor: newStatus.success == true ? Colors.green : Colors.red,
-        colorText: Colors.white,
-      );
+      print("⚡ Forcing logout due to status");
+      Get.offAllNamed(AppRoutes.homepage);
+      return;
+    }
+
+    if (_shouldUpdateStatus(newStatus)) {
+      print("⚡ Updating appStatus");
     }
   }
 

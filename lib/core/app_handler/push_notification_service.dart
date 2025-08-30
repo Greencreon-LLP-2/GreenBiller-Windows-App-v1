@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:greenbiller/routes/app_routes.dart';
 import 'package:logger/logger.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:greenbiller/features/auth/model/user_model.dart';
@@ -60,7 +61,7 @@ class PushNotificationService {
             colorText: Colors.white,
           );
           // Navigate to notification details
-          Get.toNamed('/notification_details', arguments: message);
+          Get.toNamed( AppRoutes.oneSignalNotificationPage, arguments: message);
         } else if (message is String) {
           logger.e('Push notification error: $message');
         }
@@ -94,7 +95,7 @@ class PushNotificationService {
     // Notification Click Listener
     OneSignal.Notifications.addClickListener((event) {
       logger.i('Notification clicked: ${event.notification.jsonRepresentation()}');
-      Get.toNamed('/notification_details', arguments: {
+      Get.toNamed( AppRoutes.oneSignalNotificationPage, arguments: {
         'title': event.notification.title,
         'body': event.notification.body,
         'payload': event.notification.rawPayload,

@@ -7,4 +7,7 @@ class AppRoutes {
   static const String staffDashboard = '/staff_dashboard';
   static const String customerDashboard = '/customer_dashboard';
   static const String homepage = '/homepage';
+  static const String maintenance = '/maintenance';
+  static const String oneSignalNotificationPage = '/notification_details';
+  
 }

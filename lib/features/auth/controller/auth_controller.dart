@@ -64,7 +64,7 @@ class AuthController extends GetxController {
               redirectToRoleBasedScreen();
             } else {
               logger.i('Invalid token, logging out');
-              await logout();
+              // await logout();
             }
           }
         } else {
