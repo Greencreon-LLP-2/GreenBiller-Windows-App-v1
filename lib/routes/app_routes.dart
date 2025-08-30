@@ -9,5 +9,11 @@ class AppRoutes {
   static const String homepage = '/homepage';
   static const String maintenance = '/maintenance';
   static const String oneSignalNotificationPage = '/notification_details';
-  
+  static const String profile = '/profile';
+  static const String settings = '/settings';
+   static const String overview = '/overview';
+  static const String reports = '/reports';
+  static const String accountSettings = '/account_settings';
+  static const String notificationSettings = '/notification_settings';
+  static const String notificationDetails = '/notification_details';
 }
