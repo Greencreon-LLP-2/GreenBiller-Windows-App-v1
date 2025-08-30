@@ -50,21 +50,22 @@ class UserCreationController extends GetxController {
     try {
       isLoadingStores.value = true;
 
-      final response = await dioClient.dio.get(storeusersUrl);
+      final response = await dioClient.dio.get(viewStoreUrl);
 
       if (response.statusCode == 200) {
-        print(response.data);
+        logger.i(response.data);
 
-        // Ensure we extract the list correctly
         final stores = response.data['data'];
         if (stores is List) {
           final storeList = stores
-              .where((store) => store['name'] != 'Walking Customer')
+              .where((store) => store['store_name'] != 'Walking Customer')
               .toList();
 
           final newMap = <String, int>{};
           for (var store in storeList) {
-            newMap[store['name']] = store['id'];
+            final name = store['store_name'] ?? 'Unnamed Store';
+            final id = store['id'] as int;
+            newMap[name] = id;
           }
 
           storeMap.assignAll(newMap);
@@ -80,8 +81,6 @@ class UserCreationController extends GetxController {
         }
       } else {
         logger.w('Failed to load stores: ${response.data}');
-
-        isLoadingStores.value = false;
       }
     } catch (e, stackTrace) {
       logger.e('Error loading stores: $e', e, stackTrace);

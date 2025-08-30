@@ -103,10 +103,12 @@ class StoreUsers extends GetView<UserCreationController> {
                     } else if (controller.storeUsers.value?.data.isEmpty ??
                         true) {
                       print("storeUsers is empty");
-                      return Center(child: Padding(
-                        padding: const EdgeInsets.only(top: 20),
-                        child: const Text("No users found"),
-                      ));
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 20),
+                          child: const Text("No users found"),
+                        ),
+                      );
                     } else {
                       print(
                         "Users loaded: ${controller.storeUsers.value?.data.length}",
@@ -446,10 +448,45 @@ class StoreUsers extends GetView<UserCreationController> {
                             style: const TextStyle(fontSize: 14),
                           ),
                         ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            onChanged: (value) =>
+                                controller.password.value = value,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              prefixIcon: const Icon(
+                                Icons.password_outlined,
+                                size: 20,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(
+                                  color: theme.accentColor,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                            ),
+                            keyboardType: TextInputType.text,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const SizedBox(height: 12),
+
                     Row(
                       children: [
                         Expanded(
@@ -506,98 +543,107 @@ class StoreUsers extends GetView<UserCreationController> {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: controller.selectedStore.value,
-                            decoration: InputDecoration(
-                              labelText: 'Select Store',
-                              prefixIcon: Container(
-                                margin: const EdgeInsets.only(right: 6),
-                                decoration: BoxDecoration(
-                                  color: theme.accentColor.withOpacity(0.12),
-                                  shape: BoxShape.circle,
-                                ),
-                                padding: const EdgeInsets.all(6),
-                                child: Icon(
-                                  Icons.store,
-                                  color: theme.accentColor.withOpacity(0.85),
-                                  size: 18,
-                                ),
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: theme.accentColor,
-                                ),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 12,
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
-                            ),
-                            items: [
-                              const DropdownMenuItem<String>(
-                                value: null,
-                                child: Text(
-                                  'Select a Store',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 14,
+                          child: Obx(
+                            () => DropdownButtonFormField<String>(
+                              value: controller
+                                  .selectedStore
+                                  .value, // bind current store
+                              decoration: InputDecoration(
+                                labelText: 'Select Store',
+                                prefixIcon: Container(
+                                  margin: const EdgeInsets.only(right: 6),
+                                  decoration: BoxDecoration(
+                                    color: theme.accentColor.withOpacity(0.12),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  padding: const EdgeInsets.all(6),
+                                  child: Icon(
+                                    Icons.store,
+                                    color: theme.accentColor.withOpacity(0.85),
+                                    size: 18,
                                   ),
                                 ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: theme.accentColor,
+                                  ),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white,
                               ),
-                              ...controller.storeMap.entries.map(
-                                (entry) => DropdownMenuItem<String>(
-                                  value: entry.key,
+                              items: [
+                                const DropdownMenuItem<String>(
+                                  value: null,
                                   child: Text(
-                                    entry.key,
-                                    style: const TextStyle(fontSize: 14),
+                                    'Select a Store',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              controller.selectedStore.value = value;
-                              controller.selectedStoreId.value = value != null
-                                  ? controller.storeMap[value]
-                                  : null;
-                              controller
-                                  .loadStoreUsers(); // Refresh user list when store changes
-                            },
-                            icon: controller.isLoadingStores.value
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation(
-                                        theme.accentColor,
+                                ...controller.storeMap.entries.map(
+                                  (entry) => DropdownMenuItem<String>(
+                                    value: entry.key, // store name
+                                    child: Text(
+                                      entry.key,
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 14,
                                       ),
                                     ),
-                                  )
-                                : Icon(
-                                    Icons.keyboard_arrow_down_rounded,
-                                    size: 20,
-                                    color: theme.accentColor.withOpacity(0.85),
                                   ),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
+                                ),
+                              ],
+                              onChanged: (value) {
+                                controller.selectedStore.value = value;
+                                controller.selectedStoreId.value = value != null
+                                    ? controller.storeMap[value]
+                                    : null;
+                                controller
+                                    .loadStoreUsers(); // reload users for selected store
+                              },
+                              icon: controller.isLoadingStores.value
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation(
+                                          theme.accentColor,
+                                        ),
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      size: 20,
+                                      color: theme.accentColor.withOpacity(
+                                        0.85,
+                                      ),
+                                    ),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              dropdownColor: Colors.white,
+                              isExpanded: true,
+                              menuMaxHeight: 250,
                             ),
-                            borderRadius: BorderRadius.circular(10),
-                            dropdownColor: Colors.white,
-                            isExpanded: true,
-                            menuMaxHeight: 250,
                           ),
                         ),
                       ],
