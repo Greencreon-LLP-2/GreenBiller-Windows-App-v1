@@ -1,80 +1,64 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:green_biller/core/app_management/app_status_model.dart';
-import 'package:green_biller/core/app_management/app_status_provider.dart';
-import 'package:green_biller/core/constants/app_config.dart';
-import 'package:green_biller/core/routes/routes.dart';
-import 'package:green_biller/features/auth/login/model/user_model.dart';
-import 'package:green_biller/features/auth/login/services/auth_service.dart';
+import 'package:get/get.dart';
+import 'package:greenbiller/core/hive_service.dart';
+import 'package:greenbiller/features/auth/controller/auth_controller.dart';
+import 'package:greenbiller/features/auth/view/login_page.dart';
+import 'package:greenbiller/features/auth/view/otp_verify_page.dart';
+import 'package:greenbiller/features/auth/view/signup_page.dart';
+import 'package:greenbiller/routes/app_routes.dart';
+import 'package:greenbiller/screens/dashboards.dart';
+
 import 'package:logger/logger.dart';
 
 final logger = Logger();
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-    GlobalKey<ScaffoldMessengerState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  final authService = AuthService();
-  UserModel? userData;
-  await AppConfig.init();
-  try {
-    userData = await authService.getUserData();
-    logger.i('User data loaded: ${userData != null}');
-  } catch (e) {
-    logger.e('Error loading user data: $e');
-  }
-
-  runApp(
-    ProviderScope(
-      overrides: [
-        if (userData != null) userProvider.overrideWith((ref) => userData),
-      ],
-      child: MyApp(userData: userData),
-    ),
-  );
+  runApp(const MyApp());
 }
 
-class MyApp extends ConsumerStatefulWidget {
-  final UserModel? userData;
-
-  const MyApp({super.key, required this.userData});
-
-  @override
-  ConsumerState<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends ConsumerState<MyApp> {
-  late ProviderSubscription<AppStatusModel> _statusSubscription;
-
-  @override
-  void initState() {
-    super.initState();
-
-    Future.microtask(() async {
-      final user = widget.userData;
-      if (user != null) {
-        final token = user.accessToken ?? '';
-        final userId = user.user?.id.toString() ?? '';
-        ref.read(appStatusProvider.notifier).startPolling(token, userId);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _statusSubscription.close();
-    super.dispose();
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final router = ref.watch(routerProvider);
-    return MaterialApp.router(
-      scaffoldMessengerKey: scaffoldMessengerKey,
-      title: 'GreenBiller',
-      debugShowCheckedModeBanner: false,
-      routerConfig: router,
+    return FutureBuilder(
+      future: HiveService().init(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const MaterialApp(
+            home: Scaffold(body: Center(child: CircularProgressIndicator())),
+          );
+        } else if (snapshot.hasError) {
+          logger.e('Initialization error: ${snapshot.error}', snapshot.error, snapshot.stackTrace);
+          return MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: Text('Error initializing app: ${snapshot.error}'),
+              ),
+            ),
+          );
+        }
+        return GetMaterialApp(
+          title: 'GreenBiller',
+          debugShowCheckedModeBanner: false,
+          initialRoute: AppRoutes.login,
+          getPages: [
+            GetPage(name: AppRoutes.login, page: () => const LoginPage()),
+            GetPage(name: AppRoutes.otpVerify, page: () => const OtpVerifyPage()),
+            GetPage(name: AppRoutes.signUp, page: () => const SignUpPage()),
+            GetPage(name: AppRoutes.adminDashboard, page: () => const AdminDashboard()),
+            GetPage(name: AppRoutes.managerDashboard, page: () => const ManagerDashboard()),
+            GetPage(name: AppRoutes.staffDashboard, page: () => const StaffDashboard()),
+            GetPage(name: AppRoutes.customerDashboard, page: () => const CustomerDashboard()),
+            GetPage(name: AppRoutes.homepage, page: () => const CustomerDashboard()),
+          ],
+          builder: (context, child) {
+            Get.put(AuthController());
+            return child!;
+          },
+        );
+      },
     );
   }
 }

@@ -1,2 +1,0 @@
-/home/x/greencreon/greenbillerapp/android/app/.cxx/Debug/3730405u/armeabi-v7a/CMakeFiles/edit_cache.dir
-/home/x/greencreon/greenbillerapp/android/app/.cxx/Debug/3730405u/armeabi-v7a/CMakeFiles/rebuild_cache.dir
