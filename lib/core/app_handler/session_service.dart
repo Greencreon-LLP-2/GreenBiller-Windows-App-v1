@@ -56,14 +56,34 @@ class SessionService {
   }
 
   void _handleStatusUpdate(AppStatusModel newStatus) {
+    // 🚨 Maintenance/server errors → skip logout
+    if (newStatus.maintenanceData != null &&
+        (newStatus.status == 500 ||
+            newStatus.status == 501 ||
+            newStatus.status == 502 ||
+            newStatus.status == 503)) {
+      logger.w(
+        'Server maintenance mode: ${newStatus.maintenanceData?.message}',
+      );
+
+      // Show maintenance UI/snackbar
+      Get.snackbar(
+        'Maintenance',
+        newStatus.maintenanceData?.message ?? 'Server under maintenance',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+
+      return; // ✅ don’t call logout
+    }
+
+    // 🔑 Only run logout checks for auth/session issues
     if (_shouldLogoutUser(newStatus)) {
       logger.i('Session invalid, logging out user');
-      _logoutUser();
+      // _logoutUser();
     } else if (_shouldUpdateStatus(newStatus)) {
-      logger.i(
-        'Session status updated: success=${newStatus.success}, shutdown=${newStatus.shutdown}',
-      );
-      // Update UI or state if needed (e.g., show maintenance message)
+      logger.i('Session status updated: ${newStatus.message}');
       Get.snackbar(
         'Status Update',
         newStatus.message ?? 'Session status updated',
@@ -73,22 +93,70 @@ class SessionService {
     }
   }
 
-  bool _shouldUpdateStatus(AppStatusModel newStatus) {
-    final currentStatus = AppStatusModel.initial();
-    return currentStatus.success != newStatus.success ||
-        currentStatus.shutdown != newStatus.shutdown ||
-        currentStatus.isLoggedIn != newStatus.isLoggedIn ||
-        currentStatus.userBlocked != newStatus.userBlocked ||
-        currentStatus.settings?.appMaintenanceMode !=
-            newStatus.settings?.appMaintenanceMode ||
-        currentStatus.settings?.appVersion != newStatus.settings?.appVersion;
+  bool _shouldUpdateStatus(AppStatusModel oldStatus, AppStatusModel newStatus) {
+    print("🔍 _shouldUpdateStatus check:");
+    print(
+      "   old: userExists=${oldStatus.userExists}, "
+      "isLoggedIn=${oldStatus.isLoggedIn}, "
+      "userBlocked=${oldStatus.userBlocked}, "
+      "shutdown=${oldStatus.shutdown}",
+    );
+    print(
+      "   new: userExists=${newStatus.userExists}, "
+      "isLoggedIn=${newStatus.isLoggedIn}, "
+      "userBlocked=${newStatus.userBlocked}, "
+      "shutdown=${newStatus.shutdown}",
+    );
+
+    if (oldStatus.shutdown != newStatus.shutdown) {
+      print("⚡ Updating: shutdown changed");
+      return true;
+    }
+    if (oldStatus.userBlocked != newStatus.userBlocked) {
+      print("⚡ Updating: userBlocked changed");
+      return true;
+    }
+    if (oldStatus.isLoggedIn != newStatus.isLoggedIn) {
+      print("⚡ Updating: isLoggedIn changed");
+      return true;
+    }
+    if (oldStatus.userExists != newStatus.userExists) {
+      print("⚡ Updating: userExists changed");
+      return true;
+    }
+
+    print("✅ No update needed");
+    return false;
   }
 
   bool _shouldLogoutUser(AppStatusModel newStatus) {
-    return newStatus.userExists != true ||
-        newStatus.isLoggedIn != true ||
-        newStatus.userBlocked != false ||
-        newStatus.shutdown == true;
+    print(
+      "🔍 _shouldLogoutUser check: "
+      "userExists=${newStatus.userExists}, "
+      "isLoggedIn=${newStatus.isLoggedIn}, "
+      "userBlocked=${newStatus.userBlocked}, "
+      "shutdown=${newStatus.shutdown}",
+    );
+
+    if (newStatus.shutdown == true) {
+      print("❌ Logging out: shutdown=true");
+      return true;
+    }
+    if (newStatus.userBlocked == true) {
+      print("❌ Logging out: userBlocked=true");
+      return true;
+    }
+    if (newStatus.isLoggedIn == false) {
+      print("❌ Logging out: isLoggedIn=false");
+      return true;
+    }
+    if (newStatus.userExists == false) {
+      print("❌ Logging out: userExists=false");
+      return true;
+    }
+
+    print("✅ No logout needed");
+    return false;
   }
 
   Future<void> _logoutUser() async {
@@ -140,18 +208,23 @@ class SessionService {
           sendPort.send(status);
         } else {
           final maintenanceModel = _mapErrorToMaintenance(statusCode ?? 500);
+
+          // ✅ For server/maintenance errors: don’t logout the user
+          final isMaintenanceCode = [500, 501, 502, 503].contains(statusCode);
+
           final errorStatus = AppStatusModel(
-            shutdown: true,
+            shutdown: !isMaintenanceCode, // 👈 only true if real shutdown
             success: false,
             message: body['message']?.toString() ?? 'Unknown error',
-            isLoggedIn: false,
-            userExists: false,
-            userBlocked: true,
+            isLoggedIn: isMaintenanceCode, // 👈 keep logged in
+            userExists: isMaintenanceCode, // 👈 keep user valid
+            userBlocked: !isMaintenanceCode, // 👈 only block if auth issue
             user: null,
             settings: null,
             status: statusCode,
             maintenanceData: maintenanceModel,
           );
+
           sendPort.send(errorStatus);
         }
       } catch (e, stackTrace) {

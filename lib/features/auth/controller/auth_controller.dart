@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart' as ApiConstants;
+import 'package:greenbiller/core/app_handler/push_notification_service.dart';
+import 'package:greenbiller/core/app_handler/session_service.dart';
 import 'package:greenbiller/core/dio_client.dart';
 import 'package:greenbiller/core/hive_service.dart';
+
 import 'package:greenbiller/features/auth/model/user_model.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 import 'package:logger/logger.dart';
@@ -11,6 +16,7 @@ import 'package:logger/logger.dart';
 class AuthController extends GetxController {
   final DioClient dioClient = DioClient();
   final HiveService hiveService = HiveService();
+  final SessionService sessionService = SessionService();
   final logger = Logger();
 
   final user = Rxn<UserModel>();
@@ -19,19 +25,50 @@ class AuthController extends GetxController {
   final phoneNumber = ''.obs;
   final otp = ''.obs;
   final countryCodes = <String>[].obs;
+
   @override
   void onInit() {
     super.onInit();
     _loadCountryCodes();
-    Future.microtask(() {
+    Future.microtask(() async {
       try {
+        logger.i('Ensuring Hive is initialized');
+        await hiveService.ensureInitialized();
+        logger.i('Checking for stored user in Hive');
         user.value = hiveService.getUser();
         if (user.value != null && user.value!.accessToken != null) {
-          logger.i('User found in Hive, setting auth token');
+          logger.i('User found: ${user.value!.toJson()}');
           dioClient.setAuthToken(user.value!.accessToken!);
-          redirectToRoleBasedScreen();
+          final isValid = await _validateToken(user.value!.accessToken!);
+          if (isValid) {
+            logger.i('Token valid, starting services');
+            sessionService.startSessionCheck(user.value!.accessToken!);
+            if (!Platform.isLinux) {
+              await Get.find<PushNotificationService>().setUserData(
+                user.value!,
+              );
+            }
+            redirectToRoleBasedScreen();
+          } else {
+            logger.w('Token invalid or server error, checking offline mode');
+            if (await _isNetworkError()) {
+              logger.i(
+                'Offline mode: Proceeding to dashboard without validation',
+              );
+              sessionService.startSessionCheck(user.value!.accessToken!);
+              if (!Platform.isLinux) {
+                await Get.find<PushNotificationService>().setUserData(
+                  user.value!,
+                );
+              }
+              redirectToRoleBasedScreen();
+            } else {
+              logger.i('Invalid token, logging out');
+              await logout();
+            }
+          }
         } else {
-          logger.i('No user found or no access token, navigating to login');
+          logger.i('No user or token found in Hive, navigating to login');
           Get.offAllNamed(AppRoutes.login);
         }
       } catch (e, stackTrace) {
@@ -39,6 +76,48 @@ class AuthController extends GetxController {
         Get.offAllNamed(AppRoutes.login);
       }
     });
+  }
+
+  Future<bool> _isNetworkError() async {
+    try {
+      await dioClient.dio.get(
+        'https://www.google.com',
+        options: Options(validateStatus: (status) => true),
+      );
+      return false;
+    } catch (e) {
+      logger.w('Network unavailable: $e');
+      return true;
+    }
+  }
+
+  Future<bool> _validateToken(String token) async {
+    try {
+      final response = await dioClient.dio.post(
+        ApiConstants.userSessionCheckUrl,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+      logger.i(
+        'Token validation response: ${response.statusCode}, ${response.data}',
+      );
+      return response.statusCode == 200 && response.data['success'] == true;
+    } catch (e) {
+      logger.e('Token validation failed: $e');
+      return false;
+    }
+  }
+
+  @override
+  void onClose() {
+    logger.i('Stopping SessionService on controller close');
+    sessionService.stopSessionCheck();
+    super.onClose();
   }
 
   Future<void> _loadCountryCodes() async {
@@ -52,12 +131,10 @@ class AuthController extends GetxController {
         for (var item in data['data']) {
           String? phoneCode;
 
-       
           if (item['mobile_code'] != null &&
               item['mobile_code'].toString().isNotEmpty) {
             phoneCode = item['mobile_code'].toString();
           } else {
-            // fallback: check all possible fields
             final possibleFields = [
               'phone_code',
               'dial_code',
@@ -86,7 +163,6 @@ class AuthController extends GetxController {
         }
 
         if (codes.isNotEmpty) {
-          // remove duplicates + sort numerically
           codes = codes.toSet().toList();
           codes.sort((a, b) {
             final aNum = int.tryParse(a.substring(1)) ?? 9999;
@@ -144,7 +220,6 @@ class AuthController extends GetxController {
           'country_code': countryCode.value,
         },
       );
-
       if (response.statusCode == 200) {
         final data = response.data;
         logger.i('Verify OTP response: $data');
@@ -152,8 +227,16 @@ class AuthController extends GetxController {
         if (isExistingUser) {
           final userModel = UserModel.fromJson(data);
           user.value = userModel;
+          logger.i('Saving user to Hive: ${userModel.toJson()}');
           await hiveService.saveUser(userModel);
+          final savedUser = hiveService.getUser();
+          logger.i('Verified saved user: ${savedUser?.toJson() ?? 'null'}');
           dioClient.setAuthToken(userModel.accessToken!);
+          sessionService.startSessionCheck(userModel.accessToken!);
+          if (!Platform.isLinux) {
+            await Get.find<PushNotificationService>().setUserData(userModel);
+          }
+
           Get.snackbar(
             'Success',
             'Login successful',
@@ -186,15 +269,12 @@ class AuthController extends GetxController {
   Future<void> loginWithPassword(String mobile, String password) async {
     try {
       isLoading.value = true;
-
       final payload = {
-        "mobile": mobile.trim(),
-        "country_code": countryCode.value.trim(),
-        "password": password.trim(),
+        'mobile': mobile.trim(),
+        'country_code': countryCode.value.trim(),
+        'password': password.trim(),
       };
-
-      logger.i("Login payload: $payload"); // debug
-
+      logger.i('Login payload: $payload');
       final response = await dioClient.dio.post(
         ApiConstants.loginUrl,
         data: payload,
@@ -202,34 +282,37 @@ class AuthController extends GetxController {
           validateStatus: (status) => status != null && status < 500,
         ),
       );
-
-      logger.i("Login response: ${response.data}");
-
-      if (response.statusCode == 200 && response.data["status"] == true) {
+      logger.i('Login response: ${response.data}');
+      if (response.statusCode == 200 && response.data['status'] == true) {
         final userModel = UserModel.fromJson(response.data);
         if (userModel.accessToken == null) {
-          throw Exception("Access token missing in response");
+          throw Exception('Access token missing in response');
         }
-
         user.value = userModel;
+        logger.i('Saving user to Hive: ${userModel.toJson()}');
         await hiveService.saveUser(userModel);
+        final savedUser = hiveService.getUser();
+        logger.i('Verified saved user: ${savedUser?.toJson() ?? 'null'}');
         dioClient.setAuthToken(userModel.accessToken!);
-
+        sessionService.startSessionCheck(userModel.accessToken!);
+        if (!Platform.isLinux) {
+          await Get.find<PushNotificationService>().setUserData(userModel);
+        }
         Get.snackbar(
-          "Success",
-          "Login successful",
+          'Success',
+          'Login successful',
           backgroundColor: Colors.green,
         );
         redirectToRoleBasedScreen();
       } else {
         final message =
-            response.data["message"] ?? "Invalid username or password";
-        Get.snackbar("Error", message, backgroundColor: Colors.red);
+            response.data['message'] ?? 'Invalid username or password';
+        Get.snackbar('Error', message, backgroundColor: Colors.red);
         throw Exception(message);
       }
     } catch (e, stackTrace) {
-      logger.e("Login error: $e", e, stackTrace);
-      Get.snackbar("Error", "Login failed: $e", backgroundColor: Colors.red);
+      logger.e('Login error: $e', e, stackTrace);
+      Get.snackbar('Error', 'Login failed: $e', backgroundColor: Colors.red);
     } finally {
       isLoading.value = false;
     }
@@ -247,7 +330,7 @@ class AuthController extends GetxController {
       final response = await dioClient.dio.post(
         ApiConstants.signUpUrl,
         data: {
-          'user_level': '4', // Default to Customer
+          'user_level': '4',
           'name': name,
           'email': email,
           'country_code': countryCode.value,
@@ -257,13 +340,18 @@ class AuthController extends GetxController {
           'referralCode': referralCode,
         },
       );
-
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // print(response.data);
         final userModel = UserModel.fromJson(response.data);
         user.value = userModel;
+        logger.i('Saving user to Hive: ${userModel.toJson()}');
         await hiveService.saveUser(userModel);
+        final savedUser = hiveService.getUser();
+        logger.i('Verified saved user: ${savedUser?.toJson() ?? 'null'}');
         dioClient.setAuthToken(userModel.accessToken!);
+        sessionService.startSessionCheck(userModel.accessToken!);
+        if (!Platform.isLinux) {
+          await Get.find<PushNotificationService>().setUserData(userModel);
+        }
         Get.snackbar(
           'Success',
           'Account created successfully',
@@ -285,7 +373,11 @@ class AuthController extends GetxController {
     try {
       user.value = null;
       await hiveService.clearUser();
+      sessionService.stopSessionCheck();
       dioClient.clearAuthToken();
+      if (!Platform.isLinux) {
+        Get.find<PushNotificationService>().removeUserData();
+      }
       Get.offAllNamed(AppRoutes.login);
     } catch (e, stackTrace) {
       logger.e('Logout error: $e', e, stackTrace);
@@ -298,16 +390,16 @@ class AuthController extends GetxController {
       final level = user.value?.userLevel ?? 4;
       logger.i('Navigating based on userLevel: $level');
       switch (level) {
-        case 1: // Admin
+        case 4:
           Get.offAllNamed(AppRoutes.adminDashboard);
           break;
-        case 2: // Manager
+        case 2:
           Get.offAllNamed(AppRoutes.managerDashboard);
           break;
-        case 3: // Staff
+        case 3:
           Get.offAllNamed(AppRoutes.staffDashboard);
           break;
-        case 4: // Customer
+        case 1:
         default:
           Get.offAllNamed(AppRoutes.customerDashboard);
       }
