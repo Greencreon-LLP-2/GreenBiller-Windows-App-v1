@@ -6,16 +6,22 @@ import 'package:green_biller/core/theme/text_styles.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
+  Future<Map<String, dynamic>> fetchDashboardData() async {
+    await Future.delayed(const Duration(seconds: 1));
+    return {
+      "totalSales": 0,
+      "totalDue": 0,
+      "totalItems": 0,
+      "customers": 0,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text(
-          "Dashboard",
-          style: AppTextStyles.h2,
-        ),
+        title: Text("Dashboard", style: AppTextStyles.h2),
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -31,82 +37,86 @@ class DashboardPage extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildOverviewCards(),
-            const SizedBox(height: 24),
-            _buildChartSection(),
-            const SizedBox(height: 24),
-            _buildRecentTransactions(),
-            const SizedBox(height: 24),
-            _buildQuickActions(),
-          ],
-        ),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: fetchDashboardData(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          }
+
+          final data = snapshot.data ?? {};
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildOverviewCards(data),
+                SizedBox(height: 24),
+                _buildChartSection(),
+                SizedBox(height: 24),
+                _buildRecentTransactions(),
+                SizedBox(height: 24),
+                _buildQuickActions(),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildOverviewCards() {
+  Widget _buildOverviewCards(Map<String, dynamic> data) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Business Overview",
-            style: AppTextStyles.h3,
-          ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
-              final childAspectRatio = constraints.maxWidth > 600 ? 1.8 : 1.5;
-
-              return GridView.count(
-                shrinkWrap: true,
-                crossAxisCount: crossAxisCount,
-                childAspectRatio: childAspectRatio,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildOverviewCard(
-                    "Total Sales",
-                    "₹1,50,000",
-                    Icons.trending_up,
-                    "+12.5%",
-                    true,
-                    [accentColor, accentColor.withOpacity(0.8)],
-                  ),
-                  _buildOverviewCard(
-                    "Total Due",
-                    "₹25,000",
-                    Icons.trending_down,
-                    "-5.2%",
-                    false,
-                    [errorColor, errorColor.withOpacity(0.8)],
-                  ),
-                  _buildOverviewCard(
-                    "Total Items",
-                    "156",
-                    Icons.inventory,
-                    "+8 New",
-                    true,
-                    [successColor, successColor.withOpacity(0.8)],
-                  ),
-                  _buildOverviewCard(
-                    "Customers",
-                    "45",
-                    Icons.people,
-                    "+3 New",
-                    true,
-                    [secondaryColor, secondaryColor.withOpacity(0.8)],
-                  ),
-                ],
-              );
-            },
+          Text("Business Overview", style: AppTextStyles.h3),
+          SizedBox(height: 16),
+          GridView.count(
+            shrinkWrap: true,
+            crossAxisCount: 2,
+            childAspectRatio: 1.5,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            physics: NeverScrollableScrollPhysics(),
+            children: [
+              _buildOverviewCard(
+                "Total Sales",
+                "₹${data['totalSales'] ?? 0}",
+                Icons.trending_up,
+                "+12.5%",
+                true,
+                [accentColor, accentColor.withOpacity(0.8)],
+              ),
+              _buildOverviewCard(
+                "Total Dues",
+                "₹${data['totalDue'] ?? 0}",
+                Icons.trending_down,
+                "-5.2%",
+                false,
+                [errorColor, errorColor.withOpacity(0.8)],
+              ),
+              _buildOverviewCard(
+                "Total Items",
+                "${data['totalItems'] ?? 0}",
+                Icons.inventory,
+                "+8 New",
+                true,
+                [successColor, successColor.withOpacity(0.8)],
+              ),
+              _buildOverviewCard(
+                "Customers",
+                "${data['customers'] ?? 0}",
+                Icons.people,
+                "+3 New",
+                true,
+                [secondaryColor, secondaryColor.withOpacity(0.8)],
+              ),
+            ],
           ),
         ],
       ),
@@ -219,10 +229,7 @@ class DashboardPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                "Sales Overview",
-                style: AppTextStyles.h3,
-              ),
+              const Text("Sales Overview", style: AppTextStyles.h3),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -307,17 +314,12 @@ class DashboardPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                "Recent Transactions",
-                style: AppTextStyles.h3,
-              ),
+              const Text("Recent Transactions", style: AppTextStyles.h3),
               TextButton(
                 onPressed: () {},
                 child: Text(
                   "View All",
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: accentColor,
-                  ),
+                  style: AppTextStyles.labelLarge.copyWith(color: accentColor),
                 ),
               ),
             ],
@@ -359,10 +361,7 @@ class DashboardPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Invoice #1234",
-                  style: AppTextStyles.bodyLarge,
-                ),
+                const Text("Invoice #1234", style: AppTextStyles.bodyLarge),
                 const SizedBox(height: 4),
                 Text(
                   "23 Dec 2024",
@@ -383,10 +382,7 @@ class DashboardPage extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: successColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -411,10 +407,7 @@ class DashboardPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Quick Actions",
-            style: AppTextStyles.h3,
-          ),
+          const Text("Quick Actions", style: AppTextStyles.h3),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -446,11 +439,7 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActionButton(
-    IconData icon,
-    String label,
-    Color color,
-  ) {
+  Widget _buildQuickActionButton(IconData icon, String label, Color color) {
     return Column(
       children: [
         Container(
@@ -459,18 +448,12 @@ class DashboardPage extends StatelessWidget {
             color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(
-            icon,
-            color: color,
-            size: 24,
-          ),
+          child: Icon(icon, color: color, size: 24),
         ),
         const SizedBox(height: 8),
         Text(
           label,
-          style: AppTextStyles.labelMedium.copyWith(
-            color: textPrimaryColor,
-          ),
+          style: AppTextStyles.labelMedium.copyWith(color: textPrimaryColor),
         ),
       ],
     );

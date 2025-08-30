@@ -122,14 +122,7 @@ class HomePage extends HookConsumerWidget {
                               selectedIndex: selectedIndex.value,
                               onTap: () => selectedIndex.value = 0,
                             ),
-                            _buildNavItem(
-                              title: 'Stores',
-                              icon: Icons.store,
-                              selectedIcon: Icons.store,
-                              index: 2,
-                              selectedIndex: selectedIndex.value,
-                              onTap: () => selectedIndex.value = 2,
-                            ),
+
                             _buildNavItem(
                               title: 'New Sale',
                               icon: Icons.add_circle_outline,
@@ -139,7 +132,7 @@ class HomePage extends HookConsumerWidget {
                               onTap: () => selectedIndex.value = 4,
                             ),
                             _buildNavItem(
-                              title: 'Purchase',
+                              title: 'New Purchase',
                               icon: Icons.shopping_cart_outlined,
                               selectedIcon: Icons.shopping_cart,
                               index: 5,
@@ -147,21 +140,14 @@ class HomePage extends HookConsumerWidget {
                               onTap: () => selectedIndex.value = 5,
                             ),
                             _buildNavItem(
-                              title: 'Parties',
+                              title: 'Contacts',
                               icon: Icons.person_2_outlined,
                               selectedIcon: Icons.person_2,
                               index: 7,
                               selectedIndex: selectedIndex.value,
                               onTap: () => selectedIndex.value = 7,
                             ),
-                            _buildNavItem(
-                              title: 'Users',
-                              icon: Icons.person_outline,
-                              selectedIcon: Icons.person,
-                              index: 8,
-                              selectedIndex: selectedIndex.value,
-                              onTap: () => selectedIndex.value = 8,
-                            ),
+                           
                             const Divider(height: 32),
                             const Padding(
                               padding: EdgeInsets.symmetric(
@@ -169,7 +155,7 @@ class HomePage extends HookConsumerWidget {
                                 vertical: 8,
                               ),
                               child: Text(
-                                "QUICK ACTIONS",
+                                "MANAGE",
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -398,6 +384,13 @@ class HomePage extends HookConsumerWidget {
                               selectedIcon: Icons.settings,
                               selectedIndex: selectedIndex.value,
                               subItems: [
+                                _buildNavSubItem(
+                                  title: 'Stores',
+                                  icon: Icons.store,
+                                  index: 2,
+                                  selectedIndex: selectedIndex.value,
+                                  onTap: () => selectedIndex.value = 2,
+                                ),
                                 _buildNavSubItem(
                                   title: 'Business Settings',
                                   icon: Icons.business,
