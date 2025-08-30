@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/push_notification_service.dart';
 import 'package:greenbiller/core/hive_service.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
@@ -13,6 +12,7 @@ import 'package:greenbiller/features/auth/view/otp_verify_page.dart';
 import 'package:greenbiller/features/auth/view/signup_page.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 import 'package:greenbiller/screens/dashboards.dart';
+import 'package:greenbiller/screens/store_admin/store_admin_entry_point.dart';
 import 'package:logger/logger.dart';
 
 final logger = Logger();
@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: AppRoutes.signUp, page: () => const SignUpPage()),
         GetPage(
           name: AppRoutes.adminDashboard,
-          page: () => const AdminDashboard(),
+          page: () => const StoreAdminEntryPoint(),
         ),
         GetPage(
           name: AppRoutes.managerDashboard,
