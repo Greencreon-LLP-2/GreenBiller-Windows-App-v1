@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/push_notification_service.dart';
 import 'package:greenbiller/core/app_handler/hive_service.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
@@ -11,6 +12,8 @@ import 'package:greenbiller/features/auth/view/maintenance.dart';
 import 'package:greenbiller/features/auth/view/notification_page.dart';
 import 'package:greenbiller/features/auth/view/otp_verify_page.dart';
 import 'package:greenbiller/features/auth/view/signup_page.dart';
+import 'package:greenbiller/features/settings/controller/store_user_creation_controller.dart';
+import 'package:greenbiller/features/settings/store_users.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 import 'package:greenbiller/screens/dashboards.dart';
 import 'package:greenbiller/screens/store_admin/store_admin_entry_point.dart';
@@ -19,16 +22,16 @@ import 'package:path_provider/path_provider.dart';
 
 final logger = Logger();
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
   runZonedGuarded(
     () async {
+      WidgetsFlutterBinding.ensureInitialized(); // ✅ Now in same zone
+
       try {
         logger.i('Initializing Hive');
+        final documentsDir = await getApplicationDocumentsDirectory();
         final hiveService = HiveService();
         Get.put(hiveService);
-
-        final documentsDir = await getApplicationDocumentsDirectory();
         hiveService.setCustomStoragePath('${documentsDir.path}\\GreenBiller');
 
         await hiveService.init();
@@ -49,7 +52,7 @@ void main() async {
         // Continue running the app even if initialization fails
       }
 
-      runApp(const MyApp());
+      runApp(const MyApp()); // ✅ Same zone as ensureInitialized
     },
     (error, stackTrace) {
       logger.e('Uncaught error: $error', error, stackTrace);
@@ -95,9 +98,12 @@ class MyApp extends StatelessWidget {
           name: AppRoutes.oneSignalNotificationPage,
           page: () => const NotificationDetailsPage(),
         ),
+        GetPage(name: AppRoutes.usersSettings, page: () => const StoreUsers()),
       ],
       builder: (context, child) {
         Get.put(AuthController());
+        Get.lazyPut(() => UserCreationController());
+        Get.lazyPut(() => DioClient());
         return child!;
       },
     );

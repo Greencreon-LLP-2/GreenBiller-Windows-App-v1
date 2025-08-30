@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart' as ApiConstants;
 import 'package:greenbiller/core/app_handler/push_notification_service.dart';
 import 'package:greenbiller/core/app_handler/session_service.dart';
-import 'package:greenbiller/core/dio_client.dart';
+import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/hive_service.dart';
 
 import 'package:greenbiller/features/auth/model/user_model.dart';
@@ -22,7 +22,7 @@ class AuthController extends GetxController {
   final user = Rxn<UserModel>();
   final isLoading = false.obs;
   final countryCode = '+91'.obs;
-  final phoneNumber = ''.obs;
+  final phoneNumber = '7012545907'.obs;
   final otp = ''.obs;
   final countryCodes = <String>[].obs;
 
@@ -30,6 +30,7 @@ class AuthController extends GetxController {
   void onInit() {
     super.onInit();
     _loadCountryCodes();
+    dioClient.setAuthToken('eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIwMTk3NDQ0OS04NmEwLTcxMjEtODk2NC0yMjUzODNiZmU0MzUiLCJqdGkiOiJlY2RhNzk0MjI1YzBmYTUwMjk4ZTRhY2MxOGNmYzk5NjYyMWM1M2VmNDEzMGY5MzAxZDVkZWYxYmYyZTZjNWJhNDEwYTU1ZTFlNzQyYmNjMyIsImlhdCI6MTc1NjU3NTgzNC43NDYwNzcsIm5iZiI6MTc1NjU3NTgzNC43NDYwNzksImV4cCI6MTc3MjQ3MzQzNC43NDM3LCJzdWIiOiI4NSIsInNjb3BlcyI6W119.LlEXQIiB896IAaMShMRT4PtouSugR3B66ZwW6Bbu4x9RmE4sFKWEeNAsfkDgt9p1FPr4hk-7vbl-ifCqBwVnTy7Sz5sGMUoqCk8wNcpyp_USW8pSD9wQikqp8KoI-Bc-Utc6r_18OhQdb852eRR7aeM2PTUGecZqnrz7u710LfJUmEHgMVSr2NNQs1clWssr2XfrAwZWOhxIHJ8Tjp9o_Z9aeZAySQuBZs4KidnMhZCj4PW4K99K4AvJ_Xf8LmcaOGBXROblitD_GMPFnvZxWcejwGBYjFzY-1wRZWVAcqnFYwCViKdBOA15lqoervmQBgxalw5Y7pF5oE3niuuWsUYSKzRap3ok9XeX8C2u8ZB37_rt2_GFZ9O0G3TPU93F910bQpY8j8OhgSDxExHOk6bKt5CmVfLw8KTR1A-T596R6et_tUx1M4FmWgWkKfXVCq1L5lqYeyRLRF7Gfa6rUjBANLvNXMm0x3IoqVQREuQ9GK_DqvyoQQr6VIuW0dNPPEp7wCm-TpDKQayvLrCt71SAu9fHLZcN4viT8ZrzFLDnreaU1NGS9UWUFtXtGgwWg80r3fkffghpemw17WdAnXVlbIh_sE-UAyjvkOlOcu6N5-jCbFFqgzDs_ND1QIrpIegUK2rtm68Kf8YWcNEwahWHPF5jOYbjpex1IXNhoXM');
     Future.microtask(() async {
       try {
         logger.i('Ensuring Hive is initialized');
@@ -42,6 +43,7 @@ class AuthController extends GetxController {
           final isValid = await _validateToken(user.value!.accessToken!);
           if (isValid) {
             logger.i('Token valid, starting services');
+            dioClient.setAuthToken(user.value!.accessToken!);
             sessionService.startSessionCheck(user.value!.accessToken!);
             if (!Platform.isLinux) {
               await Get.find<PushNotificationService>().setUserData(
@@ -70,6 +72,7 @@ class AuthController extends GetxController {
         } else {
           logger.i('No user or token found in Hive, navigating to login');
           Get.offAllNamed(AppRoutes.login);
+          // Get.offAllNamed(AppRoutes.usersSettings);
         }
       } catch (e, stackTrace) {
         logger.e('Error in onInit: $e', e, stackTrace);

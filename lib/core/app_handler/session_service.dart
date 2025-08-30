@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/app_status_model.dart';
-import 'package:greenbiller/core/dio_client.dart';
+import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/hive_service.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 
