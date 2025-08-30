@@ -93,40 +93,34 @@ class SessionService {
     }
   }
 
-  bool _shouldUpdateStatus(AppStatusModel oldStatus, AppStatusModel newStatus) {
-    print("🔍 _shouldUpdateStatus check:");
+  bool _shouldUpdateStatus(AppStatusModel newStatus) {
+    final currentStatus = AppStatusModel.initial();
+
+    print("🔍 Checking _shouldUpdateStatus...");
     print(
-      "   old: userExists=${oldStatus.userExists}, "
-      "isLoggedIn=${oldStatus.isLoggedIn}, "
-      "userBlocked=${oldStatus.userBlocked}, "
-      "shutdown=${oldStatus.shutdown}",
+      "Current: success=${currentStatus.success}, shutdown=${currentStatus.shutdown}, "
+      "isLoggedIn=${currentStatus.isLoggedIn}, userBlocked=${currentStatus.userBlocked}, "
+      "maintenance=${currentStatus.settings?.appMaintenanceMode}, "
+      "version=${currentStatus.settings?.appVersion}",
     );
     print(
-      "   new: userExists=${newStatus.userExists}, "
-      "isLoggedIn=${newStatus.isLoggedIn}, "
-      "userBlocked=${newStatus.userBlocked}, "
-      "shutdown=${newStatus.shutdown}",
+      "New: success=${newStatus.success}, shutdown=${newStatus.shutdown}, "
+      "isLoggedIn=${newStatus.isLoggedIn}, userBlocked=${newStatus.userBlocked}, "
+      "maintenance=${newStatus.settings?.appMaintenanceMode}, "
+      "version=${newStatus.settings?.appVersion}",
     );
 
-    if (oldStatus.shutdown != newStatus.shutdown) {
-      print("⚡ Updating: shutdown changed");
-      return true;
-    }
-    if (oldStatus.userBlocked != newStatus.userBlocked) {
-      print("⚡ Updating: userBlocked changed");
-      return true;
-    }
-    if (oldStatus.isLoggedIn != newStatus.isLoggedIn) {
-      print("⚡ Updating: isLoggedIn changed");
-      return true;
-    }
-    if (oldStatus.userExists != newStatus.userExists) {
-      print("⚡ Updating: userExists changed");
-      return true;
-    }
+    final shouldUpdate =
+        currentStatus.success != newStatus.success ||
+        currentStatus.shutdown != newStatus.shutdown ||
+        currentStatus.isLoggedIn != newStatus.isLoggedIn ||
+        currentStatus.userBlocked != newStatus.userBlocked ||
+        currentStatus.settings?.appMaintenanceMode !=
+            newStatus.settings?.appMaintenanceMode ||
+        currentStatus.settings?.appVersion != newStatus.settings?.appVersion;
 
-    print("✅ No update needed");
-    return false;
+    print("➡️ Should update status? $shouldUpdate");
+    return shouldUpdate;
   }
 
   bool _shouldLogoutUser(AppStatusModel newStatus) {
