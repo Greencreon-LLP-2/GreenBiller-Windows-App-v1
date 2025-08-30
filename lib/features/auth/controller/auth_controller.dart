@@ -7,7 +7,7 @@ import 'package:greenbiller/core/api_constants.dart' as ApiConstants;
 import 'package:greenbiller/core/app_handler/push_notification_service.dart';
 import 'package:greenbiller/core/app_handler/session_service.dart';
 import 'package:greenbiller/core/dio_client.dart';
-import 'package:greenbiller/core/hive_service.dart';
+import 'package:greenbiller/core/app_handler/hive_service.dart';
 
 import 'package:greenbiller/features/auth/model/user_model.dart';
 import 'package:greenbiller/routes/app_routes.dart';

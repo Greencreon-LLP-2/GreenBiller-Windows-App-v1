@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/app_handler/push_notification_service.dart';
-import 'package:greenbiller/core/hive_service.dart';
+import 'package:greenbiller/core/app_handler/hive_service.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/auth/view/login_page.dart';
 import 'package:greenbiller/features/auth/view/maintenance.dart';
@@ -14,33 +15,46 @@ import 'package:greenbiller/routes/app_routes.dart';
 import 'package:greenbiller/screens/dashboards.dart';
 import 'package:greenbiller/screens/store_admin/store_admin_entry_point.dart';
 import 'package:logger/logger.dart';
+import 'package:path_provider/path_provider.dart';
 
 final logger = Logger();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    logger.i('Initializing Hive');
-    final hiveService = HiveService();
-    Get.put(hiveService); // Make HiveService a singleton
-    await hiveService.init();
-    if (!Platform.isLinux) {
-      logger.i(
-        'Initializing PushNotificationService on ${Platform.operatingSystem}',
-      );
-      Get.put(PushNotificationService());
-      await Get.find<PushNotificationService>().init(
-        'your-onesignal-app-id',
-      ); // Replace with actual OneSignal App ID
-    } else {
-      logger.w(
-        'PushNotificationService skipped on Linux (unsupported platform)',
-      );
-    }
-  } catch (e, stackTrace) {
-    logger.e('Initialization error: $e', e, stackTrace);
-  }
-  runApp(const MyApp());
+  runZonedGuarded(
+    () async {
+      try {
+        logger.i('Initializing Hive');
+        final hiveService = HiveService();
+        Get.put(hiveService);
+
+        final documentsDir = await getApplicationDocumentsDirectory();
+        hiveService.setCustomStoragePath('${documentsDir.path}\\GreenBiller');
+
+        await hiveService.init();
+
+        if (!Platform.isLinux) {
+          logger.i(
+            'Initializing PushNotificationService on ${Platform.operatingSystem}',
+          );
+          Get.put(PushNotificationService());
+          await Get.find<PushNotificationService>().init(
+            'your-onesignal-app-id',
+          );
+        } else {
+          logger.w('PushNotificationService skipped on Linux');
+        }
+      } catch (e, stackTrace) {
+        logger.e('Initialization error: $e', e, stackTrace);
+        // Continue running the app even if initialization fails
+      }
+
+      runApp(const MyApp());
+    },
+    (error, stackTrace) {
+      logger.e('Uncaught error: $error', error, stackTrace);
+    },
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -76,10 +90,7 @@ class MyApp extends StatelessWidget {
           name: AppRoutes.homepage,
           page: () => const CustomerDashboard(),
         ),
-        GetPage(
-          name: AppRoutes.maintenance,
-          page: () => const Maintenance(),
-        ),
+        GetPage(name: AppRoutes.maintenance, page: () => const Maintenance()),
         GetPage(
           name: AppRoutes.oneSignalNotificationPage,
           page: () => const NotificationDetailsPage(),
