@@ -88,13 +88,25 @@ class BusinessProfileForm {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: accentColor, width: 2),
             ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
           ),
           onChanged: (_) => onChanged?.call(),
         ),
       ],
     );
+  }
+
+  static DecorationImage? imageProvider(
+    File? file,
+    String? url, {
+    BoxFit fit = BoxFit.cover,
+  }) {
+    if (file != null) return DecorationImage(image: FileImage(file), fit: fit);
+    if (url != null) return DecorationImage(image: NetworkImage(url), fit: fit);
+    return null;
   }
 
   static Widget buildDropdown({
@@ -131,23 +143,24 @@ class BusinessProfileForm {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: accentColor, width: 2),
             ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
           ),
           items: items.map((String item) {
-            return DropdownMenuItem<String>(
-              value: item,
-              child: Text(item),
-            );
+            return DropdownMenuItem<String>(value: item, child: Text(item));
           }).toList(),
         ),
       ],
     );
   }
 
+  // Logo Section
   static Widget buildLogoSection({
     required double completionPercent,
     required File? logoImage,
+    required String? logoUrl,
     required VoidCallback onEdit,
   }) {
     return Column(
@@ -181,19 +194,10 @@ class BusinessProfileForm {
               decoration: BoxDecoration(
                 color: const Color(0xFFF3F4F6),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFD1D5DB),
-                  width: 2,
-                  style: BorderStyle.solid,
-                ),
-                image: logoImage != null
-                    ? DecorationImage(
-                        image: FileImage(logoImage),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
+                border: Border.all(color: const Color(0xFFD1D5DB), width: 2),
+                image: imageProvider(logoImage, logoUrl, fit: BoxFit.cover),
               ),
-              child: logoImage == null
+              child: (logoImage == null && logoUrl == null)
                   ? const Icon(
                       Icons.camera_alt,
                       size: 32,
@@ -218,11 +222,7 @@ class BusinessProfileForm {
                 ),
                 child: IconButton(
                   onPressed: onEdit,
-                  icon: const Icon(
-                    Icons.edit,
-                    size: 12,
-                    color: Colors.white,
-                  ),
+                  icon: const Icon(Icons.edit, size: 12, color: Colors.white),
                   constraints: const BoxConstraints(
                     minWidth: 32,
                     minHeight: 32,
@@ -236,8 +236,10 @@ class BusinessProfileForm {
     );
   }
 
+  // Signature Section
   static Widget buildSignatureSection({
     required File? signatureImage,
+    required String? signatureUrl,
     required VoidCallback onEdit,
   }) {
     return Container(
@@ -246,37 +248,21 @@ class BusinessProfileForm {
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: const Color(0xFFD1D5DB),
-          width: 2,
-          style: BorderStyle.solid,
-        ),
-        image: signatureImage != null
-            ? DecorationImage(
-                image: FileImage(signatureImage),
-                fit: BoxFit.contain,
-              )
-            : null,
+        border: Border.all(color: const Color(0xFFD1D5DB), width: 2),
+        image: imageProvider(signatureImage, signatureUrl, fit: BoxFit.contain),
       ),
       child: Stack(
         children: [
-          if (signatureImage == null)
+          if (signatureImage == null && signatureUrl == null)
             const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.upload,
-                    size: 32,
-                    color: Color(0xFF9CA3AF),
-                  ),
+                  Icon(Icons.upload, size: 32, color: Color(0xFF9CA3AF)),
                   SizedBox(height: 4),
                   Text(
                     'Upload Signature',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF6B7280),
-                    ),
+                    style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
                   ),
                 ],
               ),
@@ -298,15 +284,8 @@ class BusinessProfileForm {
               ),
               child: IconButton(
                 onPressed: onEdit,
-                icon: const Icon(
-                  Icons.edit,
-                  size: 16,
-                  color: Colors.white,
-                ),
-                constraints: const BoxConstraints(
-                  minWidth: 40,
-                  minHeight: 40,
-                ),
+                icon: const Icon(Icons.edit, size: 16, color: Colors.white),
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               ),
             ),
           ),
@@ -349,8 +328,10 @@ class BusinessProfileForm {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: accentColor, width: 2),
             ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
             suffixIcon: IconButton(
               onPressed: onToggleVisibility,
               icon: Icon(

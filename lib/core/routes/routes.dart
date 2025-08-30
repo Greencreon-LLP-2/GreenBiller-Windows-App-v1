@@ -9,12 +9,12 @@ import 'package:green_biller/features/errors/views/update_app.dart';
 import 'package:green_biller/features/home/view/pages/darshboard_page.dart';
 import 'package:green_biller/features/home/view/pages/home_page/homepage.dart';
 import 'package:green_biller/features/home/view/pages/menu_page/menu_page.dart';
+import 'package:green_biller/features/home/view/pages/menu_page/widgets/payment_out.dart';
 import 'package:green_biller/features/home/view/pages/quick_actions/transactions.dart';
 import 'package:green_biller/features/item/view/pages/items_page.dart';
 import 'package:green_biller/features/item/view/pages/units/units_page.dart';
 import 'package:green_biller/features/packages/view/pages/packages_page.dart';
 import 'package:green_biller/features/payment/view/pages/all_payment_page/all_payment_in_page.dart';
-import 'package:green_biller/features/payment/view/pages/all_payment_page/payment_out_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_page/purchase_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_return_page/purchase_return_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_returns_view/purchase_return_view_page.dart';
@@ -269,7 +269,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/business-profile',
-        builder: (context, state) => const BusinessProfilePage(),
+        builder: (context, state) => const BusinessProfilePage(accessToken: '',),
       ),
       GoRoute(
         path: '/users-settings',

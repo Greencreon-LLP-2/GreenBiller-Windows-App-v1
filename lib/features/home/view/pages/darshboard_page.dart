@@ -1,7 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:green_biller/core/constants/colors.dart';
-// import 'package:green_biller/core/styles/text_styles.dart';
 import 'package:green_biller/core/theme/text_styles.dart';
 
 class DashboardPage extends StatelessWidget {

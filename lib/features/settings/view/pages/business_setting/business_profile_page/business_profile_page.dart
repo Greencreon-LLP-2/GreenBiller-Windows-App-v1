@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:green_biller/core/constants/api_constants.dart';
 import 'package:green_biller/core/constants/colors.dart';
+import 'package:green_biller/features/settings/services/bussiness_profile_service.dart';
 import 'package:green_biller/features/settings/view/pages/business_setting/business_profile_page/business_profile_form.dart';
 import 'package:green_biller/features/settings/view/pages/business_setting/business_profile_page/business_profile_utils.dart';
 import 'package:green_biller/features/settings/view/pages/business_setting/models/business_profile_model.dart';
@@ -11,7 +13,8 @@ import 'package:green_biller/utils/custom_appbar.dart';
 import 'package:image_picker/image_picker.dart';
 
 class BusinessProfilePage extends StatefulWidget {
-  const BusinessProfilePage({super.key});
+  final String accessToken;
+  const BusinessProfilePage({super.key, required this.accessToken});
 
   @override
   State<BusinessProfilePage> createState() => _BusinessProfilePageState();
@@ -32,6 +35,8 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
 
   File? _logoImage;
   File? _signatureImage;
+  String? _logoUrl;
+  String? _signatureUrl;
   String? _selectedBusinessType;
   String? _selectedCategory;
   String? _selectedState;
@@ -45,10 +50,12 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
   bool _hasChanges = false;
 
   final ImagePicker _picker = ImagePicker();
+  late final BusinessProfileService _service;
 
   @override
   void initState() {
     super.initState();
+    _service = BusinessProfileService(widget.accessToken);
     _loadBusinessProfile();
     _setupChangeListeners();
   }
@@ -73,32 +80,41 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
 
   Future<void> _loadBusinessProfile() async {
     setState(() => _isLoading = true);
-    final profileData = await BusinessProfileUtils.loadBusinessProfile();
-    if (profileData != null) {
-      final profile = BusinessProfile.fromJson(profileData);
+    try {
+      final profileData = await _service.fetchBusinessProfile();
+      if (profileData.isNotEmpty) {
+        final profile = BusinessProfile.fromJson(profileData);
+        setState(() {
+          _businessNameController.text = profile.businessName ?? '';
+          _mobileController.text = profile.phone ;
+          _tinController.text = profile.tin ?? '';
+          _emailController.text = profile.email ?? '';
+          _gstController.text = profile.gst ?? '';
+          _pincodeController.text = profile.pincode ?? '';
+          _addressController.text = profile.address ?? '';
+          _selectedBusinessType = profile.businessType;
+          _selectedCategory = profile.category;
+          _selectedState = profile.state;
+          // Use network URLs
+          _logoUrl = profile.profileImagePath != null
+              ? "$publicUrl${profile.profileImagePath!}"
+              : null;
+          _signatureUrl = profile.signatureImagePath != null
+              ? "$publicUrl${profile.signatureImagePath!}"
+              : null;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading profile: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
+    } finally {
       setState(() {
-        _businessNameController.text = profile.businessName ?? '';
-        _mobileController.text = profile.mobile ?? '';
-        _tinController.text = profile.tin ?? '';
-        _emailController.text = profile.email ?? '';
-        _gstController.text = profile.gst ?? '';
-        _pincodeController.text = profile.pincode ?? '';
-        _addressController.text = profile.address ?? '';
-        _selectedBusinessType = profile.businessType;
-        _selectedCategory = profile.category;
-        _selectedState = profile.state;
-        if (profile.profileImagePath != null) {
-          _logoImage = File(profile.profileImagePath!);
-        }
-        if (profile.signatureImagePath != null) {
-          _signatureImage = File(profile.signatureImagePath!);
-        }
+        _isLoading = false;
+        _hasChanges = false;
       });
     }
-    setState(() {
-      _isLoading = false;
-      _hasChanges = false;
-    });
   }
 
   Future<void> _saveProfile() async {
@@ -106,51 +122,50 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
     setState(() => _isSaving = true);
 
     final profileData = <String, dynamic>{
-      'business_name': _businessNameController.text.trim(),
-      'mobile': _mobileController.text.trim(),
+      'bussiness_name': _businessNameController.text.trim(),
+      'phone': _mobileController.text.trim(),
       'email': _emailController.text.trim(),
       'pincode': _pincodeController.text.trim(),
       'address': _addressController.text.trim(),
       if (_tinController.text.isNotEmpty) 'tin': _tinController.text.trim(),
       if (_gstController.text.isNotEmpty) 'gst': _gstController.text.trim(),
-      if (_selectedBusinessType != null) 'business_type': _selectedBusinessType,
+      if (_selectedBusinessType != null) 'businessType': _selectedBusinessType,
       if (_selectedCategory != null) 'category': _selectedCategory,
       if (_selectedState != null) 'state': _selectedState,
-      if (_logoImage != null) 'profile_image_path': _logoImage!.path,
-      if (_signatureImage != null)
-        'signature_image_path': _signatureImage!.path,
     };
 
-    final profile = BusinessProfile(
-      name: _businessNameController.text.trim(),
-      phone: _mobileController.text.trim(),
-      tin: _tinController.text.trim(),
-      email: _emailController.text.trim(),
-      pincode: _pincodeController.text.trim(),
-      address: _addressController.text.trim(),
-      businessType: _selectedBusinessType,
-      category: _selectedCategory,
-      state: _selectedState,
-      gst: _gstController.text.trim(),
-      profileImagePath: _logoImage?.path,
-      signatureImagePath: _signatureImage?.path,
-      businessName: _businessNameController.text.trim(),
-      mobile: _mobileController.text.trim(),
-    );
+    try {
+      final response = await _service.saveBusinessProfile(
+        profileData,
+        profileImage: _logoImage != null ? XFile(_logoImage!.path) : null,
+        signatureImage: _signatureImage != null
+            ? XFile(_signatureImage!.path)
+            : null,
+      );
 
-    await BusinessProfileUtils.saveBusinessProfile(profile.toJson(), context);
-    debugPrint('Profile Data Map: ${json.encode(profileData)}');
-
-    setState(() {
-      _hasChanges = false;
-      _isSaving = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profile updated successfully!'),
-        backgroundColor: accentColor,
-      ),
-    );
+      if (response['status'] == 1 || response['status'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile updated successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadBusinessProfile(); // Refresh after save
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Failed to update profile'),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error saving profile: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error saving profile: $e')));
+    } finally {
+      setState(() => _isSaving = false);
+    }
   }
 
   Future<bool> _onWillPop() async {
@@ -160,7 +175,8 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
       builder: (context) => AlertDialog(
         title: const Text('Unsaved Changes'),
         content: const Text(
-            'You have unsaved changes. Are you sure you want to leave?'),
+          'You have unsaved changes. Are you sure you want to leave?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -257,14 +273,16 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
             if (_hasChanges)
               Container(
                 margin: const EdgeInsets.only(right: 8),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.orange,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(
-                  'Unsaved',                                                                                                              
+                  'Unsaved',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white,
@@ -282,8 +300,10 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -321,6 +341,7 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
         SizedBox(
           width: 200,
           child: BusinessProfileForm.buildLogoSection(
+            logoUrl: _logoUrl,
             completionPercent: _getCompletionPercent(),
             logoImage: _logoImage,
             onEdit: () => BusinessProfileUtils.pickImage(
@@ -346,6 +367,7 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
         SizedBox(
           width: 200,
           child: BusinessProfileForm.buildLogoSection(
+            logoUrl: _logoUrl,
             completionPercent: _getCompletionPercent(),
             logoImage: _logoImage,
             onEdit: () => BusinessProfileUtils.pickImage(
@@ -383,7 +405,9 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
                         hint: 'Enter business name',
                         validator: (value) =>
                             BusinessProfileUtils.validateRequired(
-                                value, 'Business Name'),
+                              value,
+                              'Business Name',
+                            ),
                         onChanged: _onFieldChanged,
                       ),
                     ),
@@ -396,7 +420,9 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
                         keyboardType: TextInputType.phone,
                         validator: (value) =>
                             BusinessProfileUtils.validateRequired(
-                                value, 'Mobile Number'),
+                              value,
+                              'Mobile Number',
+                            ),
                         onChanged: _onFieldChanged,
                       ),
                     ),
@@ -457,7 +483,9 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
                         },
                         validator: (value) =>
                             BusinessProfileUtils.validateRequired(
-                                value, 'Business Type'),
+                              value,
+                              'Business Type',
+                            ),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -473,7 +501,9 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
                         },
                         validator: (value) =>
                             BusinessProfileUtils.validateRequired(
-                                value, 'Category'),
+                              value,
+                              'Category',
+                            ),
                       ),
                     ),
                   ],
@@ -493,7 +523,9 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
                         },
                         validator: (value) =>
                             BusinessProfileUtils.validateRequired(
-                                value, 'State'),
+                              value,
+                              'State',
+                            ),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -531,6 +563,7 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
             title: 'Digital Signature',
             icon: Icons.upload,
             child: BusinessProfileForm.buildSignatureSection(
+              signatureUrl: _signatureUrl,
               signatureImage: _signatureImage,
               onEdit: () => BusinessProfileUtils.pickImage(
                 picker: _picker,
@@ -561,8 +594,10 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: accentColor,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -627,7 +662,8 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
                       hint: 'Enter current password',
                       isVisible: _showCurrentPassword,
                       onToggleVisibility: () => setState(
-                          () => _showCurrentPassword = !_showCurrentPassword),
+                        () => _showCurrentPassword = !_showCurrentPassword,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     BusinessProfileForm.buildPasswordField(
@@ -645,7 +681,8 @@ class _BusinessProfilePageState extends State<BusinessProfilePage> {
                       hint: 'Confirm new password',
                       isVisible: _showConfirmPassword,
                       onToggleVisibility: () => setState(
-                          () => _showConfirmPassword = !_showConfirmPassword),
+                        () => _showConfirmPassword = !_showConfirmPassword,
+                      ),
                     ),
                   ],
                 ),

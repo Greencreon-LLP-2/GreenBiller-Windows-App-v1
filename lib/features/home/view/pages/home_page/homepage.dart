@@ -17,6 +17,7 @@ import 'package:green_biller/features/item/view/pages/categories/categories_page
 import 'package:green_biller/features/item/view/pages/items_page.dart';
 import 'package:green_biller/features/item/view/pages/units/units_page.dart';
 import 'package:green_biller/features/notifications/views/notification_page.dart';
+import 'package:green_biller/features/payment/view/pages/all_payment_page/all_payment_out_page.dart';
 import 'package:green_biller/features/payment/view/pages/payment_in_page/add_payment_in_page.dart';
 import 'package:green_biller/features/purchase/view/pages/purchase_page/purchase_page.dart';
 
@@ -147,7 +148,7 @@ class HomePage extends HookConsumerWidget {
                               selectedIndex: selectedIndex.value,
                               onTap: () => selectedIndex.value = 7,
                             ),
-                           
+
                             const Divider(height: 32),
                             const Padding(
                               padding: EdgeInsets.symmetric(
@@ -640,44 +641,51 @@ class HomePage extends HookConsumerWidget {
                         index: selectedIndex.value,
                         children: [
                           BuildHomeContent(
+                            // 0 - Dashboard
                             isSmallScreen: isSmallScreen,
                             isMediumScreen: isMediumScreen,
                           ),
-                          const DashboardPage(), //0
-                          const StorePageCustom(), //1
-                          const ItemsPage(), //2
-                          const AddNewSalePage(), //3
-                          const PurchasePage(), //4
-                          const SalesListPage(), //5
-                          const PartiesPage(), //6
-                          const UserCreationPage(), //7
-                          const AddPaymentInPage(), //8
-                          const SalesReturnPage(), //9
-                          const SalesOrderPage(), //10
-                          StockAdjustmentItem(), //11
-                          StockTransferItem(), //12
-                          CreditNotePage(), //13
-                          AddSalesOrderPage(), //14
-                          PurchaseBills(), //15
-                          PurchaseReturnViewPage(), //16
-                          const PaymentOutPage(), //17
-                          const SalesSummaryPage(), //18
-                          const SalesByItemPage(), //19
-                          const SalesByCustomerPage(), //20
-                          const PurchaseSummary(), //21
-                          const PurchaseItemReportPage(), //22
-                          const PurchaseSupplierBaseSummary(), //23
-                          const AddItemsPage(), //25
-                          const AllItemsPage(), //26
-                          const CategoriesPage(), //27
-                          const BrandPage(), //28
-                          const UnitsPage(), //29
-                          const BusinessProfilePage(), //30
-                          const AccountSettingsPage(), //31
-                          const SalesSettingsPage(), //32
-                          InvoiceSettingsPage(accessToken: accessToken), //33
-                          const UserSettingsPage(), //34
-                          const ActiveLogPage(), //35
+                          const DashboardPage(), // 1
+                          const StorePageCustom(), // 2 - Stores
+                          Container(), // 3 - MISSING (placeholder)
+                          const AddNewSalePage(), // 4 - New Sale
+                          const PurchasePage(), // 5 - New Purchase
+                          const SalesListPage(), // 6 - Sale List
+                          const PartiesPage(), // 7 - Contacts
+                          Container(), // 8 - MISSING (placeholder)
+                          const AddPaymentInPage(), // 9 - Payment In
+                          const SalesReturnPage(), // 10 - Sales Return
+                          const SalesOrderPage(), // 11 - Sale Order
+                          StockAdjustmentItem(), // 12 - Stock Adjustment
+                          StockTransferItem(), // 13 - Stock Transfer
+                          CreditNotePage(), // 14 - Add Sale Return
+                          AddSalesOrderPage(), // 15 - Add Sale Order
+                          PurchaseBills(), // 16 - Purchase Bills
+                          PurchaseReturnViewPage(), // 17 - Purchase Return
+                          const AllPaymentOutPage(), // 18 - Payment Out
+                          const SalesSummaryPage(), // 19 - Sales Summary
+                          const SalesByItemPage(), // 20 - Sales by Item
+                          const SalesByCustomerPage(), // 21 - Sales by Customer
+                          const PurchaseSummary(), // 22 - Purchase Summary
+                          const PurchaseItemReportPage(), // 23 - Purchase Item Report
+                          const PurchaseSupplierBaseSummary(), // 24 - Purchase Supplier Summary
+                          const AddItemsPage(), // 25 - Add Items
+                          const AllItemsPage(), // 26 - All Items
+                          const CategoriesPage(), // 27 - Categories
+                          const BrandPage(), // 28 - Brands
+                          const UnitsPage(), // 29 - Units
+                          const BusinessProfilePage(
+                            accessToken: '',
+                          ), // 30 - Business Settings
+                          const AccountSettingsPage(), // 31 - Accounts Settings
+                          const SalesSettingsPage(
+                            accessToken: '',
+                          ), // 32 - Sales Settings
+                          InvoiceSettingsPage(
+                            accessToken: accessToken,
+                          ), // 33 - Invoice Settings
+                          const UserSettingsPage(), // 34 - Users Settings
+                          const ActiveLogPage(), // 35 - Activity Log
                         ],
                       ),
                     ),

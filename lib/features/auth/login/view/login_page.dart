@@ -34,9 +34,11 @@ class LoginPage extends HookConsumerWidget {
       isError.value = error;
       // Auto-dismiss message after 3 seconds
       Future.delayed(const Duration(seconds: 3), () {
-        if (message.value == msg) {
-          message.value = null;
-          isError.value = false;
+        if (context.mounted) {
+          if (message.value == msg) {
+            message.value = null;
+            isError.value = false;
+          }
         }
       });
     }
@@ -155,7 +157,7 @@ class LogoHeaderWidget extends HookWidget {
             shape: BoxShape.circle,
             color: accentColor.withOpacity(0.1),
           ),
-          child: const Icon(Icons.store, size: 60, color: accentColor),
+          child: Image.asset("assets/images/logo_image.png"),
         ),
         const SizedBox(height: 24),
         Text(
