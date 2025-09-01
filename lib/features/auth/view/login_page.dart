@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:flutter/services.dart';
+import 'package:greenbiller/features/auth/valid/password_validator.dart';
 
 // Text styles similar to reference code
 class AppTextStyles {
@@ -300,6 +301,11 @@ class LoginFormContent extends StatelessWidget {
                       onToggleVisibility: () {
                         passwordVisible.value = !passwordVisible.value;
                       },
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(30),
+                        FilteringTextInputFormatter.deny(RegExp(r'\s'))
+                      ],
+                      
                       controller: passwordController,
                       obscureText: !isVisible,
                     );
@@ -392,6 +398,7 @@ class CustomTextField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool obscureText;
   final ValueChanged<String>? onChanged;
+  final String? Function(String?)? validator;
 
   const CustomTextField({
     super.key,
@@ -406,6 +413,7 @@ class CustomTextField extends StatelessWidget {
     this.inputFormatters,
     this.obscureText = false,
     this.onChanged,
+    this.validator,
   });
 
   @override
@@ -415,12 +423,13 @@ class CustomTextField extends StatelessWidget {
         color: Colors.grey.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
         obscureText: isPassword ? !passwordVisible : false,
         inputFormatters: inputFormatters,
         onChanged: onChanged,
+        validator: validator,
         decoration: InputDecoration(
           hintText: hintText,
           labelText: label,
