@@ -89,6 +89,14 @@ class StoreUsers extends GetView<UserCreationController> {
                             foregroundColor: theme.accentColor,
                           ),
                         ),
+                        IconButton(
+                          onPressed: controller.loadStoreUsers,
+                          icon: const Icon(Icons.refresh, size: 20),
+
+                          style: TextButton.styleFrom(
+                            foregroundColor: theme.accentColor,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -537,6 +545,9 @@ class StoreUsers extends GetView<UserCreationController> {
                                     .entries
                                     .firstWhere((entry) => entry.value == value)
                                     .key;
+                                print(
+                                  controller.selectedRoleId.value.toString(),
+                                );
                               }
                             },
                           ),

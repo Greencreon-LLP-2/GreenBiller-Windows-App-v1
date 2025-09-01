@@ -30,55 +30,56 @@ class AuthController extends GetxController {
   void onInit() {
     super.onInit();
     _loadCountryCodes();
-    dioClient.setAuthToken('eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIwMTk3NDQ0OS04NmEwLTcxMjEtODk2NC0yMjUzODNiZmU0MzUiLCJqdGkiOiJlY2RhNzk0MjI1YzBmYTUwMjk4ZTRhY2MxOGNmYzk5NjYyMWM1M2VmNDEzMGY5MzAxZDVkZWYxYmYyZTZjNWJhNDEwYTU1ZTFlNzQyYmNjMyIsImlhdCI6MTc1NjU3NTgzNC43NDYwNzcsIm5iZiI6MTc1NjU3NTgzNC43NDYwNzksImV4cCI6MTc3MjQ3MzQzNC43NDM3LCJzdWIiOiI4NSIsInNjb3BlcyI6W119.LlEXQIiB896IAaMShMRT4PtouSugR3B66ZwW6Bbu4x9RmE4sFKWEeNAsfkDgt9p1FPr4hk-7vbl-ifCqBwVnTy7Sz5sGMUoqCk8wNcpyp_USW8pSD9wQikqp8KoI-Bc-Utc6r_18OhQdb852eRR7aeM2PTUGecZqnrz7u710LfJUmEHgMVSr2NNQs1clWssr2XfrAwZWOhxIHJ8Tjp9o_Z9aeZAySQuBZs4KidnMhZCj4PW4K99K4AvJ_Xf8LmcaOGBXROblitD_GMPFnvZxWcejwGBYjFzY-1wRZWVAcqnFYwCViKdBOA15lqoervmQBgxalw5Y7pF5oE3niuuWsUYSKzRap3ok9XeX8C2u8ZB37_rt2_GFZ9O0G3TPU93F910bQpY8j8OhgSDxExHOk6bKt5CmVfLw8KTR1A-T596R6et_tUx1M4FmWgWkKfXVCq1L5lqYeyRLRF7Gfa6rUjBANLvNXMm0x3IoqVQREuQ9GK_DqvyoQQr6VIuW0dNPPEp7wCm-TpDKQayvLrCt71SAu9fHLZcN4viT8ZrzFLDnreaU1NGS9UWUFtXtGgwWg80r3fkffghpemw17WdAnXVlbIh_sE-UAyjvkOlOcu6N5-jCbFFqgzDs_ND1QIrpIegUK2rtm68Kf8YWcNEwahWHPF5jOYbjpex1IXNhoXM');
-    Future.microtask(() async {
-      try {
-        logger.i('Ensuring Hive is initialized');
-        await hiveService.ensureInitialized();
-        logger.i('Checking for stored user in Hive');
-        user.value = hiveService.getUser();
-        if (user.value != null && user.value!.accessToken != null) {
-          logger.i('User found: ${user.value!.toJson()}');
-          dioClient.setAuthToken(user.value!.accessToken!);
-          final isValid = await _validateToken(user.value!.accessToken!);
-          if (isValid) {
-            logger.i('Token valid, starting services');
-            dioClient.setAuthToken(user.value!.accessToken!);
-            sessionService.startSessionCheck(user.value!.accessToken!);
-            if (!Platform.isLinux) {
-              await Get.find<PushNotificationService>().setUserData(
-                user.value!,
-              );
-            }
-            redirectToRoleBasedScreen();
-          } else {
-            logger.w('Token invalid or server error, checking offline mode');
-            if (await _isNetworkError()) {
-              logger.i(
-                'Offline mode: Proceeding to dashboard without validation',
-              );
-              sessionService.startSessionCheck(user.value!.accessToken!);
-              if (!Platform.isLinux) {
-                await Get.find<PushNotificationService>().setUserData(
-                  user.value!,
-                );
-              }
-              redirectToRoleBasedScreen();
-            } else {
-              logger.i('Invalid token, logging out');
-              // await logout();
-            }
-          }
-        } else {
-          logger.i('No user or token found in Hive, navigating to login');
-          Get.offAllNamed(AppRoutes.login);
-          // Get.offAllNamed(AppRoutes.usersSettings);
-        }
-      } catch (e, stackTrace) {
-        logger.e('Error in onInit: $e', e, stackTrace);
-        Get.offAllNamed(AppRoutes.login);
-      }
-    });
+    dioClient.setAuthToken('eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIwMTk3NDQ0OS04NmEwLTcxMjEtODk2NC0yMjUzODNiZmU0MzUiLCJqdGkiOiI3OGIwZDc0NzU2MDZiM2Q3YzNlNTQ1OTMxZDlmMGMzOTFlOTM1Y2ZjZDUxNzZkODdmNjEyZmQwYzg0YWQyNzA3MWFlOTY2ODQwZmY4ZDRlMyIsImlhdCI6MTc1NjcyMDIzMS40NjY5NDYsIm5iZiI6MTc1NjcyMDIzMS40NjY5NTIsImV4cCI6MTc3MjM1ODYzMS40MTMzNDQsInN1YiI6IjYyIiwic2NvcGVzIjpbXX0.ZVMeK8uZKSU9_jbgm39gp2ai6fAarKYV-0Qh9XzGga3_ybnA-z63Q6R3w1MCPKi8k41f-BxYDXMR-uEvvOW-umbPhW0mzB5XeQbskzabIbfVSI-_-anCxzV3Z8KQWY1UAH-_P8X1NvPWGpQALuBQeZ7cwqbFOAhVwCTguwBTdrUp8YxlMldRtje2EzH1q2l-tx68mah-Wgv-Te7LZCNzDSIXH9hMuU5H17l3DoM5KV0Hi5xR8lpD7y3WSjMVhOSmw68kDQinFNzYtEeLGQs3BH5KWuDkJdr-oyB4Jgb6HIN_UzGvcnhwqZ-VQXfj3L6hNjOXPuTEyIq1Ovj81lr6fkdscWX0x6BEY9MpsN_pBPh6DzBRq8_g4wQjg8GcEbt0EDhW7Gh0hzeX5Gb1yiB_QNyD3fqYkSfxVpXdRM2whMoEELYwTtME03ONfeQyDH5UEUyhsn2OvAg27L1v6ZgbwRHCiMagPBS3xRpQ0rEFHHizf3lonIrbBth2bYXpmC0tVoI45v0aOICBuicHNkAFHAcV-dMRDydXRe5kqC1jNfteFmB00CqDla0DhUhEuhyFnn-A6vT62QC2b_sIAmQdeIv4RbAueQ_4oYh798PyK7-1hwFnh37BN67E3bqmqdylyoz1ocHUM0QRVijeui0ucV5yqMzaUxz2_gHdBGAmSI8');
+    // Future.microtask(() async {
+    //   try {
+    //     logger.i('Ensuring Hive is initialized');
+    //     await hiveService.ensureInitialized();
+    //     logger.i('Checking for stored user in Hive');
+    //     user.value = hiveService.getUser();
+    //     if (user.value != null && user.value!.accessToken != null) {
+    //       logger.i('User found: ${user.value!.toJson()}');
+    //       dioClient.setAuthToken(user.value!.accessToken!);
+    //       final isValid = await _validateToken(user.value!.accessToken!);
+    //       if (isValid) {
+    //         logger.i('Token valid, starting services');
+    //         dioClient.setAuthToken(user.value!.accessToken!);
+    //         sessionService.startSessionCheck(user.value!.accessToken!);
+    //         if (!Platform.isLinux) {
+    //           await Get.find<PushNotificationService>().setUserData(
+    //             user.value!,
+    //           );
+    //         }
+    //         redirectToRoleBasedScreen();
+    //       } else {
+    //         logger.w('Token invalid or server error, checking offline mode');
+    //         if (await _isNetworkError()) {
+    //           logger.i(
+    //             'Offline mode: Proceeding to dashboard without validation',
+    //           );
+    //           sessionService.startSessionCheck(user.value!.accessToken!);
+    //           if (!Platform.isLinux) {
+    //             await Get.find<PushNotificationService>().setUserData(
+    //               user.value!,
+    //             );
+    //           }
+    //           redirectToRoleBasedScreen();
+    //         } else {
+    //           logger.i('Invalid token, logging out');
+    //           // await logout();
+    //         }
+    //       }
+    //     } else {
+    //       logger.i('No user or token found in Hive, navigating to login');
+    //       Get.offAllNamed(AppRoutes.login);
+    //       // Get.offAllNamed(AppRoutes.usersSettings);
+    //     }
+    //   } catch (e, stackTrace) {
+    //     logger.e('Error in onInit: $e', e, stackTrace);
+    //     Get.offAllNamed(AppRoutes.login);
+    //   }
+    // });
+  
   }
 
   Future<bool> _isNetworkError() async {

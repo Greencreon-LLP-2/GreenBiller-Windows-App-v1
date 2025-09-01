@@ -93,23 +93,23 @@ class AdminSidebar extends StatelessWidget {
                 },
               ),
               ListTile(
-                title: const Text('Account Settings'),
+                title: const Text('Bussiness Profile Settings'),
                 selected: currentRoute == AppRoutes.accountSettings,
                 onTap: () {
-                  logger.i('Navigating to account settings');
-                  Get.toNamed(AppRoutes.accountSettings);
+                  logger.i('Navigating to Bussiness settings');
+                  Get.toNamed(AppRoutes.businessProfile);
                 },
               ),
               ListTile(
-                title: const Text('Notification Settings'),
-                selected: currentRoute == AppRoutes.notificationSettings,
+                title: const Text('Invoice Settings'),
+                selected: currentRoute == AppRoutes.invoiceSettings,
                 onTap: () {
-                  logger.i('Navigating to notification settings');
-                  Get.toNamed(AppRoutes.notificationSettings);
+                  logger.i('Navigating to Invoice settings');
+                  Get.toNamed(AppRoutes.invoiceSettings);
                 },
               ),
 
-               ListTile(
+              ListTile(
                 title: const Text('Users Settings'),
                 selected: currentRoute == AppRoutes.usersSettings,
                 onTap: () {

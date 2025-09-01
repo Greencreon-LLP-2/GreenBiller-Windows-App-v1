@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
@@ -125,13 +125,14 @@ class UserCreationController extends GetxController {
 
   Future<void> createUser() async {
     try {
+      
       isLoading.value = true;
       final errors = _validateFields();
       if (errors.isNotEmpty) {
         Get.snackbar('Error', errors.join('\n'), backgroundColor: Colors.red);
         return;
       }
-
+      log(selectedRoleId.value.toString());
       final response = await dioClient.dio.post(
         signUpUrl,
         data: {

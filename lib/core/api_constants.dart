@@ -5,7 +5,7 @@
 //!======================================================================================================
 
 const String baseUrl = "http://127.0.0.1:8000/api";
-const String publicUrl = "http://127.0.0.1:8000/public";
+const String publicUrl = "http://127.0.0.1:8000/admin";
 // const String onesignal = "rfpuvfb7pfgr3pvi2ns4izmlhugjfq7fpfcel7nmsrhch5jxtgca5r2hgnwo3z7cdionapma4ukgkrx7qyzvi6tl7rpxkg7plmhx3wa";
 // const String baseUrl = "https://greenbiller.in/api";
 // const String publicUrl = "https://greenbiller.in/public";
@@ -100,3 +100,9 @@ const String salesCustomerSummaryUrl = "$baseUrl/sales/report-view";
 const String salesSummaryUrl = "$baseUrl/reports/sales-report";
 const String purchaseItemSummaryUrl = "$baseUrl/purchaseitem/report-view";
 const String salesItemSummaryUrl = "$baseUrl/reports/sales-item-report";
+
+const String businessProfileCreateUrl = '$baseUrl/profile-create';
+const String businessProfileViewUrl = '$baseUrl/profile-view';
+const String businessProfileEditUrl = '$baseUrl/profile-update';
+
+const String updatePasswordUrl = '$baseUrl/update-password';

@@ -17,4 +17,6 @@ class AppRoutes {
   static const String usersSettings = '/users_settings';
   static const String notificationSettings = '/notification_settings';
   static const String notificationDetails = '/notification_details';
+  static const String businessProfile = '/business_profile';
+  static const String invoiceSettings = '/invoice-settings';
 }
