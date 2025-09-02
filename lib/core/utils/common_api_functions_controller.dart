@@ -6,7 +6,7 @@ import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:logger/logger.dart';
 
 class CommonApiFunctionsController extends GetxController {
-  final DioClient dioClient = Get.find<DioClient>();
+  final DioClient dioClient = DioClient();
   final AuthController authController = Get.find<AuthController>();
   final Logger logger = Logger();
 
@@ -48,6 +48,4 @@ class CommonApiFunctionsController extends GetxController {
       return {};
     }
   }
-
-
 }

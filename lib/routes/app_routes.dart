@@ -19,4 +19,5 @@ class AppRoutes {
   static const String notificationDetails = '/notification_details';
   static const String businessProfile = '/business_profile';
   static const String invoiceSettings = '/invoice-settings';
+  static const String newPurchase = '/new-purchase';
 }

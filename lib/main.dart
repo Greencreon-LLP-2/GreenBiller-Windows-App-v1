@@ -13,6 +13,8 @@ import 'package:greenbiller/features/auth/view/maintenance.dart';
 import 'package:greenbiller/features/auth/view/notification_page.dart';
 import 'package:greenbiller/features/auth/view/otp_verify_page.dart';
 import 'package:greenbiller/features/auth/view/signup_page.dart';
+import 'package:greenbiller/features/purchase/controller/new_purchase_controller.dart';
+import 'package:greenbiller/features/purchase/view/new_purchase_page.dart';
 import 'package:greenbiller/features/settings/controller/bussiness_profile_controller.dart';
 import 'package:greenbiller/features/settings/controller/invoice_settings_controller.dart';
 import 'package:greenbiller/features/settings/view/account_setttings_page.dart';
@@ -119,16 +121,18 @@ class MyApp extends StatelessWidget {
           name: AppRoutes.invoiceSettings,
           page: () => InvoiceSettingsPage(),
         ),
+        GetPage(name: AppRoutes.newPurchase, page: () => NewPurchasePage()),
       ],
       builder: (context, child) {
         Get.put(AuthController());
+       
+        Get.lazyPut(() => CommonApiFunctionsController());
         Get.lazyPut(() => UserCreationController());
-        Get.lazyPut(() => DioClient());
         Get.lazyPut(() => UserCreationController());
         Get.lazyPut(() => AccountController());
         Get.lazyPut(() => BusinessProfileController());
         Get.lazyPut(() => InvoiceSettingsController());
-        Get.lazyPut(()=>CommonApiFunctionsController());
+        Get.lazyPut(() => NewPurchaseController());
         return child!;
       },
     );

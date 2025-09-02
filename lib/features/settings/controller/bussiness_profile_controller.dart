@@ -13,7 +13,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 
 class BusinessProfileController extends GetxController {
-  final DioClient dioClient = Get.find<DioClient>();
+ final DioClient dioClient = DioClient();
   final AuthController authController = Get.find<AuthController>();
   final HiveService hiveService = Get.find<HiveService>();
   final Logger logger = Logger();

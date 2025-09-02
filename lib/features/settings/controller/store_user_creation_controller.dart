@@ -11,7 +11,7 @@ import 'package:greenbiller/features/settings/models/store_users_model.dart';
 import 'package:logger/logger.dart';
 
 class UserCreationController extends GetxController {
-  final DioClient dioClient = Get.find<DioClient>();
+  final DioClient dioClient = DioClient();
   final AuthController authController = Get.find<AuthController>();
   final CommonApiFunctionsController commonApi = Get.find<CommonApiFunctionsController>();
   final Logger logger = Logger();

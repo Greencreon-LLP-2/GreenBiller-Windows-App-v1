@@ -114,11 +114,11 @@ class AdminSidebar extends StatelessWidget {
                     onTap: () => Get.toNamed(AppRoutes.overview),
                   ),
                   _buildNavTile(
-                    title: "Reports",
+                    title: "Quick Purchase",
                     icon: Icons.bar_chart_outlined,
-                    route: AppRoutes.reports,
+                    route: AppRoutes.newPurchase,
                     currentRoute: currentRoute,
-                    onTap: () => Get.toNamed(AppRoutes.reports),
+                    onTap: () => Get.toNamed(AppRoutes.newPurchase),
                   ),
 
                   _buildSectionHeader("Profile"),
