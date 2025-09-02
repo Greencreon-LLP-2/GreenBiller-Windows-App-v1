@@ -1,6 +1,6 @@
 {
-    "name": "greenbiller",
-    "short_name": "greenbiller",
+    "name": "Green Biller",
+    "short_name": "Green Biller",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
