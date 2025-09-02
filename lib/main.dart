@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/push_notification_service.dart';
 import 'package:greenbiller/core/app_handler/hive_service.dart';
+import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/auth/view/login_page.dart';
 import 'package:greenbiller/features/auth/view/maintenance.dart';
@@ -13,10 +14,12 @@ import 'package:greenbiller/features/auth/view/notification_page.dart';
 import 'package:greenbiller/features/auth/view/otp_verify_page.dart';
 import 'package:greenbiller/features/auth/view/signup_page.dart';
 import 'package:greenbiller/features/settings/controller/bussiness_profile_controller.dart';
+import 'package:greenbiller/features/settings/controller/invoice_settings_controller.dart';
 import 'package:greenbiller/features/settings/view/account_setttings_page.dart';
 import 'package:greenbiller/features/settings/controller/account_settings_controller.dart';
 import 'package:greenbiller/features/settings/controller/store_user_creation_controller.dart';
 import 'package:greenbiller/features/settings/view/business_profile_page.dart';
+import 'package:greenbiller/features/settings/view/invoice_settings_page.dart';
 import 'package:greenbiller/features/settings/view/store_users.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 import 'package:greenbiller/screens/dashboards.dart';
@@ -112,6 +115,10 @@ class MyApp extends StatelessWidget {
           name: AppRoutes.businessProfile,
           page: () => const BusinessProfilePage(),
         ),
+        GetPage(
+          name: AppRoutes.invoiceSettings,
+          page: () => InvoiceSettingsPage(),
+        ),
       ],
       builder: (context, child) {
         Get.put(AuthController());
@@ -120,6 +127,8 @@ class MyApp extends StatelessWidget {
         Get.lazyPut(() => UserCreationController());
         Get.lazyPut(() => AccountController());
         Get.lazyPut(() => BusinessProfileController());
+        Get.lazyPut(() => InvoiceSettingsController());
+        Get.lazyPut(()=>CommonApiFunctionsController());
         return child!;
       },
     );

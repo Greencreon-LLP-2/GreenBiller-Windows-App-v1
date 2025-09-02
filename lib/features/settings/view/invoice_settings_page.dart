@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'package:greenbiller/core/colors.dart';
-import 'package:greenbiller/core/gloabl_widgets/sidebar/custom_appbar.dart';
+import 'package:greenbiller/core/gloabl_widgets/custom_appbar.dart';
 import 'package:greenbiller/features/settings/controller/invoice_settings_controller.dart';
 
 class InvoiceSettingsPage extends StatelessWidget {
@@ -39,23 +39,142 @@ class InvoiceSettingsPage extends StatelessWidget {
           const SizedBox(width: 8),
         ],
       ),
-      body: Obx(
-        () => _controller.isLoading.value
-            ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    if (constraints.maxWidth > 1024) {
-                      return _buildDesktopLayout();
-                    } else {
-                      return _buildMobileLayout();
-                    }
-                  },
-                ),
+      body: Obx(() {
+        if (_controller.isLoadingStores.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // Store Selection Dropdown
+              _buildStoreSelector(),
+              const SizedBox(height: 16),
+
+              // Show loading while settings are loading
+              if (_controller.isLoading.value)
+                const Center(child: CircularProgressIndicator())
+              else if (_controller.selectedStoreId.value != null)
+                // Show settings form when store is selected
+                _buildSettingsForm()
+              else
+                // Show message when no store is selected
+                _buildNoStoreSelected(),
+            ],
+          ),
+        );
+      }),
+      bottomNavigationBar: Obx(() {
+        if (_controller.selectedStoreId.value == null ||
+            _controller.isLoading.value) {
+          return const SizedBox.shrink();
+        }
+        return _buildBottomNavigationBar();
+      }),
+    );
+  }
+
+  Widget _buildStoreSelector() {
+    return Obx(
+      () => DropdownButtonFormField<String>(
+        value: _controller.selectedStore.value,
+        decoration: InputDecoration(
+          labelText: 'Select Store',
+          prefixIcon: Container(
+            margin: const EdgeInsets.only(right: 6),
+            decoration: BoxDecoration(
+              color: accentColor.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            padding: const EdgeInsets.all(6),
+            child: Icon(
+              Icons.store,
+              color: accentColor.withOpacity(0.85),
+              size: 18,
+            ),
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: accentColor),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+        ),
+        items: [
+          const DropdownMenuItem<String>(
+            value: null,
+            child: Text(
+              'Select a Store',
+              style: TextStyle(color: Colors.black, fontSize: 14),
+            ),
+          ),
+          ..._controller.storeMap.entries.map(
+            (entry) => DropdownMenuItem<String>(
+              value: entry.key,
+              child: Text(
+                entry.key,
+                style: const TextStyle(color: Colors.black, fontSize: 14),
               ),
+            ),
+          ),
+        ],
+        onChanged: _controller.onStoreChanged,
+        icon: _controller.isLoadingStores.value
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 20,
+                color: accentColor.withOpacity(0.85),
+              ),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        borderRadius: BorderRadius.circular(10),
+        dropdownColor: Colors.white,
+        isExpanded: true,
+        menuMaxHeight: 250,
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  Widget _buildNoStoreSelected() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.store, size: 64, color: Colors.grey),
+          SizedBox(height: 16),
+          Text(
+            'Please select a store to configure invoice settings',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsForm() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth > 1024) {
+          return _buildDesktopLayout();
+        } else {
+          return _buildMobileLayout();
+        }
+      },
     );
   }
 
@@ -99,7 +218,6 @@ class InvoiceSettingsPage extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildBottomNavigationBar() {
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -117,13 +235,8 @@ class InvoiceSettingsPage extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: accentColor,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
           ),
@@ -136,13 +249,8 @@ class InvoiceSettingsPage extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue.shade600,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
           ),
@@ -150,7 +258,6 @@ class InvoiceSettingsPage extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildCard({
     required String title,
     required IconData icon,

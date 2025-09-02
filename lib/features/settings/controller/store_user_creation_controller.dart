@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
+import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/settings/models/store_users_model.dart';
@@ -12,6 +13,7 @@ import 'package:logger/logger.dart';
 class UserCreationController extends GetxController {
   final DioClient dioClient = Get.find<DioClient>();
   final AuthController authController = Get.find<AuthController>();
+  final CommonApiFunctionsController commonApi = Get.find<CommonApiFunctionsController>();
   final Logger logger = Logger();
 
   // Form fields
@@ -49,46 +51,19 @@ class UserCreationController extends GetxController {
   Future<void> loadStores() async {
     try {
       isLoadingStores.value = true;
+      final stores = await commonApi.fetchStores();
 
-      final response = await dioClient.dio.get(viewStoreUrl);
-
-      if (response.statusCode == 200) {
-        logger.i(response.data);
-
-        final stores = response.data['data'];
-        if (stores is List) {
-          final storeList = stores
-              .where((store) => store['store_name'] != 'Walking Customer')
-              .toList();
-
-          final newMap = <String, int>{};
-          for (var store in storeList) {
-            final name = store['store_name'] ?? 'Unnamed Store';
-            final id = store['id'] as int;
-            newMap[name] = id;
-          }
-
-          storeMap.assignAll(newMap);
-
-          if (newMap.isNotEmpty) {
-            selectedStore.value = newMap.keys.first;
-            selectedStoreId.value = newMap.values.first;
-          }
-
-          logger.i('Loaded stores: ${newMap.keys.toList()}');
-        } else {
-          logger.w('Unexpected stores format: ${response.data}');
-        }
-      } else {
-        logger.w('Failed to load stores: ${response.data}');
+      if (stores.isNotEmpty) {
+        storeMap.assignAll(stores);
+        selectedStore.value = stores.keys.first;
+        selectedStoreId.value = stores.values.first;
       }
-    } catch (e, stackTrace) {
-      logger.e('Error loading stores: $e', e, stackTrace);
+    } catch (e, stack) {
+      logger.e("Error in loadStores: $e", e, stack);
     } finally {
       isLoadingStores.value = false;
     }
   }
-
   Future<void> loadStoreUsers() async {
     try {
       isLoadingStores.value = true;
