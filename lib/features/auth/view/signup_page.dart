@@ -3,9 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
-import 'package:greenbiller/features/auth/valid/email_validator.dart';
-import 'package:greenbiller/features/auth/valid/name_validator.dart';
-import 'package:greenbiller/features/auth/valid/password_validator.dart';
+import 'package:greenbiller/features/auth/validator/validator.dart';
+
 import 'package:greenbiller/features/auth/view/login_page.dart';
 
 class SignUpPage extends StatefulWidget {

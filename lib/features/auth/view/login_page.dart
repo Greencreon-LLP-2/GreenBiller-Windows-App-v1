@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:flutter/services.dart';
-import 'package:greenbiller/features/auth/valid/password_validator.dart';
+
 
 // Text styles similar to reference code
 class AppTextStyles {
