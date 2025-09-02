@@ -9,125 +9,196 @@ class AdminSidebar extends StatelessWidget {
 
   AdminSidebar({super.key});
 
+  Widget _buildNavTile({
+    required String title,
+    required IconData icon,
+    required String route,
+    required String currentRoute,
+    required VoidCallback onTap,
+    Color? color,
+    double indent = 0,
+  }) {
+    final isSelected = currentRoute == route;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        margin: EdgeInsets.only(left: indent + 8, right: 8, top: 4, bottom: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.green.shade50 : null,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(icon,
+                size: 20,
+                color: isSelected ? Colors.green : (color ?? Colors.grey[700])),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? Colors.green[800] : Colors.grey[800],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, top: 16, bottom: 8),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.grey[600],
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<AuthController>();
     final currentRoute = Get.currentRoute;
 
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(color: Colors.green),
-            child: Obx(
-              () => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    controller.user.value?.username ?? 'User',
+      child: SafeArea(
+        child: Column(
+          children: [
+            // --- HEADER ---
+            Obx(
+              () => UserAccountsDrawerHeader(
+                decoration: const BoxDecoration(color: Colors.green),
+                accountName: Text(
+                  controller.user.value?.username ?? 'User',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                accountEmail: Text(controller.user.value?.email ?? 'N/A'),
+                currentAccountPicture: CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Text(
+                    (controller.user.value?.username ?? 'U')
+                        .substring(0, 1)
+                        .toUpperCase(),
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 22,
+                      color: Colors.green,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    controller.user.value?.email ?? 'N/A',
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+              ),
+            ),
+
+            // --- NAVIGATION ---
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildSectionHeader("Dashboard"),
+                  _buildNavTile(
+                    title: "Overview",
+                    icon: Icons.dashboard_outlined,
+                    route: AppRoutes.overview,
+                    currentRoute: currentRoute,
+                    onTap: () => Get.toNamed(AppRoutes.overview),
+                  ),
+                  _buildNavTile(
+                    title: "Reports",
+                    icon: Icons.bar_chart_outlined,
+                    route: AppRoutes.reports,
+                    currentRoute: currentRoute,
+                    onTap: () => Get.toNamed(AppRoutes.reports),
+                  ),
+
+                  _buildSectionHeader("Profile"),
+                  _buildNavTile(
+                    title: "My Profile",
+                    icon: Icons.person_outline,
+                    route: AppRoutes.profile,
+                    currentRoute: currentRoute,
+                    onTap: () => Get.toNamed(AppRoutes.profile),
+                  ),
+
+                  _buildSectionHeader("Settings"),
+                  ExpansionTile(
+                    leading: const Icon(Icons.settings_outlined,
+                        color: Colors.grey),
+                    title: const Text(
+                      "Account Settings",
+                      style: TextStyle(fontSize: 15),
+                    ),
+                    childrenPadding: const EdgeInsets.only(left: 16),
+                    initiallyExpanded: currentRoute == AppRoutes.accountSettings ||
+                        currentRoute == AppRoutes.businessProfile ||
+                        currentRoute == AppRoutes.invoiceSettings ||
+                        currentRoute == AppRoutes.usersSettings,
+                    children: [
+                      _buildNavTile(
+                        title: "General",
+                        icon: Icons.tune_outlined,
+                        route: AppRoutes.accountSettings,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.accountSettings),
+                        indent: 16,
+                      ),
+                      _buildNavTile(
+                        title: "Business Profile",
+                        icon: Icons.store_outlined,
+                        route: AppRoutes.businessProfile,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.businessProfile),
+                        indent: 16,
+                      ),
+                      _buildNavTile(
+                        title: "Invoice Settings",
+                        icon: Icons.receipt_long_outlined,
+                        route: AppRoutes.invoiceSettings,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.invoiceSettings),
+                        indent: 16,
+                      ),
+                      _buildNavTile(
+                        title: "User Management",
+                        icon: Icons.group_outlined,
+                        route: AppRoutes.usersSettings,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.usersSettings),
+                        indent: 16,
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-          ),
-          ExpansionTile(
-            leading: const Icon(Icons.dashboard),
-            title: const Text('Dashboard'),
-            initiallyExpanded:
-                currentRoute == AppRoutes.adminDashboard ||
-                currentRoute == AppRoutes.overview ||
-                currentRoute == AppRoutes.reports,
-            children: [
-              ListTile(
-                title: const Text('Overview'),
-                selected: currentRoute == AppRoutes.overview,
-                onTap: () {
-                  logger.i('Navigating to overview');
-                  Get.toNamed(AppRoutes.overview);
-                },
-              ),
-              ListTile(
-                title: const Text('Reports'),
-                selected: currentRoute == AppRoutes.reports,
-                onTap: () {
-                  logger.i('Navigating to reports');
-                  Get.toNamed(AppRoutes.reports);
-                },
-              ),
-            ],
-          ),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Profile'),
-            selected: currentRoute == AppRoutes.profile,
-            onTap: () {
-              logger.i('Navigating to profile');
-              Get.toNamed(AppRoutes.profile);
-            },
-          ),
-          ExpansionTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            initiallyExpanded:
-                currentRoute == AppRoutes.settings ||
-                currentRoute == AppRoutes.accountSettings ||
-                currentRoute == AppRoutes.notificationSettings,
-            children: [
-              ListTile(
-                title: const Text('Account Settings'),
-                selected: currentRoute == AppRoutes.accountSettings,
-                onTap: () {
-                  logger.i('Navigating to account settings');
-                  Get.toNamed(AppRoutes.accountSettings);
-                },
-              ),
-              ListTile(
-                title: const Text('Bussiness Profile Settings'),
-                selected: currentRoute == AppRoutes.accountSettings,
-                onTap: () {
-                  logger.i('Navigating to Bussiness settings');
-                  Get.toNamed(AppRoutes.businessProfile);
-                },
-              ),
-              ListTile(
-                title: const Text('Invoice Settings'),
-                selected: currentRoute == AppRoutes.invoiceSettings,
-                onTap: () {
-                  logger.i('Navigating to Invoice settings');
-                  Get.toNamed(AppRoutes.invoiceSettings);
-                },
-              ),
 
-              ListTile(
-                title: const Text('Users Settings'),
-                selected: currentRoute == AppRoutes.usersSettings,
-                onTap: () {
-                  logger.i('Navigating to Users settings');
-                  Get.toNamed(AppRoutes.usersSettings);
+            // --- LOGOUT AT BOTTOM ---
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: _buildNavTile(
+                title: "Logout",
+                icon: Icons.logout,
+                route: "",
+                currentRoute: "",
+                color: Colors.red,
+                onTap: () async {
+                  logger.i('Initiating logout');
+                  await controller.logout();
                 },
               ),
-            ],
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
-            onTap: () async {
-              logger.i('Initiating logout');
-              await controller.logout();
-            },
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
