@@ -306,11 +306,11 @@ class BusinessProfileController extends GetxController {
 
     try {
       final response = await dioClient.dio.post(
-        updatePasswordUrl,
+        passwordResetUrl,
         data: {
           'current_password': currentPassword.value.trim(),
-          'new_password': newPassword.value.trim(),
-          'new_password_confirmation': confirmPassword.value.trim(),
+          'password': newPassword.value.trim(),
+          'password_confirmation': confirmPassword.value.trim(),
         },
       );
       if (response.statusCode == 200) {
