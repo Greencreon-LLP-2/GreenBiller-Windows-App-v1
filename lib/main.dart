@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/push_notification_service.dart';
 import 'package:greenbiller/core/app_handler/hive_service.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
@@ -13,6 +12,9 @@ import 'package:greenbiller/features/auth/view/maintenance.dart';
 import 'package:greenbiller/features/auth/view/notification_page.dart';
 import 'package:greenbiller/features/auth/view/otp_verify_page.dart';
 import 'package:greenbiller/features/auth/view/signup_page.dart';
+import 'package:greenbiller/features/parties/controller/parties_controller.dart';
+import 'package:greenbiller/features/parties/controller/store_drtopdown_controller.dart';
+import 'package:greenbiller/features/parties/view/parties_page.dart';
 import 'package:greenbiller/features/purchase/controller/new_purchase_controller.dart';
 import 'package:greenbiller/features/purchase/view/new_purchase_page.dart';
 import 'package:greenbiller/features/settings/controller/bussiness_profile_controller.dart';
@@ -77,7 +79,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'GreenBiller',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.newPurchase,
+      initialRoute: AppRoutes.parties,
       getPages: [
         GetPage(name: AppRoutes.login, page: () => const LoginPage()),
         GetPage(name: AppRoutes.otpVerify, page: () => const OtpVerifyPage()),
@@ -122,17 +124,20 @@ class MyApp extends StatelessWidget {
           page: () => InvoiceSettingsPage(),
         ),
         GetPage(name: AppRoutes.newPurchase, page: () => NewPurchasePage()),
+        GetPage(name: AppRoutes.parties, page: () => PartiesPage()),
       ],
       builder: (context, child) {
         Get.put(AuthController());
         Get.put(CommonApiFunctionsController());
         Get.put(NewPurchaseController());
+        Get.put(StoreDropdownController());
         Get.lazyPut(() => UserCreationController());
         Get.lazyPut(() => UserCreationController());
         Get.lazyPut(() => AccountController());
         Get.lazyPut(() => BusinessProfileController());
         Get.lazyPut(() => InvoiceSettingsController());
-
+        Get.lazyPut(() => PartiesController());
+        
         return child!;
       },
     );

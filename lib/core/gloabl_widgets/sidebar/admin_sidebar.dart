@@ -32,9 +32,11 @@ class AdminSidebar extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon,
-                size: 20,
-                color: isSelected ? Colors.green : (color ?? Colors.grey[700])),
+            Icon(
+              icon,
+              size: 20,
+              color: isSelected ? Colors.green : (color ?? Colors.grey[700]),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -105,7 +107,7 @@ class AdminSidebar extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
-                  _buildSectionHeader("Dashboard"),
+                  _buildSectionHeader("Quick Actions"),
                   _buildNavTile(
                     title: "Overview",
                     icon: Icons.dashboard_outlined,
@@ -121,25 +123,28 @@ class AdminSidebar extends StatelessWidget {
                     onTap: () => Get.toNamed(AppRoutes.newPurchase),
                   ),
 
-                  _buildSectionHeader("Profile"),
+                  _buildSectionHeader("Dashboard"),
                   _buildNavTile(
-                    title: "My Profile",
+                    title: "Parties",
                     icon: Icons.person_outline,
-                    route: AppRoutes.profile,
+                    route: AppRoutes.parties,
                     currentRoute: currentRoute,
-                    onTap: () => Get.toNamed(AppRoutes.profile),
+                    onTap: () => Get.toNamed(AppRoutes.parties),
                   ),
 
                   _buildSectionHeader("Settings"),
                   ExpansionTile(
-                    leading: const Icon(Icons.settings_outlined,
-                        color: Colors.grey),
+                    leading: const Icon(
+                      Icons.settings_outlined,
+                      color: Colors.grey,
+                    ),
                     title: const Text(
                       "Account Settings",
                       style: TextStyle(fontSize: 15),
                     ),
                     childrenPadding: const EdgeInsets.only(left: 16),
-                    initiallyExpanded: currentRoute == AppRoutes.accountSettings ||
+                    initiallyExpanded:
+                        currentRoute == AppRoutes.accountSettings ||
                         currentRoute == AppRoutes.businessProfile ||
                         currentRoute == AppRoutes.invoiceSettings ||
                         currentRoute == AppRoutes.usersSettings,
