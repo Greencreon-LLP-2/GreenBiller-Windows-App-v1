@@ -77,7 +77,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'GreenBiller',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.login,
+      initialRoute: AppRoutes.newPurchase,
       getPages: [
         GetPage(name: AppRoutes.login, page: () => const LoginPage()),
         GetPage(name: AppRoutes.otpVerify, page: () => const OtpVerifyPage()),
@@ -125,14 +125,14 @@ class MyApp extends StatelessWidget {
       ],
       builder: (context, child) {
         Get.put(AuthController());
-       
-        Get.lazyPut(() => CommonApiFunctionsController());
+        Get.put(CommonApiFunctionsController());
+        Get.put(NewPurchaseController());
         Get.lazyPut(() => UserCreationController());
         Get.lazyPut(() => UserCreationController());
         Get.lazyPut(() => AccountController());
         Get.lazyPut(() => BusinessProfileController());
         Get.lazyPut(() => InvoiceSettingsController());
-        Get.lazyPut(() => NewPurchaseController());
+
         return child!;
       },
     );

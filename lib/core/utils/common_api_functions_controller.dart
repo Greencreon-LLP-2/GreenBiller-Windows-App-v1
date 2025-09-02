@@ -20,20 +20,13 @@ class CommonApiFunctionsController extends GetxController {
         final stores = response.data['data'];
 
         if (stores is List) {
-          final storeList = excludeWalkingCustomer
-              ? stores
-                    .where((store) => store['store_name'] != 'Walking Customer')
-                    .toList()
-              : stores;
-
           final mappedStores = <String, int>{};
-          for (var store in storeList) {
+          for (var store in stores) {
             final name = store['store_name'] ?? 'Unnamed Store';
             final id = store['id'] as int;
             mappedStores[name] = id;
           }
 
-          logger.i("Fetched stores: ${mappedStores.keys.toList()}");
           return mappedStores;
         } else {
           logger.w("Unexpected store response format: ${response.data}");
@@ -46,6 +39,80 @@ class CommonApiFunctionsController extends GetxController {
     } catch (e, stack) {
       logger.e("Error fetching stores: $e", e, stack);
       return {};
+    }
+  }
+
+  Future<List<dynamic>> fetchStoreList() async {
+    try {
+      final response = await dioClient.dio.get(viewStoreUrl);
+      if (response.statusCode == 200) {
+        return response.data['data'] as List; // Safe cast
+      } else {
+        throw response; // Re-throwing non-200 response
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to fetch stores: $e');
+      throw e; // Re-throwing error for caller to handle
+    }
+  }
+
+  Future<List<dynamic>> fetchWarehouses() async {
+    try {
+      final response = await dioClient.dio.get(viewStoreUrl);
+      if (response.statusCode == 200) {
+        return response.data['data'] as List; // Safe cast
+      } else {
+        throw response; // Re-throwing non-200 response
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to fetch stores: $e');
+      throw e; // Re-throwing error for caller to handle
+    }
+  }
+
+  Future<List<dynamic>> fetchWarehousesByStoreID(String storeId) async {
+    try {
+      final response = await dioClient.dio.get("$viewWarehouseUrl/$storeId");
+      if (response.statusCode == 200) {
+        return response.data['data'] as List; // Safe cast
+      } else {
+        throw response; // Re-throwing non-200 response
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to fetch stores: $e');
+      throw e; // Re-throwing error for caller to handle
+    }
+  }
+
+  Future<List<dynamic>> fetchSuppliers(String? storeId) async {
+    try {
+      String url = storeId != null
+          ? "$viewSupplierUrl/$storeId"
+          : viewSupplierUrl;
+      final response = await dioClient.dio.get(url);
+      if (response.statusCode == 200) {
+        return response.data['data'] as List; // Safe cast
+      } else {
+        throw response; // Re-throwing non-200 response
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to fetch stores: $e');
+      throw e; // Re-throwing error for caller to handle
+    }
+  }
+
+  Future<List<dynamic>> fetchAllItems(String? storeId) async {
+    try {
+      final url = storeId != null ? "$viewAllItemUrl/$storeId" : viewAllItemUrl;
+      final response = await dioClient.dio.get(url);
+      if (response.statusCode == 200) {
+        return response.data['data'] as List; // Safe cast
+      } else {
+        throw response; // Re-throwing non-200 response
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to fetch stores: $e');
+      throw e; // Re-throwing error for caller to handle
     }
   }
 }

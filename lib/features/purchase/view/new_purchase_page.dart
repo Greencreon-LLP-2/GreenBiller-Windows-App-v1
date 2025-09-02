@@ -2,618 +2,138 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/features/purchase/controller/new_purchase_controller.dart';
 
-class NewPurchasePage extends StatelessWidget {
+class NewPurchasePage extends GetView<NewPurchaseController> {
   const NewPurchasePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(NewPurchaseController());
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("New Purchase"),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: controller.savePurchase,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.green, Colors.green.withOpacity(0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.green.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.clear),
-            onPressed: controller.clearForm, // Removed the () here
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: const Text(
+              'New Purchase',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.save, color: Colors.white),
+                onPressed: controller.savePurchase,
+              ),
+              IconButton(
+                icon: const Icon(Icons.clear, color: Colors.white),
+                onPressed: controller.clearForm,
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          children: [
-            /// Purchase Info Card
-            Card(
-              elevation: 6,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Colors.green[100]!, width: 1),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    // Header with green icon
-                    Container(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Colors.green[100]!,
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.green[50],
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.green[300]!,
-                                width: 1,
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.inventory_2,
-                              color: Colors.green[700]!,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            "Purchase Information",
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green[800],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // First row of fields
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildLabeledField(
-                            "Store",
-                            controller.storeController,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildLabeledField(
-                            "Warehouse",
-                            controller.warehouseController,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildLabeledFieldWithButton(
-                            "Bill Number",
-                            controller.billNumberController,
-                            onPressed: controller.generateBillNumber,
-                            buttonText: "Generate",
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Second row of fields
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildLabeledField(
-                            "Supplier",
-                            controller.supplierController,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildLabeledFieldWithButton(
-                            "Bill Date",
-                            controller.billDateController,
-                            onPressed: () async {
-                              DateTime? date = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime.now().subtract(
-                                  const Duration(days: 365),
-                                ),
-                                lastDate: DateTime.now().add(
-                                  const Duration(days: 365),
-                                ),
-                              );
-                              if (date != null) {
-                                controller.setBillDate(date);
-                              }
-                            },
-                            buttonText: "Pick Date",
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+      body: Container(
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green.withOpacity(0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
-
-            const SizedBox(height: 16),
-
-            /// Purchase Items Table
-            Card(
-              elevation: 6,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              WidgetSpan(
-                                child: Icon(
-                                  Icons.shopping_cart,
-                                  color: Colors.green[800],
-                                  size: 18,
-                                ),
-                              ),
-                              TextSpan(
-                                text: " Purchase Items",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green[800],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: controller.addItem,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[700],
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          icon: const Icon(Icons.add, size: 18),
-                          label: const Text("Add Item"),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Scrollable Table
-                    Obx(() {
-                      return Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: SizedBox(
-                            height: 400,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.vertical,
-                                child: DataTable(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[50],
-                                  ),
-                                  columnSpacing: 20,
-                                  headingRowHeight: 50,
-                                  dataRowHeight: 60,
-                                  headingTextStyle: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                  columns: const [
-                                    DataColumn(
-                                      label: Center(child: Text("Sl No")),
-                                    ),
-                                    DataColumn(
-                                      label: Center(child: Text("Item")),
-                                    ),
-                                    DataColumn(
-                                      label: Center(child: Text("Serial No")),
-                                    ),
-                                    DataColumn(
-                                      label: Center(child: Text("Qty")),
-                                    ),
-                                    DataColumn(
-                                      label: Center(child: Text("Unit")),
-                                    ),
-                                    DataColumn(
-                                      label: Center(child: Text("Price/Unit")),
-                                    ),
-                                    DataColumn(
-                                      label: Center(
-                                        child: Text("Purchase Price"),
-                                      ),
-                                    ),
-                                    DataColumn(
-                                      label: Center(child: Text("SKU")),
-                                    ),
-                                    DataColumn(
-                                      label: Center(child: Text("Discount %")),
-                                    ),
-                                    DataColumn(
-                                      label: Center(
-                                        child: Text("Discount Amt"),
-                                      ),
-                                    ),
-                                    DataColumn(
-                                      label: Center(child: Text("Tax %")),
-                                    ),
-                                    DataColumn(
-                                      label: Center(child: Text("Tax Amt")),
-                                    ),
-                                    DataColumn(
-                                      label: Center(child: Text("Total")),
-                                    ),
-                                    DataColumn(
-                                      label: Center(child: Text("Actions")),
-                                    ),
-                                  ],
-                                  rows: List.generate(
-                                    controller.items.length < 5
-                                        ? 5
-                                        : controller.items.length,
-                                    (index) {
-                                      // Use empty item if index is beyond controller items
-                                      final item =
-                                          index < controller.items.length
-                                          ? controller.items[index]
-                                          : PurchaseItem();
-
-                                      return DataRow(
-                                        color:
-                                            MaterialStateProperty.resolveWith<
-                                              Color?
-                                            >(
-                                              (states) => index.isEven
-                                                  ? Colors.green[50]
-                                                  : null,
-                                            ),
-                                        cells: [
-                                          DataCell(
-                                            Center(child: Text("${index + 1}")),
-                                          ),
-                                          DataCell(_buildTextField(item.item)),
-                                          DataCell(
-                                            _buildTextField(item.serialNo),
-                                          ),
-                                          DataCell(_buildTextField(item.qty)),
-                                          DataCell(_buildTextField(item.unit)),
-                                          DataCell(
-                                            _buildTextField(item.pricePerUnit),
-                                          ),
-                                          DataCell(
-                                            _buildTextField(item.purchasePrice),
-                                          ),
-                                          DataCell(_buildTextField(item.sku)),
-                                          DataCell(
-                                            _buildTextField(
-                                              item.discountPercent,
-                                            ),
-                                          ),
-                                          DataCell(
-                                            _buildTextField(
-                                              item.discountAmount,
-                                            ),
-                                          ),
-                                          DataCell(
-                                            _buildTextField(item.taxPercent),
-                                          ),
-                                          DataCell(
-                                            _buildTextField(item.taxAmount),
-                                          ),
-                                          DataCell(
-                                            _buildTextField(item.totalAmount),
-                                          ),
-                                          DataCell(
-                                            Center(
-                                              child:
-                                                  index <
-                                                      controller.items.length
-                                                  ? IconButton(
-                                                      icon: const Icon(
-                                                        Icons.delete,
-                                                        color: Colors.red,
-                                                      ),
-                                                      onPressed: () =>
-                                                          controller.removeItem(
-                                                            index,
-                                                          ),
-                                                    )
-                                                  : const SizedBox(), // Empty space for empty rows
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            /// Purchase Details and Summary Row
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Purchase Details Card
-                Expanded(
-                  flex: 2,
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.green, width: 1.2),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Purchase Details & Summary",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.green[800],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            "Payment Type",
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(height: 5),
-                          Obx(
-                            () => DropdownButtonFormField<String>(
-                              value: controller.paymentType.value.isEmpty
-                                  ? null
-                                  : controller.paymentType.value,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Colors.green,
-                                  ),
-                                ),
-                                filled: true,
-                                fillColor: Colors.green.shade50,
-                              ),
-                              items: ["Cash", "Card", "UPI", "Credit"]
-                                  .map(
-                                    (type) => DropdownMenuItem(
-                                      value: type,
-                                      child: Text(type),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (val) {
-                                controller.paymentType.value = val ?? "";
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            "Purchase Note",
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(height: 5),
-                          TextField(
-                            controller: controller.noteController,
-                            maxLines: 4,
-                            decoration: InputDecoration(
-                              hintText: "Add purchase note...",
-                              border: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: Colors.green,
-                                ),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              filled: true,
-                              fillColor: Colors.green.shade50,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                // Purchase Summary Card
-                Expanded(
-                  flex: 1,
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.green, width: 1.2),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Obx(
-                        () => Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Purchase Summary",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Colors.green[800],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            _summaryRow("Subtotal", controller.subtotal.value),
-                            const SizedBox(height: 8),
-                            _summaryRow(
-                              "Total Discount",
-                              controller.totalDiscount.value,
-                              textColor: Colors.red,
-                            ),
-                            const SizedBox(height: 8),
-                            _summaryRow("Total Tax", controller.totalTax.value),
-                            const SizedBox(height: 10),
-                            TextField(
-                              controller: controller.otherChargesController,
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                labelText: "Other Charges",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Colors.green,
-                                  ),
-                                ),
-                                prefixIcon: Icon(
-                                  Icons.add,
-                                  color: Colors.green[700],
-                                ),
-                                filled: true,
-                                fillColor: Colors.green.shade50,
-                              ),
-                            ),
-                            const Divider(),
-                            _summaryRow(
-                              "Grand Total",
-                              controller.grandTotal.value,
-                              isBold: true,
-                            ),
-                            const SizedBox(height: 10),
-                            TextField(
-                              controller: controller.paidAmountController,
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                labelText: "Paid Amount",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  borderSide: const BorderSide(
-                                    color: Colors.green,
-                                  ),
-                                ),
-                                prefixIcon: Icon(
-                                  Icons.currency_rupee,
-                                  color: Colors.green[700],
-                                ),
-                                filled: true,
-                                fillColor: Colors.green.shade50,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: controller.balanceAmount.value <= 0
-                                    ? Colors.green.shade100
-                                    : Colors.orange.shade100,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            controller.balanceAmount.value <= 0
-                                                ? Icons.check_circle
-                                                : Icons.pending,
-                                            color:
-                                                controller
-                                                        .balanceAmount
-                                                        .value <=
-                                                    0
-                                                ? Colors.green
-                                                : Colors.orange,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            controller.balanceAmount.value <= 0
-                                                ? "Fully Paid"
-                                                : "Pending",
-                                            style: TextStyle(
-                                              color:
-                                                  controller
-                                                          .balanceAmount
-                                                          .value <=
-                                                      0
-                                                  ? Colors.green
-                                                  : Colors.orange,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Text(
-                                        "₹${controller.balanceAmount.value.toStringAsFixed(2)}",
-                                        style: TextStyle(
-                                          color:
-                                              controller.balanceAmount.value <=
-                                                  0
-                                              ? Colors.green
-                                              : Colors.orange,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 80), // Space for bottom navigation
           ],
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Purchase Information Card
+              _buildPurchaseInfoCard(context, controller),
+              const SizedBox(height: 16),
+              // Purchase Items Table
+              Card(
+                elevation: 6,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                WidgetSpan(
+                                  child: Icon(
+                                    Icons.shopping_cart,
+                                    color: Colors.green.shade800,
+                                    size: 18,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: " Purchase Items",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green.shade800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: controller.addItem,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green.shade700,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            icon: const Icon(Icons.add, size: 18),
+                            label: const Text("Add Item"),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _buildItemsTable(context),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Purchase Details and Summary
+              _buildDetailsAndSummary(context, controller),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Container(
@@ -626,7 +146,7 @@ class NewPurchasePage extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: controller.clearForm,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[600],
+                  backgroundColor: Colors.grey.shade600,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   textStyle: const TextStyle(fontSize: 14),
@@ -640,7 +160,7 @@ class NewPurchasePage extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: controller.savePurchase,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green[700],
+                  backgroundColor: Colors.green.shade700,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   textStyle: const TextStyle(fontSize: 14),
@@ -654,112 +174,843 @@ class NewPurchasePage extends StatelessWidget {
     );
   }
 
-  /// ----- Helper Methods -----
-  static Widget _buildLabeledField(
-    String label,
-    TextEditingController controller,
+  Widget _buildPurchaseInfoCard(
+    BuildContext context,
+    NewPurchaseController controller,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 4),
-        TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 10,
-            ),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-          ),
-        ),
-      ],
-    );
-  }
-
-  static Widget _buildLabeledFieldWithButton(
-    String label,
-    TextEditingController controller, {
-    required VoidCallback onPressed,
-    required String buttonText,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 10,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            SizedBox(
-              height: 42,
-              child: ElevatedButton(
-                onPressed: onPressed,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                ),
-                child: Text(buttonText, style: const TextStyle(fontSize: 12)),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  static Widget _buildTextField(TextEditingController controller) {
     return Container(
-      width: 120,
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 6,
-            vertical: 8,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)),
-        ),
+        ],
+        border: Border.all(color: Colors.green.withOpacity(0.2), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.shopping_cart, color: Colors.green.shade700, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                "Purchase Information",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green.shade700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Store"),
+                    const SizedBox(height: 6),
+                    Obx(
+                      () => controller.isLoadingStores.value
+                          ? _buildLoadingDropdown("Loading stores...")
+                          : _buildDropdown(
+                              items: controller.storeMap.keys.toList(),
+                              onChanged: controller.onStoreSelected,
+                              hint: "Select Store",
+                              icon: Icons.store,
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Warehouse"),
+                    const SizedBox(height: 6),
+                    Obx(
+                      () =>
+                          controller.isLoadingWarehouses.value ||
+                              controller.warehouseMap.isEmpty
+                          ? _buildLoadingDropdown(
+                              controller.warehouseMap.isEmpty
+                                  ? "Select store first"
+                                  : "Loading warehouses...",
+                            )
+                          : _buildDropdown(
+                              items: controller.warehouseMap.keys.toList(),
+                              onChanged: controller.onWarehouseSelected,
+                              hint: "Select Warehouse",
+                              icon: Icons.warehouse,
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Bill Number"),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: controller.billNumberController,
+                            style: const TextStyle(fontSize: 14),
+                            decoration: InputDecoration(
+                              hintText: "Enter bill no.",
+                              hintStyle: TextStyle(color: Colors.grey.shade500),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                              border: InputBorder.none,
+                              prefixIcon: Icon(
+                                Icons.receipt,
+                                color: Colors.green.shade600,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        SizedBox(
+                          height: 42,
+                          child: ElevatedButton(
+                            onPressed: controller.generateBillNumber,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                            ),
+                            child: const Text(
+                              "Generate",
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Suppliers"),
+                    const SizedBox(height: 6),
+                    Obx(
+                      () =>
+                          controller.isLoadingSuppliers.value ||
+                              controller.supplierMap.isEmpty
+                          ? _buildLoadingDropdown(
+                              controller.supplierMap.isEmpty
+                                  ? "Select store first"
+                                  : "Loading suppliers...",
+                            )
+                          : _buildDropdown(
+                              items: controller.supplierMap.keys.toList(),
+                              onChanged: controller.onSupplierSelected,
+                              hint: "Select Supplier",
+                              icon: Icons.person,
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(flex: 2, child: SizedBox()),
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Bill Date"),
+                    const SizedBox(height: 6),
+                    GestureDetector(
+                      onTap: () async {
+                        DateTime? date = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime.now().subtract(
+                            const Duration(days: 365),
+                          ),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 365),
+                          ),
+                        );
+                        if (date != null) {
+                          controller.setBillDate(date);
+                        }
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.green.shade300),
+                          color: Colors.green.shade50,
+                        ),
+                        child: TextField(
+                          controller: controller.billDateController,
+                          readOnly: true,
+                          style: const TextStyle(fontSize: 14),
+                          decoration: InputDecoration(
+                            hintText: "Select date",
+                            hintStyle: TextStyle(color: Colors.grey.shade500),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            border: InputBorder.none,
+                            prefixIcon: Icon(
+                              Icons.calendar_today,
+                              color: Colors.green.shade600,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _summaryRow(
+  Widget _buildItemsTable(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const columnCount = 13;
+        const itemFlex = 3;
+        const otherFlex = 1;
+        const totalFlex = itemFlex + (columnCount - 1) * otherFlex;
+        final baseColumnWidth = constraints.maxWidth / totalFlex;
+        final itemColumnWidth = baseColumnWidth * itemFlex;
+
+        return ConstrainedBox(
+          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Obx(() {
+              final items = controller.items; // RxList<PurchaseItem>
+              final rowCount = items.length < 1 ? 1 : items.length;
+
+              return Column(
+                children: [
+                  // --- HEADER ---
+                  Container(
+                    color: Colors.green.shade200,
+                    child: Row(
+                      children: [
+                        _buildHeaderCell("Sl No", baseColumnWidth * 0.5),
+                        _buildHeaderCell("Item", itemColumnWidth * 0.97),
+                        _buildHeaderCell("Serial No", baseColumnWidth * 0.55),
+                        _buildHeaderCell("Qty", baseColumnWidth * 0.5),
+                        _buildHeaderCell("Unit", baseColumnWidth),
+                        _buildHeaderCell("Price/Unit", baseColumnWidth),
+                        _buildHeaderCell("Purchase Price", baseColumnWidth),
+                        _buildHeaderCell("SKU", baseColumnWidth * 0.5),
+                        _buildHeaderCell("Discount", baseColumnWidth),
+                        _buildHeaderCell("Tax", baseColumnWidth),
+                        _buildHeaderCell("Tax Amt", baseColumnWidth),
+                        _buildHeaderCell("Total", baseColumnWidth),
+                        _buildHeaderCell("Actions", baseColumnWidth),
+                      ],
+                    ),
+                  ),
+
+                  // --- ROWS ---
+                  ...List.generate(rowCount, (index) {
+                    final item = index < items.length
+                        ? items[index]
+                        : PurchaseItem();
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          bottom: BorderSide(color: Colors.green.shade100),
+                          left: BorderSide(color: Colors.green.shade100),
+                          right: BorderSide(color: Colors.green.shade100),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          _buildDataCell(
+                            Text("${index + 1}"),
+                            baseColumnWidth * 0.5,
+                          ),
+
+                          // --- ITEM AUTOCOMPLETE ---
+                          _buildDataCell(
+                            controller.isLoadingItems.value
+                                ? const Text("Loading...")
+                                : Autocomplete<Map<String, dynamic>>(
+                                    optionsBuilder:
+                                        (TextEditingValue textEditingValue) {
+                                          if (textEditingValue.text.isEmpty) {
+                                            return const Iterable<
+                                              Map<String, dynamic>
+                                            >.empty();
+                                          }
+                                          final query = textEditingValue.text
+                                              .toLowerCase();
+                                          return controller.itemsList.where(
+                                            (i) =>
+                                                i['item_name']
+                                                    .toLowerCase()
+                                                    .contains(query) ||
+                                                (i['barcode'] ?? '')
+                                                    .toLowerCase()
+                                                    .contains(query),
+                                          );
+                                        },
+                                    displayStringForOption: (item) =>
+                                        item['item_name'],
+                                    onSelected: (selected) => controller
+                                        .onItemSelected(index, selected),
+                                    fieldViewBuilder:
+                                        (
+                                          context,
+                                          textEditingController,
+                                          focusNode,
+                                          onFieldSubmitted,
+                                        ) {
+                                          if (index < items.length) {
+                                            textEditingController.text =
+                                                items[index].item.text;
+                                          }
+                                          return TextField(
+                                            controller: textEditingController,
+                                            focusNode: focusNode,
+                                            onSubmitted: (_) =>
+                                                onFieldSubmitted(),
+                                            decoration: const InputDecoration(
+                                              isDense: true,
+                                              border: InputBorder.none,
+                                            ),
+                                          );
+                                        },
+                                  ),
+                            itemColumnWidth * 0.97,
+                          ),
+
+                          // --- OTHER COLUMNS ---
+                          _buildDataCell(
+                            _buildTextField(item.serialNo),
+                            baseColumnWidth * 0.55,
+                          ),
+                          _buildDataCell(
+                            _buildTextField(
+                              item.qty,
+                              keyboardType: TextInputType.number,
+                            ),
+                            baseColumnWidth * 0.5,
+                          ),
+                          _buildDataCell(
+                            _buildTextField(item.unit),
+                            baseColumnWidth,
+                          ),
+                          _buildDataCell(
+                            _buildTextField(
+                              item.pricePerUnit,
+                              keyboardType: TextInputType.number,
+                            ),
+                            baseColumnWidth,
+                          ),
+                          _buildDataCell(
+                            _buildTextField(item.purchasePrice, readOnly: true),
+                            baseColumnWidth,
+                          ),
+                          _buildDataCell(
+                            _buildTextField(item.sku),
+                            baseColumnWidth * 0.5,
+                          ),
+
+                          // --- DISCOUNT ---
+                          _buildDataCell(
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    item.discountPercent,
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _buildTextField(
+                                    item.discountAmount,
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            baseColumnWidth,
+                          ),
+
+                          // --- TAX DROPDOWN ---
+                          _buildDataCell(
+                            controller.isLoadingTaxes.value
+                                ? const Text("Loading...")
+                                : DropdownButtonFormField<String>(
+                                    value: item.taxName,
+                                    isExpanded: true,
+                                    decoration: const InputDecoration(
+                                      isDense: true,
+                                      border: InputBorder.none,
+                                    ),
+                                    items: controller.taxList.map((tax) {
+                                      return DropdownMenuItem<String>(
+                                        value: tax['tax_name'],
+                                        child: Text(tax['tax_name'] ?? ''),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) {
+                                      final selectedTax = controller.taxList
+                                          .firstWhere(
+                                            (t) => t['tax_name'] == value,
+                                            orElse: () => {
+                                              'tax_name': '',
+                                              'tax_rate': '0',
+                                            },
+                                          );
+                                      controller.onTaxSelected(
+                                        index,
+                                        selectedTax,
+                                      );
+                                    },
+                                  ),
+                            baseColumnWidth,
+                          ),
+
+                          _buildDataCell(
+                            _buildTextField(item.taxAmount, readOnly: true),
+                            baseColumnWidth,
+                          ),
+                          _buildDataCell(
+                            _buildTextField(item.totalAmount, readOnly: true),
+                            baseColumnWidth,
+                          ),
+
+                          // --- ACTION ---
+                          _buildDataCell(
+                            index < items.length
+                                ? IconButton(
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                    ),
+                                    onPressed: () =>
+                                        controller.removeItem(index),
+                                  )
+                                : const SizedBox(),
+                            baseColumnWidth,
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              );
+            }),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailsAndSummary(
+    BuildContext context,
+    NewPurchaseController controller,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.green.withOpacity(0.2), width: 1),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.shopping_cart,
+                      color: Colors.green.shade700,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "Purchase Details & Summary",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Payment Type",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Obx(
+                      () => DropdownButtonFormField<String>(
+                        value: controller.paymentType.value.isEmpty
+                            ? null
+                            : controller.paymentType.value,
+                        items: const [
+                          DropdownMenuItem(value: "Cash", child: Text('Cash')),
+                          DropdownMenuItem(value: "Upi", child: Text('UPI')),
+                          DropdownMenuItem(
+                            value: "Cheque",
+                            child: Text('Cheque'),
+                          ),
+                          DropdownMenuItem(
+                            value: "Bank Transfer",
+                            child: Text('Bank Transfer'),
+                          ),
+                        ],
+                        onChanged: (val) =>
+                            controller.paymentType.value = val ?? "",
+                        decoration: InputDecoration(
+                          hintText: "Select Payment Type",
+                          hintStyle: TextStyle(color: Colors.grey.shade500),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          border: InputBorder.none,
+                          prefixIcon: Icon(
+                            Icons.payment,
+                            color: Colors.green.shade600,
+                            size: 20,
+                          ),
+                        ),
+                        dropdownColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      "Note",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: controller.noteController,
+                      maxLines: 3,
+                      style: const TextStyle(fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: "Enter note",
+                        hintStyle: TextStyle(color: Colors.grey.shade500),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.green.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.green.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.green.shade700),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            flex: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSummaryRow("Subtotal", controller.subtotal, Colors.black),
+                const SizedBox(height: 10),
+                _buildSummaryRow(
+                  "Total Discount",
+                  controller.totalDiscount,
+                  Colors.red,
+                ),
+                const SizedBox(height: 10),
+                _buildSummaryRow(
+                  "Total Tax",
+                  controller.totalTax,
+                  Colors.black,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Other Charges",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          TextField(
+                            controller: controller.otherChargesController,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(fontSize: 14),
+                            decoration: InputDecoration(
+                              hintText: "Enter other charges",
+                              hintStyle: TextStyle(color: Colors.grey.shade500),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                              border: InputBorder.none,
+                              prefixIcon: Icon(
+                                Icons.attach_money,
+                                color: Colors.green.shade600,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _buildSummaryRow(
+                  "Grand Total",
+                  controller.grandTotal,
+                  Colors.green.shade700,
+                  fontWeight: FontWeight.bold,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Paid Amount",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          TextField(
+                            controller: controller.paidAmountController,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(fontSize: 14),
+                            decoration: InputDecoration(
+                              hintText: "Enter paid amount",
+                              hintStyle: TextStyle(color: Colors.grey.shade500),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                              border: InputBorder.none,
+                              prefixIcon: Icon(
+                                Icons.payment,
+                                color: Colors.green.shade600,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _buildSummaryRow(
+                  "Balance Amount",
+                  controller.balanceAmount,
+                  Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdown({
+    required List<String> items,
+    required void Function(String?) onChanged,
+    required String hint,
+    required IconData icon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green.shade300),
+        color: Colors.green.shade50,
+      ),
+      child: DropdownButtonFormField<String>(
+        value: null,
+        items: items.map((item) {
+          return DropdownMenuItem<String>(
+            value: item,
+            child: Text(item, style: const TextStyle(fontSize: 14)),
+          );
+        }).toList(),
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.grey.shade500),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          border: InputBorder.none,
+          prefixIcon: Icon(icon, color: Colors.green.shade600, size: 20),
+        ),
+        dropdownColor: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildLoadingDropdown(String text) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green.shade300),
+        color: Colors.green.shade50,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Text(
+        text,
+        style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+      ),
+    );
+  }
+
+  Widget _buildHeaderCell(String title, double width) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border(right: BorderSide(color: Colors.green.shade100)),
+      ),
+      child: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  Widget _buildDataCell(Widget child, double width) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      decoration: BoxDecoration(
+        border: Border(right: BorderSide(color: Colors.green.shade100)),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController textController, {
+    TextInputType? keyboardType,
+    bool readOnly = false,
+  }) {
+    return TextField(
+      controller: textController,
+      keyboardType: keyboardType,
+      readOnly: readOnly,
+      style: const TextStyle(fontSize: 14),
+      decoration: const InputDecoration(
+        isDense: true,
+        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        border: InputBorder.none,
+      ),
+      onChanged: (value) {
+        controller.calculateTotals();
+      },
+    );
+  }
+
+  Widget _buildSummaryRow(
     String label,
-    double value, {
-    Color? textColor,
-    bool isBold = false,
+    RxDouble value,
+    Color color, {
+    FontWeight fontWeight = FontWeight.w600,
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -767,15 +1018,19 @@ class NewPurchasePage extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
-            color: textColor,
+            fontSize: 14,
+            fontWeight: fontWeight,
+            color: Colors.grey.shade700,
           ),
         ),
-        Text(
-          "₹${value.toStringAsFixed(2)}",
-          style: TextStyle(
-            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            color: textColor,
+        Obx(
+          () => Text(
+            "₹ ${value.value.toStringAsFixed(2)}",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: fontWeight,
+              color: color,
+            ),
           ),
         ),
       ],

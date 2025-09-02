@@ -108,13 +108,23 @@ class HiveService {
       }
       try {
         _userBox = await Hive.openBox<UserModel>(_userBoxName);
-        _businessProfileBox = await Hive.openBox<BusinessProfile>(_businessProfileBoxName);
-        logger.i('Hive boxes opened successfully: $_userBoxName, $_businessProfileBoxName');
+        _businessProfileBox = await Hive.openBox<BusinessProfile>(
+          _businessProfileBoxName,
+        );
+        logger.i(
+          'Hive boxes opened successfully: $_userBoxName, $_businessProfileBoxName',
+        );
       } catch (e) {
         logger.w('Error opening boxes: $e');
         try {
-          _userBox = await Hive.openBox<UserModel>(_userBoxName, crashRecovery: false);
-          _businessProfileBox = await Hive.openBox<BusinessProfile>(_businessProfileBoxName, crashRecovery: false);
+          _userBox = await Hive.openBox<UserModel>(
+            _userBoxName,
+            crashRecovery: false,
+          );
+          _businessProfileBox = await Hive.openBox<BusinessProfile>(
+            _businessProfileBoxName,
+            crashRecovery: false,
+          );
           logger.i('Hive boxes opened with crashRecovery: false');
         } catch (e2) {
           logger.w('Failed with crashRecovery false: $e2');
@@ -122,7 +132,9 @@ class HiveService {
             await Hive.deleteBoxFromDisk(_userBoxName);
             await Hive.deleteBoxFromDisk(_businessProfileBoxName);
             _userBox = await Hive.openBox<UserModel>(_userBoxName);
-            _businessProfileBox = await Hive.openBox<BusinessProfile>(_businessProfileBoxName);
+            _businessProfileBox = await Hive.openBox<BusinessProfile>(
+              _businessProfileBoxName,
+            );
             logger.i('Hive boxes recreated after deletion');
           } catch (e3) {
             logger.w('Failed to recreate boxes: $e3');
@@ -134,10 +146,20 @@ class HiveService {
       _isInitialized = true;
       logger.i('Hive initialization completed successfully');
     } catch (e, stackTrace) {
-      logger.e('Hive initialization failed: $e',  e,  stackTrace);
+      logger.e('Hive initialization failed: $e', e, stackTrace);
       _isInitialized = false;
       _useMemoryFallback = true;
       logger.w('App will run with memory fallback storage');
+    }
+  }
+
+  Future<void> savePurchase(Map<String, dynamic> purchaseData) async {
+    try {
+      final box = await Hive.openBox<Map<String, dynamic>>('purchases');
+      await box.add(purchaseData);
+    } catch (e) {
+      print('Error saving purchase to Hive: $e');
+      rethrow;
     }
   }
 
@@ -155,7 +177,9 @@ class HiveService {
         return;
       }
       if (_useMemoryFallback) {
-        logger.w('Using memory fallback for user storage - data will not persist');
+        logger.w(
+          'Using memory fallback for user storage - data will not persist',
+        );
         logger.i('User data (not persisted): ${user.toJson()}');
         return;
       }
@@ -163,7 +187,7 @@ class HiveService {
       await _userBox!.put(_userKey, user);
       logger.i('User saved successfully');
     } catch (e, stackTrace) {
-      logger.e('Error saving user: $e',  e,  stackTrace);
+      logger.e('Error saving user: $e', e, stackTrace);
     }
   }
 
@@ -181,7 +205,7 @@ class HiveService {
       logger.i('Retrieved user from Hive: ${user?.toJson() ?? 'null'}');
       return user;
     } catch (e, stackTrace) {
-      logger.e('Error retrieving user: $e',  e,  stackTrace);
+      logger.e('Error retrieving user: $e', e, stackTrace);
       return null;
     }
   }
@@ -194,7 +218,9 @@ class HiveService {
         return;
       }
       if (_useMemoryFallback) {
-        logger.w('Using memory fallback for business profile - data will not persist');
+        logger.w(
+          'Using memory fallback for business profile - data will not persist',
+        );
         logger.i('Business profile data (not persisted): ${profile.toJson()}');
         return;
       }
@@ -202,7 +228,7 @@ class HiveService {
       await _businessProfileBox!.put(_businessProfileKey, profile);
       logger.i('Business profile saved successfully');
     } catch (e, stackTrace) {
-      logger.e('Error saving business profile: $e',  e,  stackTrace);
+      logger.e('Error saving business profile: $e', e, stackTrace);
     }
   }
 
@@ -213,14 +239,18 @@ class HiveService {
         return null;
       }
       if (_useMemoryFallback) {
-        logger.w('Using memory fallback - no persisted business profile available');
+        logger.w(
+          'Using memory fallback - no persisted business profile available',
+        );
         return null;
       }
       final profile = _businessProfileBox!.get(_businessProfileKey);
-      logger.i('Retrieved business profile from Hive: ${profile?.toJson() ?? 'null'}');
+      logger.i(
+        'Retrieved business profile from Hive: ${profile?.toJson() ?? 'null'}',
+      );
       return profile;
     } catch (e, stackTrace) {
-      logger.e('Error retrieving business profile: $e',  e,  stackTrace);
+      logger.e('Error retrieving business profile: $e', e, stackTrace);
       return null;
     }
   }
@@ -240,7 +270,7 @@ class HiveService {
       await _businessProfileBox!.delete(_businessProfileKey);
       logger.i('Business profile data cleared');
     } catch (e, stackTrace) {
-      logger.e('Error clearing business profile: $e',  e,  stackTrace);
+      logger.e('Error clearing business profile: $e', e, stackTrace);
     }
   }
 
@@ -259,7 +289,7 @@ class HiveService {
       await _userBox!.delete(_userKey);
       logger.i('User data cleared');
     } catch (e, stackTrace) {
-      logger.e('Error clearing user: $e',  e,  stackTrace);
+      logger.e('Error clearing user: $e', e, stackTrace);
     }
   }
 
