@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
+import 'package:greenbiller/features/auth/validator/validator.dart';
+
 import 'package:greenbiller/features/auth/view/login_page.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -114,7 +117,8 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
   final _referralController = TextEditingController();
   final ValueNotifier<bool> _passwordVisible = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _confirmPasswordVisible = ValueNotifier<bool>(false);
-
+  final _formKey = GlobalKey<FormState>();
+  
   @override
   void initState() {
     super.initState();
@@ -136,6 +140,13 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
   }
 
   void _signUp() {
+    
+    if (!_formKey.currentState!.validate()) {
+      Get.snackbar('Error', 'Please fix form errors',
+          backgroundColor: errorColor, colorText: Colors.white);
+      return;
+    }
+
     final authController = Get.find<AuthController>();
     if (_nameController.text.isEmpty ||
         _emailController.text.isEmpty ||
@@ -166,90 +177,107 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
   Widget build(BuildContext context) {
     final authController = Get.find<AuthController>();
 
-    return Column(
-      children: [
-        CustomTextField(
-          hintText: 'Enter your full name',
-          label: 'Full Name',
-          prefixIcon: Icons.person_outline,
-          controller: _nameController,
-        ),
-        const SizedBox(height: 16),
-        CustomTextField(
-          hintText: 'Enter your email',
-          label: 'Email',
-          prefixIcon: Icons.email_outlined,
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-        ),
-        const SizedBox(height: 16),
-        CustomTextField(
-          hintText: 'Phone Number',
-          label: 'Phone Number',
-          prefixIcon: Icons.phone_android,
-          controller: _phoneController,
-          keyboardType: TextInputType.phone,
-        
-        ),
-        const SizedBox(height: 16),
-        ValueListenableBuilder<bool>(
-          valueListenable: _passwordVisible,
-          builder: (context, isVisible, child) {
-            return CustomTextField(
-              hintText: 'Enter your password',
-              label: 'Password',
-              prefixIcon: Icons.lock_outline,
-              controller: _passwordController,
-              isPassword: true,
-              passwordVisible: isVisible,
-              onToggleVisibility: () {
-                _passwordVisible.value = !_passwordVisible.value;
-              },
-              obscureText: !isVisible,
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        ValueListenableBuilder<bool>(
-          valueListenable: _confirmPasswordVisible,
-          builder: (context, isVisible, child) {
-            return CustomTextField(
-              hintText: 'Confirm your password',
-              label: 'Confirm Password',
-              prefixIcon: Icons.lock_outline,
-              controller: _confirmPasswordController,
-              isPassword: true,
-              passwordVisible: isVisible,
-              onToggleVisibility: () {
-                _confirmPasswordVisible.value = !_confirmPasswordVisible.value;
-              },
-              obscureText: !isVisible,
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        CustomTextField(
-          hintText: 'Enter referral code (optional)',
-          label: 'Referral Code',
-          prefixIcon: Icons.card_giftcard,
-          controller: _referralController,
-        ),
-        const SizedBox(height: 24),
-        Obx(() => authController.isLoading.value
-            ? const Center(child: CircularProgressIndicator(color: accentColor))
-            : ActionButton(
-                text: 'Create Account',
-                onPressed: _signUp,
-              )),
-        const SizedBox(height: 16),
-        TextButton(
-          onPressed: () => Get.back(),
-          child: Text(
-            'Already have an account? Sign in',
-            style: AppTextStyles.labelMedium.copyWith(color: textSecondaryColor),
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          CustomTextField(
+            hintText: 'Enter your full name',
+            label: 'Full Name',
+            prefixIcon: Icons.person_outline,
+            controller: _nameController,
+           validator:NameValidator.validate ,
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+          CustomTextField(
+            hintText: 'Enter your email',
+            label: 'Email',
+            prefixIcon: Icons.email_outlined,
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            validator: EmailValidator.validate
+          ),
+          const SizedBox(height: 16),
+          CustomTextField(
+            hintText: 'Phone Number',
+            label: 'Phone Number',
+            prefixIcon: Icons.phone_android,
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            
+          ),
+          const SizedBox(height: 16),
+          ValueListenableBuilder<bool>(
+            valueListenable: _passwordVisible,
+            builder: (context, isVisible, child) {
+              return CustomTextField(
+                
+                hintText: 'Enter your password',
+                label: 'Password',
+                prefixIcon: Icons.lock_outline,
+                controller: _passwordController,
+                isPassword: true,
+                passwordVisible: isVisible,
+                onToggleVisibility: () {
+                  _passwordVisible.value = !_passwordVisible.value;
+                },
+                obscureText: !isVisible,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(30),
+                  FilteringTextInputFormatter.deny(RegExp(r'\s'))
+                ],
+                validator: PasswordValidator.validate,
+              );
+              
+            },
+          ),
+          const SizedBox(height: 16),
+          ValueListenableBuilder<bool>(
+            valueListenable: _confirmPasswordVisible,
+            builder: (context, isVisible, child) {
+              return CustomTextField(
+                hintText: 'Confirm your password',
+                label: 'Confirm Password',
+                prefixIcon: Icons.lock_outline,
+                controller: _confirmPasswordController,
+                isPassword: true,
+                passwordVisible: isVisible,
+                onToggleVisibility: () {
+                  _confirmPasswordVisible.value = !_confirmPasswordVisible.value;
+                },
+                obscureText: !isVisible,
+                 inputFormatters: [
+                  LengthLimitingTextInputFormatter(30),
+                  FilteringTextInputFormatter.deny(RegExp(r'\s'))
+                ],
+                validator: PasswordValidator.validate,
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          CustomTextField(
+            hintText: 'Enter referral code (optional)',
+            label: 'Referral Code',
+            prefixIcon: Icons.card_giftcard,
+            controller: _referralController,
+          ),
+          const SizedBox(height: 24),
+          Obx(() => authController.isLoading.value
+              ? const Center(child: CircularProgressIndicator(color: accentColor))
+              : ActionButton(
+                  text: 'Create Account',
+                  onPressed: _signUp,
+                )),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'Already have an account? Sign in',
+              style: AppTextStyles.labelMedium.copyWith(color: textSecondaryColor),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
