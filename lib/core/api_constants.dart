@@ -100,3 +100,9 @@ const String salesCustomerSummaryUrl = "$baseUrl/sales/report-view";
 const String salesSummaryUrl = "$baseUrl/reports/sales-report";
 const String purchaseItemSummaryUrl = "$baseUrl/purchaseitem/report-view";
 const String salesItemSummaryUrl = "$baseUrl/reports/sales-item-report";
+
+const String businessProfileCreateUrl = '$baseUrl/profile-create';
+const String businessProfileViewUrl = '$baseUrl/profile-view';
+const String businessProfileEditUrl = '$baseUrl/profile-update';
+
+const String updatePasswordUrl = '$baseUrl/update-password';

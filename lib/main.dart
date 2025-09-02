@@ -6,14 +6,23 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/push_notification_service.dart';
 import 'package:greenbiller/core/app_handler/hive_service.dart';
+import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/auth/view/login_page.dart';
 import 'package:greenbiller/features/auth/view/maintenance.dart';
 import 'package:greenbiller/features/auth/view/notification_page.dart';
 import 'package:greenbiller/features/auth/view/otp_verify_page.dart';
 import 'package:greenbiller/features/auth/view/signup_page.dart';
+import 'package:greenbiller/features/purchase/controller/new_purchase_controller.dart';
+import 'package:greenbiller/features/purchase/view/new_purchase_page.dart';
+import 'package:greenbiller/features/settings/controller/bussiness_profile_controller.dart';
+import 'package:greenbiller/features/settings/controller/invoice_settings_controller.dart';
+import 'package:greenbiller/features/settings/view/account_setttings_page.dart';
+import 'package:greenbiller/features/settings/controller/account_settings_controller.dart';
 import 'package:greenbiller/features/settings/controller/store_user_creation_controller.dart';
-import 'package:greenbiller/features/settings/store_users.dart';
+import 'package:greenbiller/features/settings/view/business_profile_page.dart';
+import 'package:greenbiller/features/settings/view/invoice_settings_page.dart';
+import 'package:greenbiller/features/settings/view/store_users.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 import 'package:greenbiller/screens/dashboards.dart';
 import 'package:greenbiller/screens/store_admin/store_admin_entry_point.dart';
@@ -68,7 +77,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'GreenBiller',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.login,
+      initialRoute: AppRoutes.newPurchase,
       getPages: [
         GetPage(name: AppRoutes.login, page: () => const LoginPage()),
         GetPage(name: AppRoutes.otpVerify, page: () => const OtpVerifyPage()),
@@ -98,12 +107,32 @@ class MyApp extends StatelessWidget {
           name: AppRoutes.oneSignalNotificationPage,
           page: () => const NotificationDetailsPage(),
         ),
+
+        GetPage(
+          name: AppRoutes.accountSettings,
+          page: () => AccountSetttingsPage(),
+        ),
         GetPage(name: AppRoutes.usersSettings, page: () => const StoreUsers()),
+        GetPage(
+          name: AppRoutes.businessProfile,
+          page: () => const BusinessProfilePage(),
+        ),
+        GetPage(
+          name: AppRoutes.invoiceSettings,
+          page: () => InvoiceSettingsPage(),
+        ),
+        GetPage(name: AppRoutes.newPurchase, page: () => NewPurchasePage()),
       ],
       builder: (context, child) {
         Get.put(AuthController());
+        Get.put(CommonApiFunctionsController());
+        Get.put(NewPurchaseController());
         Get.lazyPut(() => UserCreationController());
-        Get.lazyPut(() => DioClient());
+        Get.lazyPut(() => UserCreationController());
+        Get.lazyPut(() => AccountController());
+        Get.lazyPut(() => BusinessProfileController());
+        Get.lazyPut(() => InvoiceSettingsController());
+
         return child!;
       },
     );

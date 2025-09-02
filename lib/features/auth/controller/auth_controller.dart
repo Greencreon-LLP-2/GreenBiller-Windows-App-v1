@@ -30,55 +30,57 @@ class AuthController extends GetxController {
   void onInit() {
     super.onInit();
     _loadCountryCodes();
-    dioClient.setAuthToken('eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIwMTk3NDQ0OS04NmEwLTcxMjEtODk2NC0yMjUzODNiZmU0MzUiLCJqdGkiOiJlY2RhNzk0MjI1YzBmYTUwMjk4ZTRhY2MxOGNmYzk5NjYyMWM1M2VmNDEzMGY5MzAxZDVkZWYxYmYyZTZjNWJhNDEwYTU1ZTFlNzQyYmNjMyIsImlhdCI6MTc1NjU3NTgzNC43NDYwNzcsIm5iZiI6MTc1NjU3NTgzNC43NDYwNzksImV4cCI6MTc3MjQ3MzQzNC43NDM3LCJzdWIiOiI4NSIsInNjb3BlcyI6W119.LlEXQIiB896IAaMShMRT4PtouSugR3B66ZwW6Bbu4x9RmE4sFKWEeNAsfkDgt9p1FPr4hk-7vbl-ifCqBwVnTy7Sz5sGMUoqCk8wNcpyp_USW8pSD9wQikqp8KoI-Bc-Utc6r_18OhQdb852eRR7aeM2PTUGecZqnrz7u710LfJUmEHgMVSr2NNQs1clWssr2XfrAwZWOhxIHJ8Tjp9o_Z9aeZAySQuBZs4KidnMhZCj4PW4K99K4AvJ_Xf8LmcaOGBXROblitD_GMPFnvZxWcejwGBYjFzY-1wRZWVAcqnFYwCViKdBOA15lqoervmQBgxalw5Y7pF5oE3niuuWsUYSKzRap3ok9XeX8C2u8ZB37_rt2_GFZ9O0G3TPU93F910bQpY8j8OhgSDxExHOk6bKt5CmVfLw8KTR1A-T596R6et_tUx1M4FmWgWkKfXVCq1L5lqYeyRLRF7Gfa6rUjBANLvNXMm0x3IoqVQREuQ9GK_DqvyoQQr6VIuW0dNPPEp7wCm-TpDKQayvLrCt71SAu9fHLZcN4viT8ZrzFLDnreaU1NGS9UWUFtXtGgwWg80r3fkffghpemw17WdAnXVlbIh_sE-UAyjvkOlOcu6N5-jCbFFqgzDs_ND1QIrpIegUK2rtm68Kf8YWcNEwahWHPF5jOYbjpex1IXNhoXM');
-    Future.microtask(() async {
-      try {
-        logger.i('Ensuring Hive is initialized');
-        await hiveService.ensureInitialized();
-        logger.i('Checking for stored user in Hive');
-        user.value = hiveService.getUser();
-        if (user.value != null && user.value!.accessToken != null) {
-          logger.i('User found: ${user.value!.toJson()}');
-          dioClient.setAuthToken(user.value!.accessToken!);
-          final isValid = await _validateToken(user.value!.accessToken!);
-          if (isValid) {
-            logger.i('Token valid, starting services');
-            dioClient.setAuthToken(user.value!.accessToken!);
-            sessionService.startSessionCheck(user.value!.accessToken!);
-            if (!Platform.isLinux) {
-              await Get.find<PushNotificationService>().setUserData(
-                user.value!,
-              );
-            }
-            redirectToRoleBasedScreen();
-          } else {
-            logger.w('Token invalid or server error, checking offline mode');
-            if (await _isNetworkError()) {
-              logger.i(
-                'Offline mode: Proceeding to dashboard without validation',
-              );
-              sessionService.startSessionCheck(user.value!.accessToken!);
-              if (!Platform.isLinux) {
-                await Get.find<PushNotificationService>().setUserData(
-                  user.value!,
-                );
-              }
-              redirectToRoleBasedScreen();
-            } else {
-              logger.i('Invalid token, logging out');
-              // await logout();
-            }
-          }
-        } else {
-          logger.i('No user or token found in Hive, navigating to login');
-          Get.offAllNamed(AppRoutes.login);
-          // Get.offAllNamed(AppRoutes.usersSettings);
-        }
-      } catch (e, stackTrace) {
-        logger.e('Error in onInit: $e', e, stackTrace);
-        Get.offAllNamed(AppRoutes.login);
-      }
-    });
+    dioClient.setAuthToken(
+      'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIwMTk3NDQ0OS04NmEwLTcxMjEtODk2NC0yMjUzODNiZmU0MzUiLCJqdGkiOiIzM2I4MDA0YTUzNmJmM2I0YjBlOTlhODhkZDkyMTJiMDkyMDZjZWIyYzIwMzczZGQ0MWEyNzVhMmZhMTlkM2I5NmE5YjViMTg3NzgwM2UyYSIsImlhdCI6MTc1NjgwOTg3My42MTY0MDUsIm5iZiI6MTc1NjgwOTg3My42MTY0MDksImV4cCI6MTc3MjQ0ODI3My40NTQyODQsInN1YiI6IjYyIiwic2NvcGVzIjpbXX0.sdhz4yK__pdEL4yUfIAXYcrGBMX6HAObjVI4eCIo4tKSL_5SNcjMGs5rQ6ABnKJNkcs92J0pnIwZqXEWLdvvXU2wHLVPaQGxv0-K6FEa7j5mVDjwIkvXjGy87Nk6K2WHrD-bNK6brT-ST7YCaIOD9-Cy0BPsLaPi2F0eUXp9yVVjTZkYioxs-W2LJgkvjcer03xqVrHJav4g-29Ngd_2SJ_nGREM20jDMQEEx7bqiqbVFEGCRaPP3EvGBD_oATgDlj2oJn4d17RGa7FY5MB6Bu1fJapZALpz8BCdMfvGo1iZq8cwCfXeccaVEL_g-GFPXLewyyOg71vgIdxAvdW5y0GS6M4EzhlwmnxMNNd5fzel7NBy-T4BOnm-dbx8CFDJ0a3NRQa3Z5kU_Kvx5sBkmDvQ5jh9bA-dWa9szyBAvAF4BtTcLRp4P6DW-_FOWryM_g3B9gV9NtIx1LZiP_GyLm3IFVmk1DIq6LKmK9BZiEVu745uwxgs7xBoc5xk4sFRwBgZmLrXPDp4u4Iku5s-mn2RIiHOKYrXZS38kvk3uTtO0cwTnLkLdjbzU-sPum_wFuSPuumXgNC_otj21bbTWY_-cRfFr33HG1XGNT4WE_qvxod_dO1rzUpNhNsaCkK69MOJmErcxsYcfOUbW9y3Vr6cg3J34ABcb4irYiT0WEw',
+    );
+    // Future.microtask(() async {
+    //   try {
+    //     logger.i('Ensuring Hive is initialized');
+    //     await hiveService.ensureInitialized();
+    //     logger.i('Checking for stored user in Hive');
+    //     user.value = hiveService.getUser();
+    //     if (user.value != null && user.value!.accessToken != null) {
+    //       logger.i('User found: ${user.value!.toJson()}');
+    //       dioClient.setAuthToken(user.value!.accessToken!);
+    //       final isValid = await _validateToken(user.value!.accessToken!);
+    //       if (isValid) {
+    //         logger.i('Token valid, starting services');
+    //         dioClient.setAuthToken(user.value!.accessToken!);
+    //         sessionService.startSessionCheck(user.value!.accessToken!);
+    //         if (!Platform.isLinux) {
+    //           await Get.find<PushNotificationService>().setUserData(
+    //             user.value!,
+    //           );
+    //         }
+    //         redirectToRoleBasedScreen();
+    //       } else {
+    //         logger.w('Token invalid or server error, checking offline mode');
+    //         if (await _isNetworkError()) {
+    //           logger.i(
+    //             'Offline mode: Proceeding to dashboard without validation',
+    //           );
+    //           sessionService.startSessionCheck(user.value!.accessToken!);
+    //           if (!Platform.isLinux) {
+    //             await Get.find<PushNotificationService>().setUserData(
+    //               user.value!,
+    //             );
+    //           }
+    //           redirectToRoleBasedScreen();
+    //         } else {
+    //           logger.i('Invalid token, logging out');
+    //           // await logout();
+    //         }
+    //       }
+    //     } else {
+    //       logger.i('No user or token found in Hive, navigating to login');
+    //       Get.offAllNamed(AppRoutes.login);
+    //       // Get.offAllNamed(AppRoutes.usersSettings);
+    //     }
+    //   } catch (e, stackTrace) {
+    //     logger.e('Error in onInit: $e', e, stackTrace);
+    //     Get.offAllNamed(AppRoutes.login);
+    //   }
+    // });
   }
 
   Future<bool> _isNetworkError() async {
@@ -202,11 +204,8 @@ class AuthController extends GetxController {
       }
     } catch (e, stackTrace) {
       logger.e('Send OTP error: $e', e, stackTrace);
-      Get.snackbar(
-        'Error',
-        'Failed to send OTP: $e',
-        backgroundColor: Colors.red,
-      );
+      final msg = _extractErrorMessage(e);
+      Get.snackbar('Error', msg, backgroundColor: Colors.red);
     } finally {
       isLoading.value = false;
     }
@@ -259,11 +258,8 @@ class AuthController extends GetxController {
       }
     } catch (e, stackTrace) {
       logger.e('Verify OTP error: $e', e, stackTrace);
-      Get.snackbar(
-        'Error',
-        'OTP verification failed: $e',
-        backgroundColor: Colors.red,
-      );
+      final msg = _extractErrorMessage(e);
+      Get.snackbar('Error', msg, backgroundColor: Colors.red);
     } finally {
       isLoading.value = false;
     }
@@ -315,7 +311,8 @@ class AuthController extends GetxController {
       }
     } catch (e, stackTrace) {
       logger.e('Login error: $e', e, stackTrace);
-      Get.snackbar('Error', 'Login failed: $e', backgroundColor: Colors.red);
+      final msg = _extractErrorMessage(e);
+      Get.snackbar('Error', msg, backgroundColor: Colors.red);
     } finally {
       isLoading.value = false;
     }
@@ -366,9 +363,30 @@ class AuthController extends GetxController {
       }
     } catch (e, stackTrace) {
       logger.e('Signup error: $e', e, stackTrace);
-      Get.snackbar('Error', 'Signup failed: $e', backgroundColor: Colors.red);
+      final msg = _extractErrorMessage(e);
+      Get.snackbar('Error', msg, backgroundColor: Colors.red);
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  String _extractErrorMessage(dynamic error) {
+    try {
+      if (error is DioException) {
+        final response = error.response;
+        if (response != null && response.data is Map<String, dynamic>) {
+          return response.data['message']?.toString() ??
+              'Email Already Existing.';
+        }
+        return error.message ?? 'Network error. Please try again.';
+      } else if (error is Map && error['message'] != null) {
+        return error['message'].toString();
+      } else if (error is String) {
+        return error;
+      }
+      return 'Unexpected error occurred. Please try again.';
+    } catch (_) {
+      return 'Unexpected error occurred. Please try again.';
     }
   }
 
