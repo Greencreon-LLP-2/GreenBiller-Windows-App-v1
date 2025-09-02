@@ -14,18 +14,17 @@ class AccountSetttingsPage extends StatelessWidget {
     final storeId = authController.user.value?.storeId ?? 0;
     final userId = authController.user.value?.userId ?? 0;
     return AdminSidebarWrapper(
-      title: 'Settings',
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: _buildDesktopLayout(storeId, userId),
-        ),
+      title: 'Bank Account Settings',
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: _buildDesktopLayout(storeId, userId),
       ),
     );
   }
 
   Widget _buildDesktopLayout(int storeId, int? userId) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Left: List of accounts

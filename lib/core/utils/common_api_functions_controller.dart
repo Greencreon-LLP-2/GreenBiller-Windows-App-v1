@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
@@ -9,8 +10,9 @@ class CommonApiFunctionsController extends GetxController {
   final AuthController authController = Get.find<AuthController>();
   final Logger logger = Logger();
 
-  
-  Future<Map<String, int>> fetchStores({bool excludeWalkingCustomer = true}) async {
+  Future<Map<String, int>> fetchStores({
+    bool excludeWalkingCustomer = true,
+  }) async {
     try {
       final response = await dioClient.dio.get(viewStoreUrl);
 
@@ -19,7 +21,9 @@ class CommonApiFunctionsController extends GetxController {
 
         if (stores is List) {
           final storeList = excludeWalkingCustomer
-              ? stores.where((store) => store['store_name'] != 'Walking Customer').toList()
+              ? stores
+                    .where((store) => store['store_name'] != 'Walking Customer')
+                    .toList()
               : stores;
 
           final mappedStores = <String, int>{};
@@ -44,4 +48,6 @@ class CommonApiFunctionsController extends GetxController {
       return {};
     }
   }
+
+
 }
