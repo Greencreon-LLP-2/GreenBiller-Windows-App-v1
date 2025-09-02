@@ -1,96 +1,202 @@
-# Project Name
+GreenBiller
+GreenBiller is a Flutter-based mobile application for user authentication and role-based dashboard navigation. It supports OTP-based and password-based login, user registration, and logout functionality, with user data stored locally using Hive. The app uses Dio for API calls, GetX for state management and navigation, and Logger for debugging. Users are redirected to role-specific dashboards (Admin, Manager, Staff, Customer) based on their userLevel.
+Features
 
-A Flutter application built with **Riverpod** and **Flutter Hooks**, following a clean and scalable feature-first architecture.  
-this file updated by bilal
-this file again updated
----
-
-## 🚀 Tech Stack
-
-- **Flutter**: 3.32.7 (stable)  
-- **Dart**: 3.8.1  
-- **Riverpod** for state management  
-- **Flutter Hooks** for widget lifecycle management  
-- **DevTools**: 2.45.1  
-
-Flutter SDK path:  
-`/home/hp/savio/flutter SDK/flutter`  
-Upstream: [https://github.com/flutter/flutter.git](https://github.com/flutter/flutter.git)  
-
----
-
-## 📂 Project Structure
-
-This project uses a **feature-based folder structure** with four primary layers inside each feature:
-
-lib/
-core/
-constants/ # API base urls and shared constants
-utils/ # App-wide utilities
-widgets/ # Shared/reusable UI widgets
-features/
-feature_name/
-models/ # Data models (JSON parsing, domain objects)
-services/ # API calls, external data handling
-controllers/ # Business logic (using Riverpod providers)
-views/ # Screens and UI (with hooks & widgets folder inside)
-widgets/ # View-specific UI components
+Authentication:
+OTP-based login with phone number verification.
+Password-based login.
+User registration with name, email, phone, password, and referral code.
+Logout functionality with local data cleanup.
 
 
-**Flow**:  
-`View → Controller → Service → Model`  
-
-- **View**: Displays the UI, listens to controller/provider states, and handles user interaction.  
-- **Controller**: Contains state + logic (Riverpod providers). Calls services.  
-- **Service**: Handles API/network/database interactions.  
-- **Model**: Defines data structures, parsing, and validation.  
-
----
-
-## ⚙️ Setup & Installation
-
-1. Install Flutter (version `3.32.7`) and ensure you are on the **stable** channel.
-   ```bash
-   flutter --version
-
-Should output:
-
-Flutter 3.32.7 • channel stable • ...
-Dart 3.8.1 • DevTools 2.45.1
+Role-Based Dashboards:
+Admin (userLevel: 1)
+Manager (userLevel: 2)
+Staff (userLevel: 3)
+Customer (userLevel: 4, default)
 
 
-🌐 API Configuration
+Local Storage: Persists user data (e.g., username, email, phone, userLevel, licenseKey, status) using Hive.
+API Integration: Handles API requests for OTP sending/verification, login, and signup using Dio.
+Error Handling: Robust error logging with Logger and user feedback via snackbars.
 
-All API base URLs and constants are defined in:
+Project Structure
+green_biller/
+├── lib/
+│   ├── core/
+│   │   ├── api_constants.dart        # API endpoint constants (e.g., sendOtpUrl, verifyOtpUrl)
+│   │   ├── dio_client.dart          # Dio client setup for API requests
+│   │   ├── hive_service.dart        # Hive initialization and user data management
+│   ├── features/
+│   │   ├── auth/
+│   │   │   ├── controller/
+│   │   │   │   ├── auth_controller.dart  # GetX controller for authentication logic
+│   │   │   ├── model/
+│   │   │   │   ├── user_model.dart       # User model with Hive annotations
+│   │   │   │   ├── user_model.g.dart     # Generated Hive adapter
+│   │   │   ├── view/
+│   │   │   │   ├── login_page.dart       # Login UI
+│   │   │   │   ├── otp_verify_page.dart  # OTP verification UI
+│   │   │   │   ├── signup_page.dart      # Signup UI
+│   ├── routes/
+│   │   ├── app_routes.dart          # Route definitions for navigation
+│   ├── screens/
+│   │   ├── dashboards.dart          # Role-based dashboard UIs
+│   ├── main.dart                    # App entry point with Hive initialization
+├── pubspec.yaml                    # Project dependencies and configuration
+├── README.md                       # This file
 
-lib/core/constants/
+Key Files
 
-Example (api_constants.dart):
+main.dart: Initializes the app, sets up Hive via HiveService, and configures GetMaterialApp with routes.
+user_model.dart: Defines the UserModel with fields (loggedIn, accessToken, username, email, phone, userLevel, status, createdAt, licenseKey, subscriptionStart, subscriptionId, subscriptionEnd, profileImage, tokenExpiresIn) and Hive annotations.
+hive_service.dart: Manages Hive initialization, adapter registration, and user data storage/retrieval.
+auth_controller.dart: Handles authentication logic (OTP, login, signup, logout) and role-based navigation.
+dashboards.dart: Implements role-specific dashboards displaying user details.
+app_routes.dart: Defines named routes for navigation (/login, /otp_verify, /signup, /admin_dashboard, etc.).
 
+Prerequisites
+
+Flutter SDK: Version 3.0.0 or higher
+Dart: Version 2.17.0 or higher
+IDE: VS Code or Android Studio with Flutter plugin
+Emulator/Device: Android or iOS emulator/physical device for testing
+API Access: Ensure API endpoints (sendOtpUrl, verifyOtpUrl, loginUrl, signUpUrl) in api_constants.dart are configured and accessible.
+
+Setup Instructions
+
+Clone the Repository:
+git clone <repository-url>
+cd green_biller
+
+
+Install Dependencies:Update pubspec.yaml with the following dependencies:
+dependencies:
+  flutter:
+    sdk: flutter
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  get: ^4.6.5
+  dio: ^5.3.0
+  logger: ^1.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  hive_generator: ^2.0.0
+  build_runner: ^2.3.0
+
+Run:
+flutter pub get
+
+
+Generate Hive Adapters:Generate the user_model.g.dart file for Hive:
+flutter pub run build_runner build --delete-conflicting-outputs
+
+
+Configure API Endpoints:Update lib/core/api_constants.dart with your API endpoints:
 class ApiConstants {
-  static const String baseUrl = "https://api.example.com";
-  static const String auth = "$baseUrl/auth";
-  static const String users = "$baseUrl/users";
+  static const String sendOtpUrl = 'https://your-api.com/send-otp';
+  static const String verifyOtpUrl = 'https://your-api.com/verify-otp';
+  static const String loginUrl = 'https://your-api.com/login';
+  static const String signUpUrl = 'https://your-api.com/signup';
 }
 
 
-🛠️ Development Notes
+Clear Old Data (if needed):To avoid Hive type mismatches:
 
-Use Riverpod providers in controllers for state and logic.
+Clear app data on the device/emulator (Settings > Apps > GreenBiller > Clear Data).
+Or uninstall/reinstall the app.
+Alternatively, keep await box.clear() in hive_service.dart for one run, then remove it.
 
-Use Flutter Hooks inside views for cleaner lifecycle handling (useEffect, useState, etc.).
 
-Keep all UI widgets for a feature inside the widgets/ folder of that feature.
 
-Shared/common widgets should live under lib/core/widgets/.
+Running the App
 
-✅ Example Workflow
+Run in Debug Mode:
+flutter run --debug
 
-Example: Login Feature
+This starts the app and logs debugging information via Logger.
 
-features/login/
-  models/login_request.dart
-  services/login_service.dart
-  controllers/login_controller.dart
-  views/login_view.dart
-  views/widgets/login_form.dart
+Available Routes:
+
+/login: Login page for OTP or password-based authentication.
+/otp_verify: OTP verification page.
+/signup: User registration page.
+/admin_dashboard: Admin dashboard (userLevel: 1).
+/manager_dashboard: Manager dashboard (userLevel: 2).
+/staff_dashboard: Staff dashboard (userLevel: 3).
+/customer_dashboard: Customer dashboard (userLevel: 4).
+/homepage: Alias for customer dashboard.
+
+
+Test Scenarios:
+
+Initial Launch: App starts at /login or redirects to /customer_dashboard if a user is stored in Hive.
+OTP Login: Enter phone number, verify OTP, and check redirection to /customer_dashboard.
+Password Login: Log in with mobile and password, verify user details (username: test user, email: test@gmail.com, phone: 7012545907, userLevel: 4, licenseKey: 5788, status: active) on the dashboard.
+Sign Up: Register a new user and confirm redirection to /customer_dashboard.
+Logout: Log out and verify redirection to /login.
+
+
+
+Debugging
+
+Console Logs: Run flutter run --debug and check logs for:
+Hive adapter registered for UserModel (typeId: 0) or already registered.
+Verify OTP response: {...} to confirm API response parsing.
+Errors like Hive initialization failed or Verify OTP error.
+
+
+Clear Hive Data: If type mismatches occur, keep box.clear() in hive_service.dart for one run, then remove it.
+Check Generated Files: Verify lib/features/auth/model/user_model.g.dart matches the expected UserModelAdapter with 14 fields.
+API Issues: Ensure API endpoints return the expected response format:{
+  "status": true,
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...",
+  "expires_in": 3600,
+  "data": {
+    "name": "test user",
+    "email": "test@gmail.com",
+    "mobile": "7012545907",
+    "user_level": 4,
+    "status": "active",
+    "created_at": "2025-08-25T11:46:14.000000Z",
+    "license_key": "5788",
+    "subcription_id": null,
+    "subcription_start": null,
+    "subcription_end": null,
+    "profile_image": null
+  },
+  "is_existing_user": true
+}
+
+
+
+Known Issues and Fixes
+
+HiveError: There is already a TypeAdapter for typeId 0:
+Cause: Multiple registrations of UserModelAdapter.
+Fix: Added Hive.isAdapterRegistered(0) check in hive_service.dart.
+
+
+Type 'String' is not a subtype of type 'int?':
+Cause: API sends user_level or expires_in as strings.
+Fix: Updated user_model.dart to use int.tryParse for userLevel and tokenExpiresIn.
+
+
+Black Screen:
+Cause: Runtime errors in Hive initialization or JSON parsing.
+Fix: Clear Hive data, regenerate adapters, and check logs.
+
+
+
+Contributing
+
+Fork the repository.
+Create a feature branch (git checkout -b feature/new-feature).
+Commit changes (git commit -m 'Add new feature').
+Push to the branch (git push origin feature/new-feature).
+Create a pull request.
+
+License
+This project is licensed under the GreenBilller License.
