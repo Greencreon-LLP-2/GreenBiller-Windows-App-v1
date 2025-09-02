@@ -1,111 +1,80 @@
-import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:greenbiller/core/app_handler/dio_client.dart';
-import 'package:greenbiller/core/app_handler/push_notification_service.dart';
-import 'package:greenbiller/core/app_handler/hive_service.dart';
-import 'package:greenbiller/features/auth/controller/auth_controller.dart';
-import 'package:greenbiller/features/auth/view/login_page.dart';
-import 'package:greenbiller/features/auth/view/maintenance.dart';
-import 'package:greenbiller/features/auth/view/notification_page.dart';
-import 'package:greenbiller/features/auth/view/otp_verify_page.dart';
-import 'package:greenbiller/features/auth/view/signup_page.dart';
-import 'package:greenbiller/features/settings/controller/store_user_creation_controller.dart';
-import 'package:greenbiller/features/settings/store_users.dart';
-import 'package:greenbiller/routes/app_routes.dart';
-import 'package:greenbiller/screens/dashboards.dart';
-import 'package:greenbiller/screens/store_admin/store_admin_entry_point.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:green_biller/core/app_management/app_status_model.dart';
+import 'package:green_biller/core/app_management/app_status_provider.dart';
+import 'package:green_biller/core/constants/app_config.dart';
+import 'package:green_biller/core/routes/routes.dart';
+import 'package:green_biller/features/auth/login/model/user_model.dart';
+import 'package:green_biller/features/auth/login/services/auth_service.dart';
 import 'package:logger/logger.dart';
-import 'package:path_provider/path_provider.dart';
 
 final logger = Logger();
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-void main() {
-  runZonedGuarded(
-    () async {
-      WidgetsFlutterBinding.ensureInitialized(); // ✅ Now in same zone
+  final authService = AuthService();
+  UserModel? userData;
+  await AppConfig.init();
+  try {
+    userData = await authService.getUserData();
+    logger.i('User data loaded: ${userData != null}');
+  } catch (e) {
+    logger.e('Error loading user data: $e');
+  }
 
-      try {
-        logger.i('Initializing Hive');
-        final documentsDir = await getApplicationDocumentsDirectory();
-        final hiveService = HiveService();
-        Get.put(hiveService);
-        hiveService.setCustomStoragePath('${documentsDir.path}\\GreenBiller');
-
-        await hiveService.init();
-
-        if (!Platform.isLinux) {
-          logger.i(
-            'Initializing PushNotificationService on ${Platform.operatingSystem}',
-          );
-          Get.put(PushNotificationService());
-          await Get.find<PushNotificationService>().init(
-            'your-onesignal-app-id',
-          );
-        } else {
-          logger.w('PushNotificationService skipped on Linux');
-        }
-      } catch (e, stackTrace) {
-        logger.e('Initialization error: $e', e, stackTrace);
-        // Continue running the app even if initialization fails
-      }
-
-      runApp(const MyApp()); // ✅ Same zone as ensureInitialized
-    },
-    (error, stackTrace) {
-      logger.e('Uncaught error: $error', error, stackTrace);
-    },
+  runApp(
+    ProviderScope(
+      overrides: [
+        if (userData != null) userProvider.overrideWith((ref) => userData),
+      ],
+      child: MyApp(userData: userData),
+    ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends ConsumerStatefulWidget {
+  final UserModel? userData;
+
+  const MyApp({super.key, required this.userData});
+
+  @override
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  late ProviderSubscription<AppStatusModel> _statusSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() async {
+      final user = widget.userData;
+      if (user != null) {
+        final token = user.accessToken ?? '';
+        final userId = user.user?.id.toString() ?? '';
+        ref.read(appStatusProvider.notifier).startPolling(token, userId);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _statusSubscription.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    final router = ref.watch(routerProvider);
+    return MaterialApp.router(
+      scaffoldMessengerKey: scaffoldMessengerKey,
       title: 'GreenBiller',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.login,
-      getPages: [
-        GetPage(name: AppRoutes.login, page: () => const LoginPage()),
-        GetPage(name: AppRoutes.otpVerify, page: () => const OtpVerifyPage()),
-        GetPage(name: AppRoutes.signUp, page: () => const SignUpPage()),
-        GetPage(
-          name: AppRoutes.adminDashboard,
-          page: () => const StoreAdminEntryPoint(),
-        ),
-        GetPage(
-          name: AppRoutes.managerDashboard,
-          page: () => const ManagerDashboard(),
-        ),
-        GetPage(
-          name: AppRoutes.staffDashboard,
-          page: () => const StaffDashboard(),
-        ),
-        GetPage(
-          name: AppRoutes.customerDashboard,
-          page: () => const CustomerDashboard(),
-        ),
-        GetPage(
-          name: AppRoutes.homepage,
-          page: () => const CustomerDashboard(),
-        ),
-        GetPage(name: AppRoutes.maintenance, page: () => const Maintenance()),
-        GetPage(
-          name: AppRoutes.oneSignalNotificationPage,
-          page: () => const NotificationDetailsPage(),
-        ),
-        GetPage(name: AppRoutes.usersSettings, page: () => const StoreUsers()),
-      ],
-      builder: (context, child) {
-        Get.put(AuthController());
-        Get.lazyPut(() => UserCreationController());
-        Get.lazyPut(() => DioClient());
-        return child!;
-      },
+      routerConfig: router,
     );
   }
 }

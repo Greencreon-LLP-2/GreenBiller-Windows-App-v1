@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "plugins/printing",
+		"source" : "flutter/ephemeral/.plugin_symlinks/printing/windows"
+	}
+}
