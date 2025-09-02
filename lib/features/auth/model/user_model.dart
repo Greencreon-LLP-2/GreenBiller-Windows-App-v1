@@ -46,6 +46,12 @@ class UserModel extends HiveObject {
   @HiveField(13)
   final int? tokenExpiresIn;
 
+  @HiveField(14)
+  final int? storeId;
+
+  @HiveField(15)
+  final int? userId;
+
   UserModel({
     this.loggedIn,
     this.accessToken,
@@ -61,6 +67,8 @@ class UserModel extends HiveObject {
     this.subscriptionEnd,
     this.profileImage,
     this.tokenExpiresIn,
+    this.storeId,
+    this.userId,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
@@ -69,6 +77,10 @@ class UserModel extends HiveObject {
     username: json['data']?['name'] as String?,
     email: json['data']?['email'] as String?,
     phone: json['data']?['mobile'] as String?,
+    storeId: json['data']?['store_id'] != null
+        ? int.tryParse(json['data']['store_id'] as String)
+        : 0,
+    userId: json['data']?['id'] != null ? json['data']['id'] as int : 0,
     userLevel: json['data']?['user_level'] != null
         ? (json['data']['user_level'] is Map<String, dynamic>
               ? json['data']['user_level']['id']
@@ -106,6 +118,8 @@ class UserModel extends HiveObject {
       'subcription_id': subscriptionId,
       'subcription_end': subscriptionEnd,
       'profile_image': profileImage,
+      'userId': userId,
+      'storeId': storeId,
     },
     'expires_in': tokenExpiresIn,
   };

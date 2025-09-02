@@ -31,13 +31,15 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       subscriptionEnd: fields[11] as dynamic,
       profileImage: fields[12] as dynamic,
       tokenExpiresIn: fields[13] as int?,
+      storeId: fields[14] as int?,
+      userId: fields[15] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserModel obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.loggedIn)
       ..writeByte(1)
@@ -65,7 +67,11 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
       ..writeByte(12)
       ..write(obj.profileImage)
       ..writeByte(13)
-      ..write(obj.tokenExpiresIn);
+      ..write(obj.tokenExpiresIn)
+      ..writeByte(14)
+      ..write(obj.storeId)
+      ..writeByte(15)
+      ..write(obj.userId);
   }
 
   @override
