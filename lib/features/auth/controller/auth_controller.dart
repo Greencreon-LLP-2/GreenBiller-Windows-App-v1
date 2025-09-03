@@ -160,15 +160,16 @@ class AuthController extends GetxController {
           }
 
           if (phoneCode != null) {
+            if (_isValidCountryCode(phoneCode)) {
             if (!phoneCode.startsWith('+')) {
               phoneCode = '+$phoneCode';
             }
             codes.add(phoneCode);
           }
+          }
         }
 
         if (codes.isNotEmpty) {
-          codes = codes.toSet().toList();
           codes.sort((a, b) {
             final aNum = int.tryParse(a.substring(1)) ?? 9999;
             final bNum = int.tryParse(b.substring(1)) ?? 9999;
@@ -182,6 +183,18 @@ class AuthController extends GetxController {
     } catch (e) {
       logger.w('Failed to load country codes from API: $e');
     }
+  }
+
+  bool _isValidCountryCode(String phoneCode) {
+
+    final code = phoneCode.startsWith('+') ? phoneCode.substring(1) : phoneCode;
+    
+  
+    final numericCode = int.tryParse(code);
+    if (numericCode == null) return false;
+    
+    
+    return code.length >= 1 && code.length <= 4 && numericCode >= 1 && numericCode <= 9999;
   }
 
   Future<void> sendOtp() async {
