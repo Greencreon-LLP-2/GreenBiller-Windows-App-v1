@@ -200,11 +200,30 @@ class AuthController extends GetxController {
   Future<void> sendOtp() async {
     try {
       isLoading.value = true;
-      final response = await dioClient.dio.post(
-        ApiConstants.sendOtpUrl,
-        data: {'name': countryCode.value, 'mobile': phoneNumber.value},
+      if (!_isValidCountryCode(countryCode.value)) {
+      Get.snackbar(
+        'Error',
+        'Invalid country code. Please select a valid country code.',
+        backgroundColor: Colors.red,
       );
-
+      return;
+    }
+      if (phoneNumber.value.isEmpty || phoneNumber.value.length != 10) {
+      Get.snackbar(
+        'Error',
+        'Please enter a valid 10-digit phone number.',
+        backgroundColor: Colors.red,
+      );
+      return;
+    }
+         final response = await dioClient.dio.post(
+      ApiConstants.sendOtpUrl,
+      data: {
+        'country_code': countryCode.value,
+        'mobile': phoneNumber.value,
+      },
+    );
+  
       if (response.statusCode == 200) {
         Get.snackbar(
           'Success',
