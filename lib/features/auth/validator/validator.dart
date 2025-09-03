@@ -6,6 +6,9 @@ class EmailValidator {
               if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                 return 'Enter a valid email';
               }
+              if (value.length > 254) {
+                return 'Email must be less than 254 characters'; 
+              }
               return null;            
   }
 }

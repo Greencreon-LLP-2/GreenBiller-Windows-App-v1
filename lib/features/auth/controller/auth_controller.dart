@@ -75,6 +75,13 @@ class AuthController extends GetxController {
     }
   }
 
+  void resetOtp() {
+    try {
+      otp.value = '';
+    }
+    catch(_){}
+  }
+
   Future<bool> _isNetworkError() async {
     try {
       await dioClient.dio.get(
@@ -152,15 +159,16 @@ class AuthController extends GetxController {
           }
 
           if (phoneCode != null) {
-            if (!phoneCode.startsWith('+')) {
-              phoneCode = '+$phoneCode';
+            if (_isValidCountryCode(phoneCode)) {
+              if (!phoneCode.startsWith('+')) {
+                phoneCode = '+$phoneCode';
+              }
+              codes.add(phoneCode);
             }
-            codes.add(phoneCode);
           }
         }
 
         if (codes.isNotEmpty) {
-          codes = codes.toSet().toList();
           codes.sort((a, b) {
             final aNum = int.tryParse(a.substring(1)) ?? 9999;
             final bNum = int.tryParse(b.substring(1)) ?? 9999;
@@ -176,12 +184,40 @@ class AuthController extends GetxController {
     }
   }
 
+  bool _isValidCountryCode(String phoneCode) {
+    final code = phoneCode.startsWith('+') ? phoneCode.substring(1) : phoneCode;
+
+    final numericCode = int.tryParse(code);
+    if (numericCode == null) return false;
+
+    return code.length >= 1 &&
+        code.length <= 4 &&
+        numericCode >= 1 &&
+        numericCode <= 9999;
+  }
+
   Future<void> sendOtp() async {
     try {
       isLoading.value = true;
+      if (!_isValidCountryCode(countryCode.value)) {
+        Get.snackbar(
+          'Error',
+          'Invalid country code. Please select a valid country code.',
+          backgroundColor: Colors.red,
+        );
+        return;
+      }
+      if (phoneNumber.value.isEmpty || phoneNumber.value.length != 10) {
+        Get.snackbar(
+          'Error',
+          'Please enter a valid 10-digit phone number.',
+          backgroundColor: Colors.red,
+        );
+        return;
+      }
       final response = await dioClient.dio.post(
         ApiConstants.sendOtpUrl,
-        data: {'name': countryCode.value, 'mobile': phoneNumber.value},
+        data: {'country_code': countryCode.value, 'mobile': phoneNumber.value},
       );
 
       if (response.statusCode == 200) {
