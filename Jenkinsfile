@@ -2,40 +2,36 @@ pipeline {
     agent any
 
     environment {
-        FLUTTER_VERSION = "3.35.2"
         ANDROID_HOME = "/home/hp/Android/5dk"
-        PATH = "$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin"
+        PATH = "$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+        FLUTTER_VERSION = "3.35.2"
+        FLUTTER_DIR = "$WORKSPACE/flutter/flutter"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
                 echo "Checking out code from GitHub..."
-                checkout([$class: 'GitSCM',
-                    branches: [[name: 'savio_branch_getx_fix']],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/Greencreon-LLP-2/GreenBiller-Windows-App-v1.git',
-                        credentialsId: 'github-cred'
-                    ]]
-                ])
+                git branch: 'savio_branch_getx_fix',
+                    url: 'https://github.com/Greencreon-LLP-2/GreenBiller-Windows-App-v1.git',
+                    credentialsId: 'github-cred'
             }
         }
 
-        stage('Set up Flutter') {
+        stage('Setup Flutter') {
             steps {
                 echo "Setting up Flutter SDK..."
                 sh '''
                 mkdir -p $WORKSPACE/flutter
                 cd $WORKSPACE/flutter
 
-                # Download Flutter 3.35.2 stable if not present
                 if [ ! -d flutter ]; then
-                    wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.35.2-stable.tar.xz
-                    tar xf flutter_linux_3.35.2-stable.tar.xz
-                    rm flutter_linux_3.35.2-stable.tar.xz
+                  wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
+                  tar xf flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
+                  rm flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
                 fi
 
-                export PATH="$PATH:$WORKSPACE/flutter/flutter/bin"
+                export PATH="$WORKSPACE/flutter/flutter/bin:$PATH"
 
                 flutter --version
                 flutter doctor
@@ -45,20 +41,20 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'flutter pub get'
+                sh '$FLUTTER_DIR/flutter pub get'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'flutter test || true'
+                sh '$FLUTTER_DIR/flutter test || true'
             }
         }
 
         stage('Build APK') {
             steps {
                 echo "Building release APK..."
-                sh 'flutter build apk --release'
+                sh '$FLUTTER_DIR/flutter build apk --release'
             }
         }
 
