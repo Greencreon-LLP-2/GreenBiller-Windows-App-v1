@@ -209,6 +209,7 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
             keyboardType: TextInputType.emailAddress,
             validator: EmailValidator.validate,
             inputFormatters: [
+                  LengthLimitingTextInputFormatter(254),
                   FilteringTextInputFormatter.deny(RegExp(r'\s')),
                 ],
           ),
