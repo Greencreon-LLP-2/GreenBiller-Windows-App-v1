@@ -2,10 +2,11 @@ pipeline {
     agent any
 
     environment {
-        FLUTTER_VERSION = "3.32.7"
-        FLUTTER_HOME = "$WORKSPACE/flutter"
-        PATH = "$FLUTTER_HOME/bin:$PATH"
-    }
+    FLUTTER_VERSION = "3.32.7"
+    ANDROID_HOME = "/var/lib/jenkins/Android/Sdk"
+    PATH = "$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$WORKSPACE/flutter/bin"
+}
+
 
     stages {
         stage('Checkout') {
