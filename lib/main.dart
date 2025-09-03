@@ -12,8 +12,17 @@ import 'package:greenbiller/features/auth/view/maintenance.dart';
 import 'package:greenbiller/features/auth/view/notification_page.dart';
 import 'package:greenbiller/features/auth/view/otp_verify_page.dart';
 import 'package:greenbiller/features/auth/view/signup_page.dart';
+import 'package:greenbiller/features/items/controller/add_items_controller.dart';
+import 'package:greenbiller/features/items/controller/brand_controller.dart';
+import 'package:greenbiller/features/items/controller/category_controller.dart';
+import 'package:greenbiller/features/items/controller/category_items_controller.dart';
+import 'package:greenbiller/features/items/controller/unit_controller.dart';
+import 'package:greenbiller/features/items/views/brands/brand_page.dart';
+import 'package:greenbiller/features/items/views/category/categories_page.dart';
+import 'package:greenbiller/features/items/views/items/add_items_page.dart';
+import 'package:greenbiller/features/items/views/units/units_page.dart';
 import 'package:greenbiller/features/parties/controller/parties_controller.dart';
-import 'package:greenbiller/features/parties/controller/store_drtopdown_controller.dart';
+import 'package:greenbiller/core/app_handler/store_drtopdown_controller.dart';
 import 'package:greenbiller/features/parties/view/parties_page.dart';
 import 'package:greenbiller/features/purchase/controller/new_purchase_controller.dart';
 import 'package:greenbiller/features/purchase/view/new_purchase_page.dart';
@@ -109,35 +118,36 @@ class MyApp extends StatelessWidget {
           name: AppRoutes.oneSignalNotificationPage,
           page: () => const NotificationDetailsPage(),
         ),
-
-        GetPage(
-          name: AppRoutes.accountSettings,
-          page: () => AccountSetttingsPage(),
-        ),
+        GetPage(name: AppRoutes.accountSettings, page: () => AccountSetttingsPage()),
         GetPage(name: AppRoutes.usersSettings, page: () => const StoreUsers()),
-        GetPage(
-          name: AppRoutes.businessProfile,
-          page: () => const BusinessProfilePage(),
-        ),
-        GetPage(
-          name: AppRoutes.invoiceSettings,
-          page: () => InvoiceSettingsPage(),
-        ),
+        GetPage(name: AppRoutes.businessProfile, page: () => const BusinessProfilePage()),
+        GetPage(name: AppRoutes.invoiceSettings, page: () => InvoiceSettingsPage()),
         GetPage(name: AppRoutes.newPurchase, page: () => NewPurchasePage()),
         GetPage(name: AppRoutes.parties, page: () => PartiesPage()),
+        GetPage(name: AppRoutes.categoryView, page: () => CategoriesPage()),
+        GetPage(name: AppRoutes.brands, page: () => BrandPage()),
+        GetPage(name: AppRoutes.units, page: () => UnitsPage()),
+        GetPage(name: AppRoutes.addItems, page: () => AddItemsPage()),
       ],
       builder: (context, child) {
-        Get.put(AuthController());
-        Get.put(CommonApiFunctionsController());
-        Get.put(NewPurchaseController());
-        Get.put(StoreDropdownController());
-        Get.lazyPut(() => UserCreationController());
+        // Always-available global controllers
+        Get.put(AuthController(), permanent: true);
+        Get.put(CommonApiFunctionsController(), permanent: true);
+        Get.put(NewPurchaseController(), permanent: true);
+        Get.put(StoreDropdownController(), permanent: true);
+
+        // Feature-specific controllers: lazy loaded
         Get.lazyPut(() => UserCreationController());
         Get.lazyPut(() => AccountController());
         Get.lazyPut(() => BusinessProfileController());
         Get.lazyPut(() => InvoiceSettingsController());
         Get.lazyPut(() => PartiesController());
-        
+        Get.lazyPut(() => CategoryItemsController());
+        Get.lazyPut(() => CategoryController());
+        Get.lazyPut(() => BrandController());
+        Get.lazyPut(() => UnitController());
+        Get.lazyPut(() => AddItemController());
+
         return child!;
       },
     );

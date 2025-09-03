@@ -9,27 +9,37 @@ import 'package:greenbiller/features/items/model/unit_model.dart';
 import 'package:logger/logger.dart';
 
 class UnitController extends GetxController {
-  final DioClient dioClient = DioClient();
-  final AuthController authController = Get.find<AuthController>();
-  final CommonApiFunctionsController commonApi =
-      Get.find<CommonApiFunctionsController>();
-  final Logger logger = Logger();
+  // Services
+  late DioClient dioClient;
+  late AuthController authController;
+  late CommonApiFunctionsController commonApi;
+  late Logger logger;
 
-  // Reactive states
-  final units = Rxn<UnitModel>();
-  final isLoading = false.obs;
-  final isSaving = false.obs;
+  // Reactive
+  Rxn<UnitModel> units = Rxn<UnitModel>();
+  RxBool isLoading = false.obs;
+  RxBool isSaving = false.obs;
+  Rxn<int> selectedStoreId = Rxn<int>();
 
-  // Form controllers for dialog
-  final unitNameController = TextEditingController();
-  final unitValueController = TextEditingController();
-  final descriptionController = TextEditingController();
-  final formKey = GlobalKey<FormState>();
-  final selectedStoreId = Rxn<int>();
+  // Form controllers
+  late TextEditingController unitNameController;
+  late TextEditingController unitValueController;
+  late TextEditingController descriptionController;
+  late GlobalKey<FormState> formKey;
 
   @override
   void onInit() {
     super.onInit();
+    dioClient = DioClient();
+    authController = Get.find<AuthController>();
+    commonApi = Get.find<CommonApiFunctionsController>();
+    logger = Logger();
+
+    unitNameController = TextEditingController();
+    unitValueController = TextEditingController();
+    descriptionController = TextEditingController();
+    formKey = GlobalKey<FormState>();
+
     fetchUnits();
   }
 

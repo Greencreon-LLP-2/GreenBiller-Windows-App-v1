@@ -6,23 +6,23 @@ import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 
 class InvoiceSettingsController extends GetxController {
-  final DioClient _dioClient = DioClient();
-  final CommonApiFunctionsController commonApi =
-      Get.find<CommonApiFunctionsController>();
+  // Services
+  late DioClient dioClient;
+  late CommonApiFunctionsController commonApi;
 
   // Form controllers
-  final businessNameController = TextEditingController();
-  final businessAddressController = TextEditingController();
-  final businessEmailController = TextEditingController();
-  final businessPhoneController = TextEditingController();
-  final taxIdController = TextEditingController();
-  final invoicePrefixController = TextEditingController();
-  final startingNumberController = TextEditingController();
-  final taxRateController = TextEditingController();
-  final paymentDetailsController = TextEditingController();
-  final invoiceNotesController = TextEditingController();
+  late TextEditingController businessNameController;
+  late TextEditingController businessAddressController;
+  late TextEditingController businessEmailController;
+  late TextEditingController businessPhoneController;
+  late TextEditingController taxIdController;
+  late TextEditingController invoicePrefixController;
+  late TextEditingController startingNumberController;
+  late TextEditingController taxRateController;
+  late TextEditingController paymentDetailsController;
+  late TextEditingController invoiceNotesController;
 
-  // Store related states
+  // Store state
   final selectedStore = Rxn<String>();
   final selectedStoreId = Rxn<int>();
   final isLoadingStores = false.obs;
@@ -35,7 +35,6 @@ class InvoiceSettingsController extends GetxController {
   final autoNumbering = true.obs;
   final sendCopy = false.obs;
   final selectedTemplate = "Template A".obs;
-
   final isLoading = false.obs;
   final hasChanges = false.obs;
   final hasExistingSettings = false.obs;
@@ -43,6 +42,20 @@ class InvoiceSettingsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    dioClient = DioClient();
+    commonApi = Get.find<CommonApiFunctionsController>();
+
+    businessNameController = TextEditingController();
+    businessAddressController = TextEditingController();
+    businessEmailController = TextEditingController();
+    businessPhoneController = TextEditingController();
+    taxIdController = TextEditingController();
+    invoicePrefixController = TextEditingController();
+    startingNumberController = TextEditingController();
+    taxRateController = TextEditingController();
+    paymentDetailsController = TextEditingController();
+    invoiceNotesController = TextEditingController();
+
     _setupListeners();
     loadStores();
   }
@@ -61,7 +74,6 @@ class InvoiceSettingsController extends GetxController {
     invoiceNotesController.dispose();
     super.onClose();
   }
-
   void _setupListeners() {
     final controllers = [
       businessNameController,
@@ -124,7 +136,7 @@ class InvoiceSettingsController extends GetxController {
   Future<void> loadSettings(String storeId) async {
     isLoading.value = true;
     try {
-      final response = await _dioClient.dio.get(
+      final response = await dioClient.dio.get(
         '$baseUrl/invoice-view?store_id=$storeId',
       );
 
@@ -249,7 +261,7 @@ class InvoiceSettingsController extends GetxController {
       };
 
       // Check if settings already exist
-      final existingResponse = await _dioClient.dio.get(
+      final existingResponse = await dioClient.dio.get(
         '$baseUrl/invoice-view?store_id=${selectedStoreId.value}',
       );
 
@@ -259,7 +271,7 @@ class InvoiceSettingsController extends GetxController {
           existingResponse.data['data'].isNotEmpty) {
         // Update existing settings
         final existingId = existingResponse.data['data'][0]['id'];
-        final updateResponse = await _dioClient.dio.put(
+        final updateResponse = await dioClient.dio.put(
           '$baseUrl/invoice-update/$existingId',
           data: settingsData,
         );
@@ -274,7 +286,7 @@ class InvoiceSettingsController extends GetxController {
         }
       } else {
         // Create new settings
-        final createResponse = await _dioClient.dio.post(
+        final createResponse = await dioClient.dio.post(
           '$baseUrl/invoice-create',
           data: settingsData,
         );

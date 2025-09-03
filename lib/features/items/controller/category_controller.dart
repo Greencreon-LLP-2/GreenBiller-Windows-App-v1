@@ -6,7 +6,7 @@ import 'package:get/get.dart' hide FormData, MultipartFile;
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/store_drtopdown_controller.dart';
-import 'package:greenbiller/core/gloabl_widgets/store_dropdown.dart';
+import 'package:greenbiller/core/gloabl_widgets/dropdowns/custom_dropdown.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/items/model/category_list_model.dart';
 
@@ -14,37 +14,53 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 
 class CategoryController extends GetxController {
-  final DioClient dioClient = DioClient();
-  final AuthController authController = Get.find<AuthController>();
-  final StoreDropdownController storeDropdownController =
-      Get.find<StoreDropdownController>();
-  final Logger logger = Logger();
-  final ImagePicker picker = ImagePicker();
+  // Services
+  late DioClient dioClient;
+  late AuthController authController;
+  late StoreDropdownController storeDropdownController;
+  late Logger logger;
+  late ImagePicker picker;
 
   // Reactive states
-  final categories = Rxn<CategoryListModel>();
-  final filteredCategories = <CategoryModel>[].obs;
-  final searchController = TextEditingController();
-  final isLoading = true.obs;
-  final selectedFilter = 'All'.obs;
-  final selectedStoreId = Rxn<int>();
+  Rxn<CategoryListModel> categories = Rxn<CategoryListModel>();
+  RxList<CategoryModel> filteredCategories = <CategoryModel>[].obs;
+  late TextEditingController searchController;
+  RxBool isLoading = true.obs;
+  RxString selectedFilter = 'All'.obs;
+  Rxn<int> selectedStoreId = Rxn<int>();
 
   // Dialog controllers
-  final categoryNameController = TextEditingController();
-  final editCategoryNameController = TextEditingController();
-  final selectedImage = Rxn<File>();
+  late TextEditingController categoryNameController;
+  late TextEditingController editCategoryNameController;
+  Rxn<File> selectedImage = Rxn<File>();
 
   @override
   void onInit() {
     super.onInit();
-    fetchCategories();
+
+    // Initialize services
+    dioClient = DioClient();
+    authController = Get.find<AuthController>();
+    storeDropdownController = Get.find<StoreDropdownController>();
+    logger = Logger();
+    picker = ImagePicker();
+
+    // Initialize controllers
+    searchController = TextEditingController();
+    categoryNameController = TextEditingController();
+    editCategoryNameController = TextEditingController();
+
+    // Attach listeners
     searchController.addListener(_filterCategories);
+
+    // Initial data load
+    fetchCategories();
   }
 
   Future<void> fetchCategories([String? storeId]) async {
     try {
       isLoading.value = true;
-      
+
       final url = storeId != null
           ? '$viewCategoriesUrl/$storeId'
           : viewCategoriesUrl;
@@ -440,6 +456,7 @@ class CategoryController extends GetxController {
 
   @override
   void onClose() {
+    // Clean up controllers
     searchController.dispose();
     categoryNameController.dispose();
     editCategoryNameController.dispose();

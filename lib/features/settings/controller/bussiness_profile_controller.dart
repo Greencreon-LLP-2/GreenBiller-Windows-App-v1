@@ -13,26 +13,27 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 
 class BusinessProfileController extends GetxController {
- final DioClient dioClient = DioClient();
-  final AuthController authController = Get.find<AuthController>();
-  final HiveService hiveService = Get.find<HiveService>();
-  final Logger logger = Logger();
-  final ImagePicker picker = ImagePicker();
+  // Services
+  late DioClient dioClient;
+  late AuthController authController;
+  late HiveService hiveService;
+  late Logger logger;
+  late ImagePicker picker;
 
   // Form key
   final formKey = GlobalKey<FormState>();
 
   // Text controllers
-  final businessNameController = TextEditingController();
-  final mobileController = TextEditingController();
-  final tinController = TextEditingController();
-  final emailController = TextEditingController();
-  final gstController = TextEditingController();
-  final pincodeController = TextEditingController();
-  final addressController = TextEditingController();
-  final currentPasswordController = TextEditingController();
-  final newPasswordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
+  late TextEditingController businessNameController;
+  late TextEditingController mobileController;
+  late TextEditingController tinController;
+  late TextEditingController emailController;
+  late TextEditingController gstController;
+  late TextEditingController pincodeController;
+  late TextEditingController addressController;
+  late TextEditingController currentPasswordController;
+  late TextEditingController newPasswordController;
+  late TextEditingController confirmPasswordController;
 
   // Form fields
   final name = ''.obs;
@@ -65,12 +66,25 @@ class BusinessProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadBusinessProfile();
-    // Setup change listeners
+    dioClient = DioClient();
+    authController = Get.find<AuthController>();
+    hiveService = Get.find<HiveService>();
+    logger = Logger();
+    picker = ImagePicker();
 
-    // dioClient.setAuthToken(
-    //   "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIwMTk3NDQ0OS04NmEwLTcxMjEtODk2NC0yMjUzODNiZmU0MzUiLCJqdGkiOiI3OGIwZDc0NzU2MDZiM2Q3YzNlNTQ1OTMxZDlmMGMzOTFlOTM1Y2ZjZDUxNzZkODdmNjEyZmQwYzg0YWQyNzA3MWFlOTY2ODQwZmY4ZDRlMyIsImlhdCI6MTc1NjcyMDIzMS40NjY5NDYsIm5iZiI6MTc1NjcyMDIzMS40NjY5NTIsImV4cCI6MTc3MjM1ODYzMS40MTMzNDQsInN1YiI6IjYyIiwic2NvcGVzIjpbXX0.ZVMeK8uZKSU9_jbgm39gp2ai6fAarKYV-0Qh9XzGga3_ybnA-z63Q6R3w1MCPKi8k41f-BxYDXMR-uEvvOW-umbPhW0mzB5XeQbskzabIbfVSI-_-anCxzV3Z8KQWY1UAH-_P8X1NvPWGpQALuBQeZ7cwqbFOAhVwCTguwBTdrUp8YxlMldRtje2EzH1q2l-tx68mah-Wgv-Te7LZCNzDSIXH9hMuU5H17l3DoM5KV0Hi5xR8lpD7y3WSjMVhOSmw68kDQinFNzYtEeLGQs3BH5KWuDkJdr-oyB4Jgb6HIN_UzGvcnhwqZ-VQXfj3L6hNjOXPuTEyIq1Ovj81lr6fkdscWX0x6BEY9MpsN_pBPh6DzBRq8_g4wQjg8GcEbt0EDhW7Gh0hzeX5Gb1yiB_QNyD3fqYkSfxVpXdRM2whMoEELYwTtME03ONfeQyDH5UEUyhsn2OvAg27L1v6ZgbwRHCiMagPBS3xRpQ0rEFHHizf3lonIrbBth2bYXpmC0tVoI45v0aOICBuicHNkAFHAcV-dMRDydXRe5kqC1jNfteFmB00CqDla0DhUhEuhyFnn-A6vT62QC2b_sIAmQdeIv4RbAueQ_4oYh798PyK7-1hwFnh37BN67E3bqmqdylyoz1ocHUM0QRVijeui0ucV5yqMzaUxz2_gHdBGAmSI8",
-    // );
+    businessNameController = TextEditingController();
+    mobileController = TextEditingController();
+    tinController = TextEditingController();
+    emailController = TextEditingController();
+    gstController = TextEditingController();
+    pincodeController = TextEditingController();
+    addressController = TextEditingController();
+    currentPasswordController = TextEditingController();
+    newPasswordController = TextEditingController();
+    confirmPasswordController = TextEditingController();
+
+    loadBusinessProfile();
+
     final fields = <RxInterface>[
       name,
       phone,
@@ -90,7 +104,7 @@ class BusinessProfileController extends GetxController {
       ever(obs, (_) => hasChanges.value = true);
     }
 
-    // Sync controllers with Rx values
+    // Sync controllers
     businessNameController.text = name.value;
     mobileController.text = phone.value;
     tinController.text = tin.value;
@@ -98,6 +112,21 @@ class BusinessProfileController extends GetxController {
     gstController.text = gst.value;
     pincodeController.text = pincode.value;
     addressController.text = address.value;
+  }
+
+  @override
+  void onClose() {
+    businessNameController.dispose();
+    mobileController.dispose();
+    tinController.dispose();
+    emailController.dispose();
+    gstController.dispose();
+    pincodeController.dispose();
+    addressController.dispose();
+    currentPasswordController.dispose();
+    newPasswordController.dispose();
+    confirmPasswordController.dispose();
+    super.onClose();
   }
 
   Future<void> loadBusinessProfile() async {
@@ -389,20 +418,5 @@ class BusinessProfileController extends GetxController {
     if (logoImage.value != null) filled++;
     if (signatureImage.value != null) filled++;
     return filled / totalFields;
-  }
-
-  @override
-  void onClose() {
-    businessNameController.dispose();
-    mobileController.dispose();
-    tinController.dispose();
-    emailController.dispose();
-    gstController.dispose();
-    pincodeController.dispose();
-    addressController.dispose();
-    currentPasswordController.dispose();
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
-    super.onClose();
   }
 }

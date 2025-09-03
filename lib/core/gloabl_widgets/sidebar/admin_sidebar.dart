@@ -131,6 +131,57 @@ class AdminSidebar extends StatelessWidget {
                     currentRoute: currentRoute,
                     onTap: () => Get.toNamed(AppRoutes.parties),
                   ),
+                  _buildSectionHeader("items"),
+                  ExpansionTile(
+                    leading: const Icon(
+                      Icons.settings_outlined,
+                      color: Colors.grey,
+                    ),
+                    title: const Text(
+                      "Items Service",
+                      style: TextStyle(fontSize: 15),
+                    ),
+                    childrenPadding: const EdgeInsets.only(left: 16),
+                    initiallyExpanded:
+                        currentRoute == AppRoutes.addItems ||
+                        currentRoute == AppRoutes.categoryView ||
+                        currentRoute == AppRoutes.brands ||
+                        currentRoute == AppRoutes.units,
+                    children: [
+                      _buildNavTile(
+                        title: "Items",
+                        icon: Icons.tune_outlined,
+                        route: AppRoutes.addItems,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.addItems),
+                        indent: 16,
+                      ),
+                      _buildNavTile(
+                        title: "Category",
+                        icon: Icons.store_outlined,
+                        route: AppRoutes.categoryView,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.categoryView),
+                        indent: 16,
+                      ),
+                      _buildNavTile(
+                        title: "Brands",
+                        icon: Icons.receipt_long_outlined,
+                        route: AppRoutes.brands,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.brands),
+                        indent: 16,
+                      ),
+                      _buildNavTile(
+                        title: "Units",
+                        icon: Icons.group_outlined,
+                        route: AppRoutes.units,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.units),
+                        indent: 16,
+                      ),
+                    ],
+                  ),
 
                   _buildSectionHeader("Settings"),
                   ExpansionTile(

@@ -10,11 +10,8 @@ class CategoriesPage extends GetView<CategoryController> {
 
   @override
   Widget build(BuildContext context) {
-  
     final isDesktop = MediaQuery.of(context).size.width > 1024;
     final isTablet = MediaQuery.of(context).size.width > 600;
-
-  
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
@@ -35,7 +32,11 @@ class CategoriesPage extends GetView<CategoryController> {
             const SizedBox(width: 12),
             const Text(
               'Categories',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20, color: Colors.white),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                color: Colors.white,
+              ),
             ),
           ],
         ),
@@ -49,7 +50,11 @@ class CategoriesPage extends GetView<CategoryController> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10)),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
               ],
             ),
             child: MediaQuery.of(context).size.width < 600
@@ -62,8 +67,13 @@ class CategoriesPage extends GetView<CategoryController> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: accentColor,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           minimumSize: const Size(double.infinity, 48),
                         ),
                       ),
@@ -82,8 +92,13 @@ class CategoriesPage extends GetView<CategoryController> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: accentColor,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -96,20 +111,29 @@ class CategoriesPage extends GetView<CategoryController> {
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Obx(() => Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${controller.filteredCategories.length} Categories',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: textPrimaryColor),
+            child: Obx(
+              () => Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${controller.filteredCategories.length} Categories',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: textPrimaryColor,
                     ),
-                    if (controller.searchController.text.isNotEmpty)
-                      Text(
-                        'Filtered results',
-                        style: TextStyle(fontSize: 14, color: textSecondaryColor.withOpacity(0.8)),
+                  ),
+                  if (controller.searchController.text.isNotEmpty)
+                    Text(
+                      'Filtered results',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: textSecondaryColor.withOpacity(0.8),
                       ),
-                  ],
-                )),
+                    ),
+                ],
+              ),
+            ),
           ),
           Expanded(
             child: Obx(() {
@@ -125,11 +149,15 @@ class CategoriesPage extends GetView<CategoryController> {
                   ),
                 );
               }
-              if (controller.categories.value?.status != 1 || controller.filteredCategories.isEmpty) {
+              if (controller.categories.value?.status != 1 ||
+                  controller.filteredCategories.isEmpty) {
                 return const Center(child: Text('No categories found'));
               }
               return GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: isDesktop ? 6 : (isTablet ? 4 : 2),
                   childAspectRatio: 1.0,
@@ -139,14 +167,23 @@ class CategoriesPage extends GetView<CategoryController> {
                 itemCount: controller.filteredCategories.length,
                 itemBuilder: (context, index) {
                   final category = controller.filteredCategories[index];
-                  final colors = controller.getCategoryColors(category.name ?? 'Unknown');
+                  final colors = controller.getCategoryColors(
+                    category.name ?? 'Unknown',
+                  );
                   return Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: colors['border']!.withOpacity(0.2), width: 1),
+                      border: Border.all(
+                        color: colors['border']!.withOpacity(0.2),
+                        width: 1,
+                      ),
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 4)),
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
                       ],
                     ),
                     child: Material(
@@ -155,10 +192,12 @@ class CategoriesPage extends GetView<CategoryController> {
                         borderRadius: BorderRadius.circular(16),
                         onTap: () {
                           if (category.id != null) {
-                            Get.dialog(CategoryItemsDialog(
-                              categoryName: category.name ?? 'Unknown',
-                              categoryId: category.id!,
-                            ));
+                            Get.dialog(
+                              CategoryItemsDialog(
+                                categoryName: category.name ?? 'Unknown',
+                                categoryId: category.id!,
+                              ),
+                            );
                           }
                         },
                         child: Stack(
@@ -178,7 +217,9 @@ class CategoriesPage extends GetView<CategoryController> {
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Icon(
-                                        controller.getCategoryIcon(category.name ?? 'Unknown'),
+                                        controller.getCategoryIcon(
+                                          category.name ?? 'Unknown',
+                                        ),
                                         color: colors['primary'],
                                         size: 24,
                                       ),
@@ -209,7 +250,10 @@ class CategoriesPage extends GetView<CategoryController> {
                                     ),
                                     const SizedBox(height: 8),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: colors['background'],
                                         borderRadius: BorderRadius.circular(12),
@@ -232,14 +276,24 @@ class CategoriesPage extends GetView<CategoryController> {
                               right: 8,
                               child: PopupMenuButton<String>(
                                 padding: EdgeInsets.zero,
-                                icon: Icon(Icons.more_vert, color: textSecondaryColor.withOpacity(0.6), size: 20),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                icon: Icon(
+                                  Icons.more_vert,
+                                  color: textSecondaryColor.withOpacity(0.6),
+                                  size: 20,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                                 itemBuilder: (context) => [
                                   const PopupMenuItem(
                                     value: 'edit',
                                     child: Row(
                                       children: [
-                                        Icon(Icons.edit, size: 18, color: accentColor),
+                                        Icon(
+                                          Icons.edit,
+                                          size: 18,
+                                          color: accentColor,
+                                        ),
                                         SizedBox(width: 8),
                                         Text('Edit'),
                                       ],
@@ -249,7 +303,11 @@ class CategoriesPage extends GetView<CategoryController> {
                                     value: 'delete',
                                     child: Row(
                                       children: [
-                                        Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                                        Icon(
+                                          Icons.delete_outline,
+                                          size: 18,
+                                          color: Colors.red,
+                                        ),
                                         SizedBox(width: 8),
                                         Text('Delete'),
                                       ],
@@ -260,7 +318,9 @@ class CategoriesPage extends GetView<CategoryController> {
                                   if (value == 'edit') {
                                     // Implement edit functionality if needed
                                   } else if (value == 'delete') {
-                                    controller.deleteCategory(category.id.toString());
+                                    controller.deleteCategory(
+                                      category.id.toString(),
+                                    );
                                   }
                                 },
                               ),
@@ -297,24 +357,29 @@ class CategoriesPage extends GetView<CategoryController> {
             onPressed: () => controller.searchController.clear(),
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
   }
 
   Widget _buildFilterDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      constraints: const BoxConstraints(minWidth: 160),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
-      ),
-      child: Obx(() => DropdownButton<String>(
+    return SizedBox(
+      width: 200, // ✅ fixes unbounded width
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
+        ),
+        child: Obx(
+          () => DropdownButton<String>(
             value: controller.selectedFilter.value,
-            isExpanded: true,
+            isExpanded: true, // ✅ fine now, inside SizedBox
             items: const [
               DropdownMenuItem(value: 'All', child: Text('All Categories')),
               DropdownMenuItem(value: 'Active', child: Text('Active')),
@@ -322,9 +387,11 @@ class CategoriesPage extends GetView<CategoryController> {
             ],
             onChanged: (value) => controller.selectedFilter.value = value!,
             style: const TextStyle(color: textPrimaryColor),
-            underline: Container(),
+            underline: SizedBox.shrink(),
             icon: const Icon(Icons.arrow_drop_down, color: textSecondaryColor),
-          )),
+          ),
+        ),
+      ),
     );
   }
 }

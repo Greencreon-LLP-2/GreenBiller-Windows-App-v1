@@ -1,38 +1,47 @@
-import 'dart:convert';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/store_drtopdown_controller.dart';
-import 'package:greenbiller/core/gloabl_widgets/store_dropdown.dart';
+import 'package:greenbiller/core/gloabl_widgets/dropdowns/custom_dropdown.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
-import 'package:greenbiller/features/items/model/brand_item.dart';
+
 import 'package:greenbiller/features/items/model/brand_model.dart';
 import 'package:logger/logger.dart';
 
 class BrandController extends GetxController {
-  final DioClient dioClient = DioClient();
-  final AuthController authController = Get.find<AuthController>();
-  final Logger logger = Logger();
-  final StoreDropdownController storeDropdownController =
-      Get.find<StoreDropdownController>();
+  // Services
+  late DioClient dioClient;
+  late AuthController authController;
+  late Logger logger;
+  late StoreDropdownController storeDropdownController;
+
   // Reactive states
-  final brands = <BrandItemData>[].obs;
-  final searchController = TextEditingController();
-  final isLoading = true.obs;
-  final selectedStoreId = Rxn<int>();
+  RxList<BrandItemData> brands = <BrandItemData>[].obs;
+  RxBool isLoading = true.obs;
+  Rxn<int> selectedStoreId = Rxn<int>();
 
   // Dialog controllers
-  final brandNameController = TextEditingController();
-  final editBrandNameController = TextEditingController();
+  late TextEditingController searchController;
+  late TextEditingController brandNameController;
+  late TextEditingController editBrandNameController;
 
   @override
   void onInit() {
     super.onInit();
-    fetchBrands();
+    dioClient = DioClient();
+    authController = Get.find<AuthController>();
+    logger = Logger();
+    storeDropdownController = Get.find<StoreDropdownController>();
+
+    searchController = TextEditingController();
+    brandNameController = TextEditingController();
+    editBrandNameController = TextEditingController();
+
     searchController.addListener(() => update());
+    fetchBrands();
   }
+
 
   Future<void> fetchBrands([int? storeId]) async {
     try {

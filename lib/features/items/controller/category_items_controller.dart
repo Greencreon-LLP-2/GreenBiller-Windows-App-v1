@@ -10,19 +10,28 @@ import 'package:greenbiller/features/items/model/item_model.dart';
 import 'package:logger/logger.dart';
 
 class CategoryItemsController extends GetxController {
-  final DioClient dioClient = DioClient();
-  final AuthController authController = Get.find<AuthController>();
-  final Logger logger = Logger();
+  // Services
+  late DioClient dioClient;
+  late AuthController authController;
+  late Logger logger;
 
-  final items = <Item>[].obs;
-  final filteredItems = <Item>[].obs;
-  final searchController = TextEditingController();
-  final isLoading = true.obs;
-  final selectedFilter = 'All'.obs;
+  // Reactive
+  RxList<Item> items = <Item>[].obs;
+  RxList<Item> filteredItems = <Item>[].obs;
+  RxBool isLoading = true.obs;
+  RxString selectedFilter = 'All'.obs;
+
+  // Controllers
+  late TextEditingController searchController;
 
   @override
   void onInit() {
     super.onInit();
+    dioClient = DioClient();
+    authController = Get.find<AuthController>();
+    logger = Logger();
+
+    searchController = TextEditingController();
     searchController.addListener(_filterItems);
   }
 
@@ -31,7 +40,9 @@ class CategoryItemsController extends GetxController {
       isLoading.value = true;
       final accessToken = authController.user.value?.accessToken ?? '';
       dioClient.setAuthToken(accessToken);
-      final response = await dioClient.dio.get('$baseUrl/category/$categoryId/items');
+      final response = await dioClient.dio.get(
+        '$baseUrl/category/$categoryId/items',
+      );
       if (response.statusCode == 200 && response.data['data'] != null) {
         final List<dynamic> dataList = response.data['data'];
         items.value = dataList.map((e) => Item.fromJson(e)).toList();
@@ -42,7 +53,11 @@ class CategoryItemsController extends GetxController {
       }
     } catch (e, stackTrace) {
       logger.e('Error loading items: $e', stackTrace);
-      Get.snackbar('Error', 'Failed to load items: $e', backgroundColor: Colors.red);
+      Get.snackbar(
+        'Error',
+        'Failed to load items: $e',
+        backgroundColor: Colors.red,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -53,10 +68,16 @@ class CategoryItemsController extends GetxController {
     filteredItems.value = items.where((item) {
       final name = item.itemName.toLowerCase();
       if (selectedFilter.value == 'All') return name.contains(query);
-      if (selectedFilter.value == 'Active') return name.contains(query) && item.status == '1';
-      if (selectedFilter.value == 'Inactive') return name.contains(query) && item.status != '1';
-      if (selectedFilter.value == 'In Stock') return name.contains(query) && (int.tryParse(item.openingStock) ?? 0) > 0;
-      if (selectedFilter.value == 'Out of Stock') return name.contains(query) && (int.tryParse(item.openingStock) ?? 0) == 0;
+      if (selectedFilter.value == 'Active')
+        return name.contains(query) && item.status == '1';
+      if (selectedFilter.value == 'Inactive')
+        return name.contains(query) && item.status != '1';
+      if (selectedFilter.value == 'In Stock')
+        return name.contains(query) &&
+            (int.tryParse(item.openingStock) ?? 0) > 0;
+      if (selectedFilter.value == 'Out of Stock')
+        return name.contains(query) &&
+            (int.tryParse(item.openingStock) ?? 0) == 0;
       return true;
     }).toList();
   }
@@ -80,10 +101,7 @@ class CategoryItemsController extends GetxController {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Close'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('Close')),
         ],
       ),
     );
@@ -114,16 +132,17 @@ class CategoryItemsController extends GetxController {
         title: const Text('Delete Item'),
         content: Text('Are you sure you want to delete "${item.itemName}"?'),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
               items.remove(item);
               filteredItems.remove(item);
               Get.back();
-              Get.snackbar('Success', 'Item deleted locally', backgroundColor: Colors.green);
+              Get.snackbar(
+                'Success',
+                'Item deleted locally',
+                backgroundColor: Colors.green,
+              );
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Delete', style: TextStyle(color: Colors.white)),

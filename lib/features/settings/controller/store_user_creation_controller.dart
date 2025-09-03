@@ -11,10 +11,11 @@ import 'package:greenbiller/features/settings/models/store_users_model.dart';
 import 'package:logger/logger.dart';
 
 class UserCreationController extends GetxController {
-  final DioClient dioClient = DioClient();
-  final AuthController authController = Get.find<AuthController>();
-  final CommonApiFunctionsController commonApi = Get.find<CommonApiFunctionsController>();
-  final Logger logger = Logger();
+  // Services
+  late DioClient dioClient;
+  late AuthController authController;
+  late CommonApiFunctionsController commonApi;
+  late Logger logger;
 
   // Form fields
   final name = ''.obs;
@@ -31,6 +32,7 @@ class UserCreationController extends GetxController {
   final storeMap = <String, int>{}.obs;
   final storeUsers = Rxn<StoreUsersModelsResponse>();
   final selectedUserIndex = 4.obs;
+
   final userRolesMap = {
     2: 'Manager',
     3: 'Staff',
@@ -44,6 +46,11 @@ class UserCreationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    dioClient = DioClient();
+    authController = Get.find<AuthController>();
+    commonApi = Get.find<CommonApiFunctionsController>();
+    logger = Logger();
+
     loadStores();
     loadStoreUsers();
   }
@@ -64,6 +71,7 @@ class UserCreationController extends GetxController {
       isLoadingStores.value = false;
     }
   }
+
   Future<void> loadStoreUsers() async {
     try {
       isLoadingStores.value = true;
@@ -100,7 +108,6 @@ class UserCreationController extends GetxController {
 
   Future<void> createUser() async {
     try {
-      
       isLoading.value = true;
       final errors = _validateFields();
       if (errors.isNotEmpty) {

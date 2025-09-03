@@ -20,5 +20,9 @@ class AppRoutes {
   static const String businessProfile = '/business_profile';
   static const String invoiceSettings = '/invoice-settings';
   static const String newPurchase = '/new-purchase';
-    static const String parties = '/parties-page';
+  static const String parties = '/parties-page';
+  static const String addItems = '/add-items-page';
+  static const String categoryView = '/category-page';
+  static const String brands = '/brands-page';
+  static const String units = '/units-page';
 }

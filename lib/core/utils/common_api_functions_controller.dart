@@ -1,12 +1,11 @@
-import 'package:dio/dio.dart';
 import 'package:get/get.dart';
+import 'package:logger/logger.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/items/model/unit_model.dart';
-import 'package:logger/logger.dart';
 
-class CommonApiFunctionsController extends GetxController {
+class CommonApiFunctionsController {
   final DioClient dioClient = DioClient();
   final AuthController authController = Get.find<AuthController>();
   final Logger logger = Logger();
@@ -57,17 +56,68 @@ class CommonApiFunctionsController extends GetxController {
     }
   }
 
-  Future<List<dynamic>> fetchWarehouses() async {
+  Future<Map<String, int>> fetchCategories(int storeId) async {
     try {
-      final response = await dioClient.dio.get(viewStoreUrl);
+      final response = await dioClient.dio.get('$viewCategoriesUrl/$storeId');
       if (response.statusCode == 200) {
-        return response.data['data'] as List; // Safe cast
+        final categories = response.data['categories'] as List<dynamic>;
+        final newMap = <String, int>{};
+        for (var category in categories) {
+          if (category['id'] != null && category['name'] != null) {
+            newMap[category['name']] = category['id'];
+          }
+        }
+        return newMap;
       } else {
-        throw response; // Re-throwing non-200 response
+        throw Exception(
+          'Failed to load categories: ${response.data['message']}',
+        );
       }
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch stores: $e');
-      throw e; // Re-throwing error for caller to handle
+    } catch (e, stackTrace) {
+      logger.e('Error fetching categories: $e', stackTrace);
+      throw Exception(e);
+    }
+  }
+
+  Future<Map<String, int>> fetchBrands(int storeId) async {
+    try {
+      final response = await dioClient.dio.get('$viewBrandUrl/$storeId');
+      if (response.statusCode == 200) {
+        final brandList = response.data as List<dynamic>;
+        final newMap = <String, int>{};
+        for (var brand in brandList) {
+          if (brand['name'] != null && brand['id'] != null) {
+            newMap[brand['name']] = int.parse(brand['id'].toString());
+          }
+        }
+        return newMap;
+      } else {
+        throw Exception('Failed to load brands: ${response.data['message']}');
+      }
+    } catch (e, stackTrace) {
+      logger.e('Error fetching brands: $e', stackTrace);
+      throw Exception(e);
+    }
+  }
+
+  Future<Map<String, int>> fetchUnits() async {
+    try {
+      final response = await dioClient.dio.get(viewUnitUrl);
+      if (response.statusCode == 200) {
+        final unitList = response.data['data'] as List<dynamic>;
+        final newMap = <String, int>{};
+        for (var unit in unitList) {
+          if (unit['id'] != null && unit['unit_name'] != null) {
+            newMap[unit['unit_name']] = unit['id'];
+          }
+        }
+        return newMap;
+      } else {
+        throw Exception('Failed to load units: ${response.data['message']}');
+      }
+    } catch (e, stackTrace) {
+      logger.e('Error fetching units: $e', stackTrace);
+      throw Exception(e);
     }
   }
 
@@ -85,6 +135,27 @@ class CommonApiFunctionsController extends GetxController {
     }
   }
 
+  Future<Map<String, String>> fetchWarehouses() async {
+    try {
+      final response = await dioClient.dio.get(viewWarehouseUrl);
+      if (response.statusCode == 200) {
+        final warehouseList = response.data as Map<String, dynamic>;
+        final newMap = <String, String>{};
+        warehouseList.forEach((key, value) {
+          newMap[key] = value.toString();
+        });
+        return newMap;
+      } else {
+        throw Exception(
+          'Failed to load warehouses: ${response.data['message']}',
+        );
+      }
+    } catch (e, stackTrace) {
+      logger.e('Error fetching warehouses: $e', stackTrace);
+      throw Exception(e);
+    }
+  }
+
   Future<List<dynamic>> fetchSuppliers(String? storeId) async {
     try {
       String url = storeId != null
@@ -92,13 +163,13 @@ class CommonApiFunctionsController extends GetxController {
           : viewSupplierUrl;
       final response = await dioClient.dio.get(url);
       if (response.statusCode == 200) {
-        return response.data['data'] as List; // Safe cast
+        return response.data['data'] as List;
       } else {
-        throw response; // Re-throwing non-200 response
+        throw response;
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch stores: $e');
-      throw e; // Re-throwing error for caller to handle
+      Get.snackbar('Error', 'Failed to fetch suppliers: $e');
+      throw e;
     }
   }
 
@@ -107,13 +178,13 @@ class CommonApiFunctionsController extends GetxController {
       final url = storeId != null ? "$viewAllItemUrl/$storeId" : viewAllItemUrl;
       final response = await dioClient.dio.get(url);
       if (response.statusCode == 200) {
-        return response.data['data'] as List; // Safe cast
+        return response.data['data'] as List;
       } else {
-        throw response; // Re-throwing non-200 response
+        throw response;
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch stores: $e');
-      throw e; // Re-throwing error for caller to handle
+      Get.snackbar('Error', 'Failed to fetch items: $e');
+      throw e;
     }
   }
 
@@ -126,7 +197,7 @@ class CommonApiFunctionsController extends GetxController {
         return UnitModel(message: response.data.toString());
       }
     } catch (e, stackTrace) {
-      logger.e('Error fetching units: $e', e, stackTrace);
+      logger.e('Error fetching units: $e', stackTrace);
       throw Exception(e);
     }
   }

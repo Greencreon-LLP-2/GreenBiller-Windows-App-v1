@@ -11,13 +11,14 @@ import 'package:greenbiller/features/parties/models/customer_model.dart';
 import 'package:greenbiller/features/parties/models/supplier_model.dart';
 
 class PartiesController extends GetxController {
-  final DioClient dioClient = DioClient();
-  final HiveService hiveService = HiveService();
-  final AuthController authController = Get.find<AuthController>();
-  final StoreDropdownController storeDropdownController =
-      Get.find<StoreDropdownController>();
-  // Reactive Variables for Customers
-  final customerSearchController = TextEditingController();
+  // Services
+  late DioClient dioClient;
+  late HiveService hiveService;
+  late AuthController authController;
+  late StoreDropdownController storeDropdownController;
+
+  // Customer
+  late TextEditingController customerSearchController;
   final customerSearchQuery = ''.obs;
   final customerSelectedFilter = 'All Customers'.obs;
   final selectedCustomerStore = Rx<String?>(null);
@@ -29,12 +30,11 @@ class PartiesController extends GetxController {
   final customers = <CustomerData>[].obs;
   final filteredCustomers = <CustomerData>[].obs;
 
-  // Reactive Variables for Suppliers
-  final supplierSearchController = TextEditingController();
+  // Supplier
+  late TextEditingController supplierSearchController;
   final supplierSearchQuery = ''.obs;
   final supplierSelectedFilter = 'All Suppliers'.obs;
   final selectedSupplierStore = Rx<String?>(null);
-
   final isLoadingSuppliers = false.obs;
   final supplierError = Rx<String?>(null);
   final supplierSuccess = Rx<String?>(null);
@@ -42,22 +42,32 @@ class PartiesController extends GetxController {
   final suppliers = <SupplierData>[].obs;
   final filteredSuppliers = <SupplierData>[].obs;
 
+  // Misc
   final RxInt userId = 0.obs;
-  // Tab Index
   final currentTabIndex = 0.obs;
 
   @override
   void onInit() {
     super.onInit();
+    dioClient = DioClient();
+    hiveService = HiveService();
+    authController = Get.find<AuthController>();
+    storeDropdownController = Get.find<StoreDropdownController>();
+
+    customerSearchController = TextEditingController();
+    supplierSearchController = TextEditingController();
+
     userId.value = authController.user.value?.userId ?? 0;
 
-    // Load initial data
+    // Load initial
     loadCustomers();
     loadSuppliers();
-    // Listen to search and filter changes
+
+    // Listeners
     ever(customerSearchQuery, (_) => filterCustomers());
     ever(customerSelectedFilter, (_) => filterCustomers());
     ever(selectedCustomerStoreId, (_) => loadCustomers());
+
     ever(supplierSearchQuery, (_) => filterSuppliers());
     ever(supplierSelectedFilter, (_) => filterSuppliers());
     ever(storeDropdownController.selectedStoreId, (_) => loadSuppliers());
@@ -362,7 +372,7 @@ class PartiesController extends GetxController {
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
-        supplierError.value =  'Failed to add supplier';
+        supplierError.value = 'Failed to add supplier';
         return false;
       }
     } catch (e) {

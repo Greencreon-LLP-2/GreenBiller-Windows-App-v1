@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/parties/controller/parties_controller.dart';
-import 'package:greenbiller/core/gloabl_widgets/store_dropdown.dart';
+import 'package:greenbiller/core/gloabl_widgets/dropdowns/custom_dropdown.dart';
 
 class AddCustomerDialog extends StatelessWidget {
   final VoidCallback onSuccess;

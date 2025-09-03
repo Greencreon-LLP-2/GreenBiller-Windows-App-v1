@@ -26,6 +26,21 @@ class PurchaseItem {
   String? itemId; // Added to store item ID for API
   String? taxName; // Added to store tax name for API
 
+  void dispose() {
+    item.dispose();
+    serialNo.dispose();
+    qty.dispose();
+    unit.dispose();
+    pricePerUnit.dispose();
+    purchasePrice.dispose();
+    sku.dispose();
+    discountPercent.dispose();
+    discountAmount.dispose();
+    taxPercent.dispose();
+    taxAmount.dispose();
+    totalAmount.dispose();
+  }
+
   PurchaseItem() {
     qty.addListener(_calculateAmount);
     pricePerUnit.addListener(_calculateAmount);
@@ -79,41 +94,27 @@ class PurchaseItem {
     double total = (quantity * price) - discountAmt + taxAmt;
     totalAmount.text = total.toStringAsFixed(2);
   }
-
-  void dispose() {
-    item.dispose();
-    serialNo.dispose();
-    qty.dispose();
-    unit.dispose();
-    pricePerUnit.dispose();
-    purchasePrice.dispose();
-    sku.dispose();
-    discountPercent.dispose();
-    discountAmount.dispose();
-    taxPercent.dispose();
-    taxAmount.dispose();
-    totalAmount.dispose();
-  }
 }
 
 class NewPurchaseController extends GetxController {
-  final DioClient dioClient = DioClient();
-  final HiveService hiveService = HiveService();
-  final AuthController authController = Get.find<AuthController>();
-  final CommonApiFunctionsController commonApi =
-      Get.find<CommonApiFunctionsController>();
-  final Logger logger = Logger();
-  // Controllers
-  final TextEditingController storeController = TextEditingController();
-  final TextEditingController warehouseController = TextEditingController();
-  final TextEditingController billNumberController = TextEditingController();
-  final TextEditingController supplierController = TextEditingController();
-  final TextEditingController billDateController = TextEditingController();
-  final TextEditingController noteController = TextEditingController();
-  final TextEditingController otherChargesController = TextEditingController();
-  final TextEditingController paidAmountController = TextEditingController();
+  // Services
+  late DioClient dioClient;
+  late HiveService hiveService;
+  late AuthController authController;
+  late CommonApiFunctionsController commonApi;
+  late Logger logger;
 
-  // Reactive Variables
+  // Form Controllers
+  late TextEditingController storeController;
+  late TextEditingController warehouseController;
+  late TextEditingController billNumberController;
+  late TextEditingController supplierController;
+  late TextEditingController billDateController;
+  late TextEditingController noteController;
+  late TextEditingController otherChargesController;
+  late TextEditingController paidAmountController;
+
+  // Reactive
   final RxString paymentType = ''.obs;
   final RxDouble subtotal = 0.0.obs;
   final RxDouble totalDiscount = 0.0.obs;
@@ -130,7 +131,8 @@ class NewPurchaseController extends GetxController {
   final isLoadingItems = false.obs;
   final isLoadingTaxes = false.obs;
   final RxInt userId = 0.obs;
-  // Dropdown a nd Autocomplete Data
+
+  // Dropdown Data
   final RxMap<String, String> storeMap = <String, String>{}.obs;
   final RxMap<String, String> warehouseMap = <String, String>{}.obs;
   final RxMap<String, String> supplierMap = <String, String>{}.obs;
@@ -143,10 +145,28 @@ class NewPurchaseController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    dioClient = DioClient();
+    hiveService = HiveService();
+    authController = Get.find<AuthController>();
+    commonApi = Get.find<CommonApiFunctionsController>();
+    logger = Logger();
+
+    storeController = TextEditingController();
+    warehouseController = TextEditingController();
+    billNumberController = TextEditingController();
+    supplierController = TextEditingController();
+    billDateController = TextEditingController();
+    noteController = TextEditingController();
+    otherChargesController = TextEditingController();
+    paidAmountController = TextEditingController();
+
     userId.value = authController.user.value?.userId ?? 0;
 
+    // Init values
     addItem();
     billDateController.text = DateTime.now().toString().split(' ')[0];
+
+    // Listeners
     otherChargesController.addListener(() {
       otherCharges.value = double.tryParse(otherChargesController.text) ?? 0.0;
       calculateTotals();
@@ -155,6 +175,8 @@ class NewPurchaseController extends GetxController {
       paidAmount.value = double.tryParse(paidAmountController.text) ?? 0.0;
       calculateBalance();
     });
+
+    // Initial API
     fetchStores();
     fetchTaxes();
   }
@@ -169,9 +191,11 @@ class NewPurchaseController extends GetxController {
     noteController.dispose();
     otherChargesController.dispose();
     paidAmountController.dispose();
+
     for (var item in items) {
       item.dispose();
     }
+
     super.onClose();
   }
 

@@ -7,26 +7,35 @@ import 'package:greenbiller/features/settings/models/account_model.dart';
 import 'package:logger/logger.dart';
 
 class AccountController extends GetxController {
-  final DioClient _dioClient = DioClient();
-  final Logger _logger = Logger();
+  // Services
+  late DioClient dioClient;
+  late Logger logger;
 
-  final RxList<Map<String, String>> accounts = <Map<String, String>>[].obs;
-  final Rx<Map<String, String>?> selectedAccount = Rx<Map<String, String>?>(
-    null,
-  );
-  final RxBool isEditing = false.obs;
+  // State
+  final accounts = <Map<String, String>>[].obs;
+  final selectedAccount = Rx<Map<String, String>?>(null);
+  final isEditing = false.obs;
 
-  // Text editing controllers
-  final accountNameController = TextEditingController();
-  final bankNameController = TextEditingController();
-  final accountNumberController = TextEditingController();
-  final ifscCodeController = TextEditingController();
-  final upiIdController = TextEditingController();
-  final openingBalanceController = TextEditingController();
+  // Form controllers
+  late TextEditingController accountNameController;
+  late TextEditingController bankNameController;
+  late TextEditingController accountNumberController;
+  late TextEditingController ifscCodeController;
+  late TextEditingController upiIdController;
+  late TextEditingController openingBalanceController;
 
   @override
   void onInit() {
     super.onInit();
+    dioClient = DioClient();
+    logger = Logger();
+
+    accountNameController = TextEditingController();
+    bankNameController = TextEditingController();
+    accountNumberController = TextEditingController();
+    ifscCodeController = TextEditingController();
+    upiIdController = TextEditingController();
+    openingBalanceController = TextEditingController();
 
     fetchAccounts();
   }
@@ -55,7 +64,7 @@ class AccountController extends GetxController {
 
   Future<void> fetchAccounts() async {
     try {
-      final response = await _dioClient.dio.get(viewAccountUrl);
+      final response = await dioClient.dio.get(viewAccountUrl);
 
       if (response.statusCode == 200) {
         final accountModel = AccountModel.fromJson(response.data);
@@ -72,7 +81,7 @@ class AccountController extends GetxController {
             'balance': account.balance?.toString() ?? '0',
           });
         }
-        _logger.i('Fetched accounts: ${accounts.length}');
+        logger.i('Fetched accounts: ${accounts.length}');
       } else {
         Get.snackbar(
           'Error',
@@ -82,7 +91,7 @@ class AccountController extends GetxController {
         );
       }
     } catch (e) {
-      _logger.e('Failed to fetch accounts: $e');
+      logger.e('Failed to fetch accounts: $e');
       Get.snackbar(
         'Error',
         'Failed to fetch accounts',
@@ -114,7 +123,7 @@ class AccountController extends GetxController {
     String userId,
   ) async {
     try {
-      final response = await _dioClient.dio.post(
+      final response = await dioClient.dio.post(
         createAccountUrl,
         data: {
           "store_id": storeId,
@@ -134,7 +143,7 @@ class AccountController extends GetxController {
         return false;
       }
     } catch (e) {
-      _logger.e('Failed to create account: $e');
+      logger.e('Failed to create account: $e');
       return false;
     }
   }
@@ -151,7 +160,7 @@ class AccountController extends GetxController {
     String userId,
   ) async {
     try {
-      final response = await _dioClient.dio.put(
+      final response = await dioClient.dio.put(
         '$editAccountUrl/$accountId',
         data: {
           "store_id": storeId,
@@ -171,7 +180,7 @@ class AccountController extends GetxController {
         return false;
       }
     } catch (e) {
-      _logger.e('Failed to update account: $e');
+      logger.e('Failed to update account: $e');
       return false;
     }
   }
