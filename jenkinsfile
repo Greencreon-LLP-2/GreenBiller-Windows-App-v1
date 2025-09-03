@@ -2,53 +2,54 @@ pipeline {
     agent any
 
     environment {
-    FLUTTER_VERSION = "3.32.7"
-    ANDROID_HOME = "/var/lib/jenkins/Android/Sdk"
-    PATH = "$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$WORKSPACE/flutter/bin"
-}
-
+        FLUTTER_VERSION = "3.32.7"
+        ANDROID_HOME = "/var/lib/jenkins/Android/Sdk"
+        PATH = "$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin"
+    }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 echo "Checking out code from GitHub..."
                 checkout([$class: 'GitSCM',
                     branches: [[name: 'flutter_cicd_shilpi']],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/Greencreon-LLP-2/GreenBiller-Windows-App-v1.git'
-                    ]]
+                    userRemoteConfigs: [[url: 'https://github.com/Greencreon-LLP-2/GreenBiller-Windows-App-v1.git',
+                                         credentialsId: 'github-cred']]
                 ])
             }
         }
 
         stage('Set up Flutter') {
             steps {
-                echo "Setting up Flutter SDK..."
+                echo "Downloading and setting up Flutter SDK..."
                 sh '''
-                # Clone Flutter SDK if not already present
-                if [ ! -d "$FLUTTER_HOME" ]; then
-                    git clone https://github.com/flutter/flutter.git -b stable --depth 1 $FLUTTER_HOME
+                mkdir -p $WORKSPACE/flutter
+                cd $WORKSPACE/flutter
+
+                # Download Flutter 3.32.7 stable
+                if [ ! -d flutter ]; then
+                    wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.32.7-stable.tar.xz
+                    tar xf flutter_linux_3.32.7-stable.tar.xz
+                    rm flutter_linux_3.32.7-stable.tar.xz
                 fi
 
-                flutter doctor
+                export PATH="$PATH:$WORKSPACE/flutter/flutter/bin"
+
                 flutter --version
+                flutter doctor
                 '''
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                echo "Installing Flutter dependencies..."
                 sh 'flutter pub get'
             }
         }
 
         stage('Run Tests') {
             steps {
-                echo "Running Flutter tests..."
-                sh '''
-                flutter test || echo "Some tests failed, but continuing..."
-                '''
+                sh 'flutter test || true'
             }
         }
 
@@ -61,7 +62,6 @@ pipeline {
 
         stage('Archive APK') {
             steps {
-                echo "Archiving APK..."
                 archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', fingerprint: true
             }
         }
@@ -70,9 +70,6 @@ pipeline {
     post {
         success {
             echo "✅ Build Successful!"
-        }
-        unstable {
-            echo "⚠️ Build completed with warnings or test failures."
         }
         failure {
             echo "❌ Build Failed!"
