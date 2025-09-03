@@ -14,15 +14,15 @@ import 'package:greenbiller/routes/app_routes.dart';
 import 'package:logger/logger.dart';
 
 class AuthController extends GetxController {
-  final DioClient dioClient = DioClient();
-  final HiveService hiveService = HiveService();
-  final SessionService sessionService = SessionService();
+  final dioClient = DioClient();
+  final hiveService = HiveService();
+  final sessionService = SessionService();
   final logger = Logger();
 
   final user = Rxn<UserModel>();
   final isLoading = false.obs;
   final countryCode = '+91'.obs;
-  final phoneNumber = '7012545907'.obs;
+  final phoneNumber = ''.obs;
   final otp = ''.obs;
   final countryCodes = <String>[].obs;
 
@@ -30,58 +30,49 @@ class AuthController extends GetxController {
   void onInit() {
     super.onInit();
     _loadCountryCodes();
-    // dioClient.setAuthToken(
-    //   'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIwMTk3NDQ0OS04NmEwLTcxMjEtODk2NC0yMjUzODNiZmU0MzUiLCJqdGkiOiIzM2I4MDA0YTUzNmJmM2I0YjBlOTlhODhkZDkyMTJiMDkyMDZjZWIyYzIwMzczZGQ0MWEyNzVhMmZhMTlkM2I5NmE5YjViMTg3NzgwM2UyYSIsImlhdCI6MTc1NjgwOTg3My42MTY0MDUsIm5iZiI6MTc1NjgwOTg3My42MTY0MDksImV4cCI6MTc3MjQ0ODI3My40NTQyODQsInN1YiI6IjYyIiwic2NvcGVzIjpbXX0.sdhz4yK__pdEL4yUfIAXYcrGBMX6HAObjVI4eCIo4tKSL_5SNcjMGs5rQ6ABnKJNkcs92J0pnIwZqXEWLdvvXU2wHLVPaQGxv0-K6FEa7j5mVDjwIkvXjGy87Nk6K2WHrD-bNK6brT-ST7YCaIOD9-Cy0BPsLaPi2F0eUXp9yVVjTZkYioxs-W2LJgkvjcer03xqVrHJav4g-29Ngd_2SJ_nGREM20jDMQEEx7bqiqbVFEGCRaPP3EvGBD_oATgDlj2oJn4d17RGa7FY5MB6Bu1fJapZALpz8BCdMfvGo1iZq8cwCfXeccaVEL_g-GFPXLewyyOg71vgIdxAvdW5y0GS6M4EzhlwmnxMNNd5fzel7NBy-T4BOnm-dbx8CFDJ0a3NRQa3Z5kU_Kvx5sBkmDvQ5jh9bA-dWa9szyBAvAF4BtTcLRp4P6DW-_FOWryM_g3B9gV9NtIx1LZiP_GyLm3IFVmk1DIq6LKmK9BZiEVu745uwxgs7xBoc5xk4sFRwBgZmLrXPDp4u4Iku5s-mn2RIiHOKYrXZS38kvk3uTtO0cwTnLkLdjbzU-sPum_wFuSPuumXgNC_otj21bbTWY_-cRfFr33HG1XGNT4WE_qvxod_dO1rzUpNhNsaCkK69MOJmErcxsYcfOUbW9y3Vr6cg3J34ABcb4irYiT0WEw',
-    // );
-    //comment belo wcode for direct bypass and uncomemnt above dio token set 
-    Future.microtask(() async {
-      try {
-        logger.i('Ensuring Hive is initialized');
-        await hiveService.ensureInitialized();
-        logger.i('Checking for stored user in Hive');
-        user.value = hiveService.getUser();
-        if (user.value != null && user.value!.accessToken != null) {
-          logger.i('User found: ${user.value!.toJson()}');
-          dioClient.setAuthToken(user.value!.accessToken!);
-          final isValid = await _validateToken(user.value!.accessToken!);
-          if (isValid) {
-            logger.i('Token valid, starting services');
-            dioClient.setAuthToken(user.value!.accessToken!);
-            sessionService.startSessionCheck(user.value!.accessToken!);
-            if (!Platform.isLinux) {
-              await Get.find<PushNotificationService>().setUserData(
-                user.value!,
-              );
-            }
-            redirectToRoleBasedScreen();
-          } else {
-            logger.w('Token invalid or server error, checking offline mode');
-            if (await _isNetworkError()) {
-              logger.i(
-                'Offline mode: Proceeding to dashboard without validation',
-              );
-              sessionService.startSessionCheck(user.value!.accessToken!);
-              if (!Platform.isLinux) {
-                await Get.find<PushNotificationService>().setUserData(
-                  user.value!,
-                );
-              }
-              redirectToRoleBasedScreen();
-            } else {
-              logger.i('Invalid token, logging out');
-              // await logout();
-            }
-          }
+  }
+
+  Future<void> initializeUserSession() async {
+    try {
+      logger.i('Ensuring Hive is initialized');
+      await hiveService.ensureInitialized();
+
+      logger.i('Checking for stored user in Hive');
+      user.value = hiveService.getUser();
+
+      if (user.value != null && user.value!.accessToken != null) {
+        dioClient.setAuthToken(user.value!.accessToken!);
+        final isValid = await _validateToken(user.value!.accessToken!);
+
+        if (isValid) {
+          _startServices();
+          redirectToRoleBasedScreen();
+        } else if (await _isNetworkError()) {
+          _startServices();
+          redirectToRoleBasedScreen();
         } else {
-          logger.i('No user or token found in Hive, navigating to login');
+          logger.i('Invalid token, logging out');
           Get.offAllNamed(AppRoutes.login);
-          // Get.offAllNamed(AppRoutes.usersSettings);
         }
-      } catch (e, stackTrace) {
-        logger.e('Error in onInit: $e', e, stackTrace);
+      } else {
+        logger.i('No user/token found, go to login');
         Get.offAllNamed(AppRoutes.login);
       }
-    });
+    } catch (e, stack) {
+      logger.e('Error in session init: $e', e, stack);
+      Get.offAllNamed(AppRoutes.login);
+    }
+  }
+
+  void _startServices() {
+    final token = user.value?.accessToken;
+    if (token == null) return;
+
+    dioClient.setAuthToken(token);
+    sessionService.startSessionCheck(token);
+    if (!Platform.isLinux) {
+      Get.find<PushNotificationService>().setUserData(user.value!);
+    }
   }
 
   Future<bool> _isNetworkError() async {

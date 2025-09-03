@@ -6,7 +6,7 @@ import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/hive_service.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
-import 'package:greenbiller/core/app_handler/store_drtopdown_controller.dart';
+import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/features/parties/models/customer_model.dart';
 import 'package:greenbiller/features/parties/models/supplier_model.dart';
 
@@ -15,7 +15,7 @@ class PartiesController extends GetxController {
   late DioClient dioClient;
   late HiveService hiveService;
   late AuthController authController;
-  late StoreDropdownController storeDropdownController;
+  late DropdownController storeDropdownController;
 
   // Customer
   late TextEditingController customerSearchController;
@@ -52,7 +52,7 @@ class PartiesController extends GetxController {
     dioClient = DioClient();
     hiveService = HiveService();
     authController = Get.find<AuthController>();
-    storeDropdownController = Get.find<StoreDropdownController>();
+    storeDropdownController = Get.find<DropdownController>();
 
     customerSearchController = TextEditingController();
     supplierSearchController = TextEditingController();

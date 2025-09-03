@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/gloabl_widgets/dropdowns/custom_dropdown.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:greenbiller/core/colors.dart';
@@ -39,30 +40,30 @@ class AddItemsPage extends GetView<AddItemController> {
               child: TextButton(
                 onPressed: controller.openFile,
                 style: ButtonStyle(
-                  foregroundColor: MaterialStateProperty.all(Colors.white),
-                  padding: MaterialStateProperty.all(
+                  foregroundColor: WidgetStateProperty.all(Colors.white),
+                  padding: WidgetStateProperty.all(
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   ),
-                  minimumSize: MaterialStateProperty.all(const Size(0, 0)),
+                  minimumSize: WidgetStateProperty.all(const Size(0, 0)),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  overlayColor: MaterialStateProperty.resolveWith<Color?>((
+                  overlayColor: WidgetStateProperty.resolveWith<Color?>((
                     states,
                   ) {
-                    if (states.contains(MaterialState.hovered)) {
+                    if (states.contains(WidgetState.hovered)) {
                       return Colors.white.withOpacity(0.2);
                     }
-                    if (states.contains(MaterialState.pressed)) {
+                    if (states.contains(WidgetState.pressed)) {
                       return Colors.white.withOpacity(0.3);
                     }
                     return null;
                   }),
-                  backgroundColor: MaterialStateProperty.all(
+                  backgroundColor: WidgetStateProperty.all(
                     controller.importedFile.value != null &&
                             controller.importedFile.value!['name'] != null
                         ? Colors.transparent
                         : Colors.white.withOpacity(0.1),
                   ),
-                  shape: MaterialStateProperty.all(
+                  shape: WidgetStateProperty.all(
                     RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4),
                     ),
@@ -423,13 +424,61 @@ class AddItemsPage extends GetView<AddItemController> {
                     ),
                     Row(
                       children: [
-                        Expanded(child: StoreDropdown()),
+                        Expanded(
+                          child: AppDropdown(
+                            label: "Store",
+                            placeHolderText: 'Select Store',
+                            selectedValue: controller
+                                .storeDropdownController
+                                .selectedStoreId,
+                            options:
+                                controller.storeDropdownController.storeMap,
+                            isLoading: controller
+                                .storeDropdownController
+                                .isLoadingStores,
+                            onChanged: (val) async {
+                              if (val != null) {
+                                await controller.storeDropdownController
+                                    .loadBrands(val);
+                                await controller.storeDropdownController
+                                    .loadCategories(val);
+                              }
+                            },
+                          ),
+                        ),
+
                         const SizedBox(width: 12),
                         Expanded(
-                          child: CategoryDropdown(controller: controller),
+                          child: AppDropdown(
+                            label: "Category",
+                            placeHolderText: 'Select Category',
+                            selectedValue: controller
+                                .storeDropdownController
+                                .selectedCategoryId,
+                            options:
+                                controller.storeDropdownController.categoryMap,
+                            isLoading: controller
+                                .storeDropdownController
+                                .isLoadingCategories,
+                            onChanged: (val) {},
+                          ),
                         ),
                         const SizedBox(width: 12),
-                        Expanded(child: BrandDropdown(controller: controller)),
+                        Expanded(
+                          child: AppDropdown(
+                            label: "Brands",
+                            placeHolderText: 'Select Brands',
+                            selectedValue: controller
+                                .storeDropdownController
+                                .selectedBrandId,
+                            options:
+                                controller.storeDropdownController.brandMap,
+                            isLoading: controller
+                                .storeDropdownController
+                                .isLoadingBrands,
+                            onChanged: (val) {},
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -499,7 +548,17 @@ class AddItemsPage extends GetView<AddItemController> {
           ),
           Row(
             children: [
-              Expanded(child: UnitDropdown(controller: controller)),
+              Expanded(
+                child: AppDropdown(
+                  placeHolderText: 'Select unit',
+                  label: "Units",
+                  selectedValue:
+                      controller.storeDropdownController.selectedUnitId,
+                  options: controller.storeDropdownController.unitMap,
+                  isLoading: controller.storeDropdownController.isLoadingUnits,
+                  onChanged: (val) {},
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: _buildInputField(
@@ -860,7 +919,19 @@ class AddItemsPage extends GetView<AddItemController> {
                           ],
                         ),
                         const SizedBox(height: 20),
-                        WarehouseDropdown(controller: controller),
+                        AppDropdown(
+                          label: "Warehouses",
+                          placeHolderText: 'Select Warehouses',
+                          selectedValue: controller
+                              .storeDropdownController
+                              .selectedWarehouseId,
+                          options:
+                              controller.storeDropdownController.warehouseMap,
+                          isLoading: controller
+                              .storeDropdownController
+                              .isLoadingWarehouses,
+                          onChanged: (val) {},
+                        ),
                         _buildInputField(
                           label: "Opening Stock",
                           hint: "10",

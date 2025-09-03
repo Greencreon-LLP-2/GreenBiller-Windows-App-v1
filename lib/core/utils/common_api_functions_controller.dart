@@ -5,154 +5,148 @@ import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/items/model/unit_model.dart';
 
-class CommonApiFunctionsController {
-  final DioClient dioClient = DioClient();
-  final AuthController authController = Get.find<AuthController>();
-  final Logger logger = Logger();
+class CommonApiFunctionsController extends GetxController {
+  final dioClient = DioClient();
+  final authController = Get.find<AuthController>();
+  final logger = Logger();
 
-  Future<Map<String, int>> fetchStores({
-    bool excludeWalkingCustomer = true,
+  Future<Map<String, int>> fetchDropdownValues({
+    required String url,
+    required String keyName,
+    required String valueName,
+    bool isListResponse = true,
+    String? listKey,
+    Map<String, dynamic>? queryParams,
   }) async {
     try {
-      final response = await dioClient.dio.get(viewStoreUrl);
+      final response = await dioClient.dio.get(
+        url,
+        queryParameters: queryParams,
+      );
 
       if (response.statusCode == 200) {
-        final stores = response.data['data'];
+        List<dynamic> items = [];
 
-        if (stores is List) {
-          final mappedStores = <String, int>{};
-          for (var store in stores) {
-            final name = store['store_name'] ?? 'Unnamed Store';
-            final id = store['id'] as int;
-            mappedStores[name] = id;
-          }
-
-          return mappedStores;
+        if (isListResponse) {
+          items = listKey != null
+              ? List<dynamic>.from(response.data[listKey] ?? [])
+              : List<dynamic>.from(response.data ?? []);
         } else {
-          logger.w("Unexpected store response format: ${response.data}");
-          return {};
+          throw Exception("Unsupported response type for $url");
         }
+
+        final newMap = <String, int>{};
+        for (var item in items) {
+          final name = item[valueName]?.toString();
+          final id = item[keyName];
+          if (name != null && id != null) {
+            final idInt = id is int ? id : int.tryParse(id.toString());
+            if (idInt != null) {
+              newMap[name] = idInt;
+            } else {
+              print("⚠️ Skipping item due to invalid id: $item");
+            }
+          } else {
+            print("⚠️ Skipping item due to missing key/value: $item");
+          }
+        }
+
+        print("✅ Fetch success: ${newMap.length} items -> $newMap");
+        return newMap;
       } else {
-        logger.w("Failed to fetch stores: ${response.data}");
-        return {};
+        throw Exception("Failed to fetch $url : ${response.data}");
       }
     } catch (e, stack) {
-      logger.e("Error fetching stores: $e", e, stack);
+      logger.e("Error fetching dropdown values ($url): $e", e, stack);
       return {};
     }
   }
 
+  /// STORES
+  Future<Map<String, int>> fetchStores() async {
+    return fetchDropdownValues(
+      url: viewStoreUrl,
+      keyName: "id",
+      valueName: "store_name",
+      isListResponse: true,
+      listKey: "data",
+    );
+  }
+
+  /// CATEGORIES
+  Future<Map<String, int>> fetchCategories(int storeId) async {
+    return fetchDropdownValues(
+      url: "$viewCategoriesUrl/$storeId",
+      keyName: "id",
+      valueName: "name",
+      isListResponse: true,
+      listKey: "data",
+    );
+  }
+
+  /// BRANDS
+  Future<Map<String, int>> fetchBrands(int storeId) async {
+    return fetchDropdownValues(
+      url: viewBrandUrl,
+      keyName: "id",
+      valueName: "brand_name",
+      isListResponse: true,
+      queryParams: {'store_id': storeId},
+      listKey: "data",
+    );
+  }
+
+  /// UNITS
+  Future<Map<String, int>> fetchUnits() async {
+    return fetchDropdownValues(
+      url: viewUnitUrl,
+      keyName: "id",
+      valueName: "unit_name",
+      isListResponse: true,
+      listKey: "data",
+    );
+  }
+
+  /// WAREHOUSES
+  Future<Map<String, int>> fetchWarehouses(int? storeId) async {
+    return fetchDropdownValues(
+      url: storeId != null ? "$viewWarehouseUrl/$storeId" : viewWarehouseUrl,
+      keyName: "id",
+      valueName: "warehouse_name",
+      isListResponse: true,
+      listKey: "data",
+    );
+  }
+
+  /// Extra: retain list-returning versions if needed
   Future<List<dynamic>> fetchStoreList() async {
     try {
       final response = await dioClient.dio.get(viewStoreUrl);
       if (response.statusCode == 200) {
-        return response.data['data'] as List; // Safe cast
+        return response.data['data'] as List;
       } else {
-        throw response; // Re-throwing non-200 response
+        throw response;
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to fetch stores: $e');
-      throw e; // Re-throwing error for caller to handle
+      throw e;
     }
   }
 
-  Future<Map<String, int>> fetchCategories(int storeId) async {
+  Future<List<dynamic>> fetchWarehousesByStoreID(String? storeId) async {
     try {
-      final response = await dioClient.dio.get('$viewCategoriesUrl/$storeId');
+      String url = storeId != null
+          ? "$viewWarehouseUrl/$storeId"
+          : viewWarehouseUrl;
+      final response = await dioClient.dio.get(url);
       if (response.statusCode == 200) {
-        final categories = response.data['categories'] as List<dynamic>;
-        final newMap = <String, int>{};
-        for (var category in categories) {
-          if (category['id'] != null && category['name'] != null) {
-            newMap[category['name']] = category['id'];
-          }
-        }
-        return newMap;
+        return response.data['data'] as List;
       } else {
-        throw Exception(
-          'Failed to load categories: ${response.data['message']}',
-        );
-      }
-    } catch (e, stackTrace) {
-      logger.e('Error fetching categories: $e', stackTrace);
-      throw Exception(e);
-    }
-  }
-
-  Future<Map<String, int>> fetchBrands(int storeId) async {
-    try {
-      final response = await dioClient.dio.get('$viewBrandUrl/$storeId');
-      if (response.statusCode == 200) {
-        final brandList = response.data as List<dynamic>;
-        final newMap = <String, int>{};
-        for (var brand in brandList) {
-          if (brand['name'] != null && brand['id'] != null) {
-            newMap[brand['name']] = int.parse(brand['id'].toString());
-          }
-        }
-        return newMap;
-      } else {
-        throw Exception('Failed to load brands: ${response.data['message']}');
-      }
-    } catch (e, stackTrace) {
-      logger.e('Error fetching brands: $e', stackTrace);
-      throw Exception(e);
-    }
-  }
-
-  Future<Map<String, int>> fetchUnits() async {
-    try {
-      final response = await dioClient.dio.get(viewUnitUrl);
-      if (response.statusCode == 200) {
-        final unitList = response.data['data'] as List<dynamic>;
-        final newMap = <String, int>{};
-        for (var unit in unitList) {
-          if (unit['id'] != null && unit['unit_name'] != null) {
-            newMap[unit['unit_name']] = unit['id'];
-          }
-        }
-        return newMap;
-      } else {
-        throw Exception('Failed to load units: ${response.data['message']}');
-      }
-    } catch (e, stackTrace) {
-      logger.e('Error fetching units: $e', stackTrace);
-      throw Exception(e);
-    }
-  }
-
-  Future<List<dynamic>> fetchWarehousesByStoreID(String storeId) async {
-    try {
-      final response = await dioClient.dio.get("$viewWarehouseUrl/$storeId");
-      if (response.statusCode == 200) {
-        return response.data['data'] as List; // Safe cast
-      } else {
-        throw response; // Re-throwing non-200 response
+        throw response;
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch stores: $e');
-      throw e; // Re-throwing error for caller to handle
-    }
-  }
-
-  Future<Map<String, String>> fetchWarehouses() async {
-    try {
-      final response = await dioClient.dio.get(viewWarehouseUrl);
-      if (response.statusCode == 200) {
-        final warehouseList = response.data as Map<String, dynamic>;
-        final newMap = <String, String>{};
-        warehouseList.forEach((key, value) {
-          newMap[key] = value.toString();
-        });
-        return newMap;
-      } else {
-        throw Exception(
-          'Failed to load warehouses: ${response.data['message']}',
-        );
-      }
-    } catch (e, stackTrace) {
-      logger.e('Error fetching warehouses: $e', stackTrace);
-      throw Exception(e);
+      Get.snackbar('Error', 'Failed to fetch warehouses: $e');
+      throw e;
     }
   }
 

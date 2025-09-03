@@ -3,7 +3,7 @@ import 'package:dio/dio.dart' as dio;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:greenbiller/core/app_handler/store_drtopdown_controller.dart';
+import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
@@ -20,7 +20,7 @@ class AddItemController extends GetxController
   late DioClient dioClient;
   late CommonApiFunctionsController commonApi;
   late AuthController authController;
-  late StoreDropdownController storeDropdownController;
+  late DropdownController storeDropdownController;
   late ImagePicker picker;
   final _logger = Logger();
 
@@ -75,11 +75,10 @@ class AddItemController extends GetxController
     dioClient = DioClient();
     commonApi = CommonApiFunctionsController();
     authController = Get.find<AuthController>();
-    storeDropdownController = Get.find<StoreDropdownController>();
+    storeDropdownController = Get.find<DropdownController>();
+    loadAwaitData();
     picker = ImagePicker();
-
     userId.value = authController.user.value?.userId ?? 0;
-
     tabController = TabController(length: 3, vsync: this);
     tabController.addListener(() {
       if (!tabController.indexIsChanging) {
@@ -105,9 +104,6 @@ class AddItemController extends GetxController
     openingStockController = TextEditingController();
     alertQuantityController = TextEditingController();
     subUnitController = TextEditingController();
-
-    loadUnits();
-    loadWarehouses();
   }
 
   @override
@@ -134,82 +130,9 @@ class AddItemController extends GetxController
     super.onClose();
   }
 
-  Future<void> loadCategories() async {
-    isLoadingCategories.value = true;
-    try {
-      if (selectedStoreId.value != null) {
-        final categories = await commonApi.fetchCategories(
-          selectedStoreId.value!,
-        );
-        categoryMap.assignAll(categories);
-      }
-    } catch (e, stackTrace) {
-      _logger.e('Error loading categories: $e', stackTrace);
-      Get.snackbar(
-        'Error',
-        'Error loading categories: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoadingCategories.value = false;
-    }
-  }
-
-  Future<void> loadBrands() async {
-    isLoadingBrands.value = true;
-    try {
-      if (selectedStoreId.value != null) {
-        final brands = await commonApi.fetchBrands(selectedStoreId.value!);
-        brandMap.assignAll(brands);
-      }
-    } catch (e, stackTrace) {
-      _logger.e('Error loading brands: $e', stackTrace);
-      Get.snackbar(
-        'Error',
-        'Error loading brands: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoadingBrands.value = false;
-    }
-  }
-
-  Future<void> loadUnits() async {
-    isLoadingUnits.value = true;
-    try {
-      final units = await commonApi.fetchUnits();
-      unitMap.assignAll(units);
-    } catch (e, stackTrace) {
-      _logger.e('Error loading units: $e', stackTrace);
-      Get.snackbar(
-        'Error',
-        'Error loading units: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoadingUnits.value = false;
-    }
-  }
-
-  Future<void> loadWarehouses() async {
-    isLoadingWarehouses.value = true;
-    try {
-      final warehouses = await commonApi.fetchWarehouses();
-      warehouseMap.assignAll(warehouses);
-    } catch (e, stackTrace) {
-      _logger.e('Error loading warehouses: $e', stackTrace);
-      Get.snackbar(
-        'Error',
-        'Error loading warehouses: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoadingWarehouses.value = false;
-    }
+  Future<void> loadAwaitData() async {
+    await storeDropdownController.loadStores();
+    await storeDropdownController.loadUnits();
   }
 
   Future<void> pickFile() async {

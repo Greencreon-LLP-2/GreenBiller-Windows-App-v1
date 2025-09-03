@@ -22,7 +22,7 @@ import 'package:greenbiller/features/items/views/category/categories_page.dart';
 import 'package:greenbiller/features/items/views/items/add_items_page.dart';
 import 'package:greenbiller/features/items/views/units/units_page.dart';
 import 'package:greenbiller/features/parties/controller/parties_controller.dart';
-import 'package:greenbiller/core/app_handler/store_drtopdown_controller.dart';
+import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/features/parties/view/parties_page.dart';
 import 'package:greenbiller/features/purchase/controller/new_purchase_controller.dart';
 import 'package:greenbiller/features/purchase/view/new_purchase_page.dart';
@@ -79,7 +79,6 @@ void main() {
     },
   );
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -90,9 +89,18 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: AppRoutes.login,
       getPages: [
-        GetPage(name: AppRoutes.login, page: () => const LoginPage()),
-        GetPage(name: AppRoutes.otpVerify, page: () => const OtpVerifyPage()),
-        GetPage(name: AppRoutes.signUp, page: () => const SignUpPage()),
+        GetPage(
+          name: AppRoutes.login,
+          page: () => const LoginPage(),
+        ),
+        GetPage(
+          name: AppRoutes.otpVerify,
+          page: () => const OtpVerifyPage(),
+        ),
+        GetPage(
+          name: AppRoutes.signUp,
+          page: () => const SignUpPage(),
+        ),
         GetPage(
           name: AppRoutes.adminDashboard,
           page: () => const StoreAdminEntryPoint(),
@@ -113,40 +121,91 @@ class MyApp extends StatelessWidget {
           name: AppRoutes.homepage,
           page: () => const CustomerDashboard(),
         ),
-        GetPage(name: AppRoutes.maintenance, page: () => const Maintenance()),
+        GetPage(
+          name: AppRoutes.maintenance,
+          page: () => const Maintenance(),
+        ),
         GetPage(
           name: AppRoutes.oneSignalNotificationPage,
           page: () => const NotificationDetailsPage(),
         ),
-        GetPage(name: AppRoutes.accountSettings, page: () => AccountSetttingsPage()),
-        GetPage(name: AppRoutes.usersSettings, page: () => const StoreUsers()),
-        GetPage(name: AppRoutes.businessProfile, page: () => const BusinessProfilePage()),
-        GetPage(name: AppRoutes.invoiceSettings, page: () => InvoiceSettingsPage()),
-        GetPage(name: AppRoutes.newPurchase, page: () => NewPurchasePage()),
-        GetPage(name: AppRoutes.parties, page: () => PartiesPage()),
-        GetPage(name: AppRoutes.categoryView, page: () => CategoriesPage()),
-        GetPage(name: AppRoutes.brands, page: () => BrandPage()),
-        GetPage(name: AppRoutes.units, page: () => UnitsPage()),
-        GetPage(name: AppRoutes.addItems, page: () => AddItemsPage()),
+        GetPage(
+          name: AppRoutes.accountSettings,
+          page: () => AccountSetttingsPage(),
+          binding: BindingsBuilder(() {
+            Get.put(AccountController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.usersSettings,
+          page: () => const StoreUsers(),
+          binding: BindingsBuilder(() {
+            Get.put(UserCreationController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.businessProfile,
+          page: () => const BusinessProfilePage(),
+          binding: BindingsBuilder(() {
+            Get.put(BusinessProfileController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.invoiceSettings,
+          page: () => InvoiceSettingsPage(),
+          binding: BindingsBuilder(() {
+            Get.put(InvoiceSettingsController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.newPurchase,
+          page: () => NewPurchasePage(),
+          binding: BindingsBuilder(() {
+            Get.put(NewPurchaseController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.parties,
+          page: () => PartiesPage(),
+          binding: BindingsBuilder(() {
+            Get.put(PartiesController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.categoryView,
+          page: () => CategoriesPage(),
+          binding: BindingsBuilder(() {
+            Get.put(CategoryController());
+            Get.put(CategoryItemsController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.brands,
+          page: () => BrandPage(),
+          binding: BindingsBuilder(() {
+            Get.put(BrandController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.units,
+          page: () => UnitsPage(),
+          binding: BindingsBuilder(() {
+            Get.put(UnitController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.addItems,
+          page: () => AddItemsPage(),
+          binding: BindingsBuilder(() {
+            Get.put(AddItemController());
+          }),
+        ),
       ],
       builder: (context, child) {
-        // Always-available global controllers
+        // ✅ Always-available global controllers
         Get.put(AuthController(), permanent: true);
         Get.put(CommonApiFunctionsController(), permanent: true);
-        Get.put(NewPurchaseController(), permanent: true);
-        Get.put(StoreDropdownController(), permanent: true);
-
-        // Feature-specific controllers: lazy loaded
-        Get.lazyPut(() => UserCreationController());
-        Get.lazyPut(() => AccountController());
-        Get.lazyPut(() => BusinessProfileController());
-        Get.lazyPut(() => InvoiceSettingsController());
-        Get.lazyPut(() => PartiesController());
-        Get.lazyPut(() => CategoryItemsController());
-        Get.lazyPut(() => CategoryController());
-        Get.lazyPut(() => BrandController());
-        Get.lazyPut(() => UnitController());
-        Get.lazyPut(() => AddItemController());
+        Get.put(DropdownController(), permanent: true);
 
         return child!;
       },

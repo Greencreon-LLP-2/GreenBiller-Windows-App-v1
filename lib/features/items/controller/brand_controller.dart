@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
-import 'package:greenbiller/core/app_handler/store_drtopdown_controller.dart';
+import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/core/gloabl_widgets/dropdowns/custom_dropdown.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 
@@ -14,12 +14,11 @@ class BrandController extends GetxController {
   late DioClient dioClient;
   late AuthController authController;
   late Logger logger;
-  late StoreDropdownController storeDropdownController;
+  late DropdownController storeDropdownController;
 
   // Reactive states
   RxList<BrandItemData> brands = <BrandItemData>[].obs;
   RxBool isLoading = true.obs;
-  Rxn<int> selectedStoreId = Rxn<int>();
 
   // Dialog controllers
   late TextEditingController searchController;
@@ -32,8 +31,8 @@ class BrandController extends GetxController {
     dioClient = DioClient();
     authController = Get.find<AuthController>();
     logger = Logger();
-    storeDropdownController = Get.find<StoreDropdownController>();
-
+    storeDropdownController = Get.find<DropdownController>();
+    storeDropdownController.loadStores();
     searchController = TextEditingController();
     brandNameController = TextEditingController();
     editBrandNameController = TextEditingController();
@@ -41,7 +40,6 @@ class BrandController extends GetxController {
     searchController.addListener(() => update());
     fetchBrands();
   }
-
 
   Future<void> fetchBrands([int? storeId]) async {
     try {
@@ -160,7 +158,6 @@ class BrandController extends GetxController {
 
   Future<void> showAddBrandDialog() async {
     brandNameController.clear();
-    selectedStoreId.value = null;
 
     Get.dialog(
       AlertDialog(
@@ -183,10 +180,12 @@ class BrandController extends GetxController {
               autofocus: true,
             ),
             const SizedBox(height: 16),
-            StoreDropdown(
-              onStoreChanged: (storeId) {
-                storeDropdownController.selectedStoreId.value = storeId;
-              },
+            AppDropdown(
+              label: "Store",
+              selectedValue: storeDropdownController.selectedStoreId,
+              options: storeDropdownController.storeMap,
+              isLoading: storeDropdownController.isLoadingStores,
+              onChanged: (val) {},
             ),
           ],
         ),
@@ -201,7 +200,8 @@ class BrandController extends GetxController {
                   ? null
                   : () async {
                       if (brandNameController.text.isEmpty ||
-                          selectedStoreId.value == null) {
+                          storeDropdownController.selectedStoreId.value ==
+                              null) {
                         Get.snackbar(
                           'Error',
                           'Please fill in all fields',
@@ -211,7 +211,8 @@ class BrandController extends GetxController {
                       }
                       await addBrand(
                         brandNameController.text,
-                        selectedStoreId.value.toString(),
+                        storeDropdownController.selectedStoreId.value
+                            .toString(),
                         authController.user.value?.userId.toString() ?? '',
                       );
                       Get.back();

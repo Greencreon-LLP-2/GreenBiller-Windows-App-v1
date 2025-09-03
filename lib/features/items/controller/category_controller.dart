@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide FormData, MultipartFile;
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
-import 'package:greenbiller/core/app_handler/store_drtopdown_controller.dart';
+import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/core/gloabl_widgets/dropdowns/custom_dropdown.dart';
+
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/items/model/category_list_model.dart';
 
@@ -17,7 +18,7 @@ class CategoryController extends GetxController {
   // Services
   late DioClient dioClient;
   late AuthController authController;
-  late StoreDropdownController storeDropdownController;
+  late DropdownController storeDropdownController;
   late Logger logger;
   late ImagePicker picker;
 
@@ -27,7 +28,6 @@ class CategoryController extends GetxController {
   late TextEditingController searchController;
   RxBool isLoading = true.obs;
   RxString selectedFilter = 'All'.obs;
-  Rxn<int> selectedStoreId = Rxn<int>();
 
   // Dialog controllers
   late TextEditingController categoryNameController;
@@ -41,7 +41,8 @@ class CategoryController extends GetxController {
     // Initialize services
     dioClient = DioClient();
     authController = Get.find<AuthController>();
-    storeDropdownController = Get.find<StoreDropdownController>();
+    storeDropdownController = Get.find<DropdownController>();
+    storeDropdownController.loadStores();
     logger = Logger();
     picker = ImagePicker();
 
@@ -206,7 +207,6 @@ class CategoryController extends GetxController {
 
   Future<void> showAddCategoryDialog() async {
     categoryNameController.clear();
-    selectedStoreId.value = null;
     selectedImage.value = null;
 
     Get.dialog(
@@ -230,12 +230,14 @@ class CategoryController extends GetxController {
                 ),
                 autofocus: true,
               ),
-              const SizedBox(height: 16),
-              StoreDropdown(
-                onStoreChanged: (storeId) {
-                  storeDropdownController.selectedStoreId.value = storeId;
-                },
+              AppDropdown(
+                label: "Store",
+                selectedValue: storeDropdownController.selectedStoreId,
+                options: storeDropdownController.storeMap,
+                isLoading: storeDropdownController.isLoadingStores,
+                onChanged: (val) {},
               ),
+
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -293,7 +295,7 @@ class CategoryController extends GetxController {
                       }
                       await addCategory(
                         categoryNameController.text,
-                        selectedStoreId.value,
+                        storeDropdownController.selectedStoreId.value,
                         selectedImage.value,
                       );
                       Get.back();

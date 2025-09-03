@@ -34,7 +34,6 @@ class UnitController extends GetxController {
     authController = Get.find<AuthController>();
     commonApi = Get.find<CommonApiFunctionsController>();
     logger = Logger();
-
     unitNameController = TextEditingController();
     unitValueController = TextEditingController();
     descriptionController = TextEditingController();

@@ -70,7 +70,7 @@ class AddSupplierDialog extends StatelessWidget {
               }
               return const SizedBox.shrink();
             }),
-              const SizedBox(height: 24),
+            const SizedBox(height: 24),
             _buildTextField(
               controller: nameController,
               label: 'Supplier Name',
@@ -116,9 +116,13 @@ class AddSupplierDialog extends StatelessWidget {
               icon: Icons.branding_watermark_outlined,
             ),
             const SizedBox(height: 16),
-            StoreDropdown(
-              onStoreChanged: (storeId) {
-                controller.selectedCustomerStoreId.value = storeId;
+            AppDropdown(
+              label: "Store",
+              selectedValue: controller.storeDropdownController.selectedStoreId,
+              options: controller.storeDropdownController.storeMap,
+              isLoading: controller.storeDropdownController.isLoadingStores,
+              onChanged: (val) {
+                controller.selectedCustomerStoreId.value = val;
               },
             ),
 

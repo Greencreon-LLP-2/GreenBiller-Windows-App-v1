@@ -106,9 +106,13 @@ class AddCustomerDialog extends StatelessWidget {
               icon: Icons.account_balance_rounded,
             ),
             const SizedBox(height: 16),
-            StoreDropdown(
-              onStoreChanged: (storeId) {
-                controller.selectedCustomerStoreId.value = storeId;
+            AppDropdown(
+              label: "Store",
+              selectedValue: controller.storeDropdownController.selectedStoreId,
+              options: controller.storeDropdownController.storeMap,
+              isLoading: controller.storeDropdownController.isLoadingStores,
+              onChanged: (val) {
+                controller.selectedCustomerStoreId.value = val;
               },
             ),
 
