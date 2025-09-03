@@ -3,28 +3,32 @@ pipeline {
 
     environment {
         FLUTTER_VERSION = "3.32.7"
-        PATH = "$PATH:$WORKSPACE/flutter/bin"
+        FLUTTER_HOME = "$WORKSPACE/flutter"
+        PATH = "$FLUTTER_HOME/bin:$PATH"
     }
 
     stages {
         stage('Checkout') {
             steps {
+                echo "Checking out code from GitHub..."
                 checkout([$class: 'GitSCM',
                     branches: [[name: 'flutter_cicd_shilpi']],
-                    userRemoteConfigs: [[url: 'https://github.com/Greencreon-LLP-2/GreenBiller-Windows-App-v1.git']]
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Greencreon-LLP-2/GreenBiller-Windows-App-v1.git'
+                    ]]
                 ])
             }
         }
 
         stage('Set up Flutter') {
             steps {
+                echo "Setting up Flutter SDK..."
                 sh '''
                 # Clone Flutter SDK if not already present
-                if [ ! -d "$WORKSPACE/flutter" ]; then
-                    git clone https://github.com/flutter/flutter.git -b stable --depth 1
+                if [ ! -d "$FLUTTER_HOME" ]; then
+                    git clone https://github.com/flutter/flutter.git -b stable --depth 1 $FLUTTER_HOME
                 fi
 
-                export PATH=$WORKSPACE/flutter/bin:$PATH
                 flutter doctor
                 flutter --version
                 '''
@@ -33,24 +37,30 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
+                echo "Installing Flutter dependencies..."
                 sh 'flutter pub get'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'flutter test || true'
+                echo "Running Flutter tests..."
+                sh '''
+                flutter test || echo "Some tests failed, but continuing..."
+                '''
             }
         }
 
         stage('Build APK') {
             steps {
+                echo "Building release APK..."
                 sh 'flutter build apk --release'
             }
         }
 
         stage('Archive APK') {
             steps {
+                echo "Archiving APK..."
                 archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', fingerprint: true
             }
         }
@@ -59,6 +69,9 @@ pipeline {
     post {
         success {
             echo "✅ Build Successful!"
+        }
+        unstable {
+            echo "⚠️ Build completed with warnings or test failures."
         }
         failure {
             echo "❌ Build Failed!"
