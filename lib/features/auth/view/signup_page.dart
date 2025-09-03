@@ -208,8 +208,11 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             validator: EmailValidator.validate,
+            inputFormatters: [
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 16), 
           TextFormField(
             decoration: InputDecoration(
             hintText: 'Phone Number',
