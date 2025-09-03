@@ -53,7 +53,7 @@ class PartiesController extends GetxController {
     hiveService = HiveService();
     authController = Get.find<AuthController>();
     storeDropdownController = Get.find<DropdownController>();
-
+    storeDropdownController.loadStores();
     customerSearchController = TextEditingController();
     supplierSearchController = TextEditingController();
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/gloabl_widgets/dropdowns/custom_dropdown.dart';
+import 'package:greenbiller/features/items/views/items/unit_dropdown_withvalue.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -122,12 +123,7 @@ class AddItemsPage extends GetView<AddItemController> {
             const SizedBox(width: 8),
           ],
         ),
-        body: _buildDesktopLayout(
-          context,
-          controller,
-          formKey,
-          controller.tabController,
-        ),
+        body: _buildDesktopLayout(context, controller, formKey),
       ),
     );
   }
@@ -136,7 +132,6 @@ class AddItemsPage extends GetView<AddItemController> {
     BuildContext context,
     AddItemController controller,
     GlobalKey<FormState> formKey,
-    TabController tabController,
   ) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -215,25 +210,19 @@ class AddItemsPage extends GetView<AddItemController> {
                           "Basic Info",
                           Icons.info_outline,
                           0,
-                          controller, // ✅ pass controller, not tabController
+                          controller,
                         ),
                         _buildNavItem(
                           "Pricing",
                           Icons.attach_money,
                           1,
-                          controller, // ✅
+                          controller,
                         ),
-                        _buildNavItem(
-                          "Stock",
-                          Icons.inventory,
-                          2,
-                          controller, // ✅
-                        ),
+                        _buildNavItem("Stock", Icons.inventory, 2, controller),
                       ],
                     ),
                   ),
                 ),
-
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -296,16 +285,18 @@ class AddItemsPage extends GetView<AddItemController> {
                       ),
                       child: Row(
                         children: [
-                          Text(
-                            tabController.index == 0
-                                ? "Basic Information"
-                                : tabController.index == 1
-                                ? "Pricing Details"
-                                : "Stock Information",
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: textPrimaryColor,
+                          Obx(
+                            () => Text(
+                              controller.currentIndex.value == 0
+                                  ? "Basic Information"
+                                  : controller.currentIndex.value == 1
+                                  ? "Pricing Details"
+                                  : "Stock Information",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: textPrimaryColor,
+                              ),
                             ),
                           ),
                           const Spacer(),
@@ -321,13 +312,15 @@ class AddItemsPage extends GetView<AddItemController> {
                       ),
                     ),
                     Expanded(
-                      child: IndexedStack(
-                        index: tabController.index,
-                        children: [
-                          _buildDesktopBasicInfoContent(controller),
-                          _buildDesktopPricingContent(controller),
-                          _buildDesktopStockContent(controller),
-                        ],
+                      child: Obx(
+                        () => IndexedStack(
+                          index: controller.currentIndex.value,
+                          children: [
+                            _buildDesktopBasicInfoContent(controller),
+                            _buildDesktopPricingContent(controller),
+                            _buildDesktopStockContent(controller),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -351,7 +344,7 @@ class AddItemsPage extends GetView<AddItemController> {
       return InkWell(
         onTap: () {
           controller.tabController.animateTo(tabIndex);
-          controller.currentIndex.value = tabIndex; // update Rx
+          controller.currentIndex.value = tabIndex;
         },
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -442,6 +435,9 @@ class AddItemsPage extends GetView<AddItemController> {
                                     .loadBrands(val);
                                 await controller.storeDropdownController
                                     .loadCategories(val);
+                                await controller.storeDropdownController
+                                    .loadWarehouses(val);
+                                    
                               }
                             },
                           ),
@@ -549,15 +545,7 @@ class AddItemsPage extends GetView<AddItemController> {
           Row(
             children: [
               Expanded(
-                child: AppDropdown(
-                  placeHolderText: 'Select unit',
-                  label: "Units",
-                  selectedValue:
-                      controller.storeDropdownController.selectedUnitId,
-                  options: controller.storeDropdownController.unitMap,
-                  isLoading: controller.storeDropdownController.isLoadingUnits,
-                  onChanged: (val) {},
-                ),
+                child: UnitDropdownWithValue(controller: controller),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -648,7 +636,7 @@ class AddItemsPage extends GetView<AddItemController> {
                             Expanded(
                               child: _buildDropdownField(
                                 label: "Tax Type",
-                                items: ["GST", "VAT", "None"],
+                                items: controller.taxList,
                                 prefixIcon: Icons.receipt_long,
                                 controller: controller,
                               ),
@@ -1277,8 +1265,9 @@ class AddItemsPage extends GetView<AddItemController> {
           selectedValue = controller.selectedTaxType.value;
           onChanged = (value) {
             controller.selectedTaxType.value = value;
-            if (value == "None") {
-              controller.taxRateController.text = "0";
+            if (value != null) {
+              controller.taxRateController.text =
+                  controller.taxMap[value]?.toString() ?? "0";
             }
           };
           break;

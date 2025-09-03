@@ -133,6 +133,20 @@ class CommonApiFunctionsController extends GetxController {
     }
   }
 
+  Future<List<dynamic>> fetchTaxList() async {
+    try {
+      final response = await dioClient.dio.get(viewTaxUrl);
+      if (response.statusCode == 200) {
+        return response.data['data'] as List;
+      } else {
+        throw response;
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to fetch stores: $e');
+      throw e;
+    }
+  }
+
   Future<List<dynamic>> fetchWarehousesByStoreID(String? storeId) async {
     try {
       String url = storeId != null

@@ -106,16 +106,12 @@ class DropdownController extends GetxController {
 
     try {
       final response = await fetchFn();
-      print("✅ Fetch success: ${response.length} items -> $response");
-      // Clear old data and add new to ensure Obx reacts
       targetMap.clear();
       targetMap.addAll(response);
     } catch (e) {
-      print("❌ Fetch error: $e");
       error.value = e.toString().replaceAll('Exception:', '').trim();
     } finally {
       isLoading.value = false;
-      print("🔄 Loading finished for ${targetMap.hashCode}");
     }
   }
 }

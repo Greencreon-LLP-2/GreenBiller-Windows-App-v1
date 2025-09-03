@@ -1,19 +1,15 @@
 class UnitModel {
   final String? message;
-  final List<Datum>? data;
+  final List<UnitItem>? data;
   final int? status;
 
-  UnitModel({
-    this.message,
-    this.data,
-    this.status,
-  });
+  UnitModel({this.message, this.data, this.status});
 
   factory UnitModel.fromJson(Map<String, dynamic> json) {
     return UnitModel(
       message: json['message'] as String?,
       data: (json['data'] as List<dynamic>?)
-          ?.map((e) => Datum.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => UnitItem.fromJson(e as Map<String, dynamic>))
           .toList(),
       status: json['status'] as int?,
     );
@@ -28,7 +24,7 @@ class UnitModel {
   }
 }
 
-class Datum {
+class UnitItem {
   final int? id;
   final String? storeId;
   final String? parentId;
@@ -39,7 +35,7 @@ class Datum {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  Datum({
+  UnitItem({
     this.id,
     this.storeId,
     this.parentId,
@@ -51,8 +47,8 @@ class Datum {
     this.updatedAt,
   });
 
-  factory Datum.fromJson(Map<String, dynamic> json) {
-    return Datum(
+  factory UnitItem.fromJson(Map<String, dynamic> json) {
+    return UnitItem(
       id: json['id'] as int?,
       storeId: json['store_id'] as String?,
       parentId: json['parent_id'] as String?,

@@ -120,15 +120,18 @@ class SuppliersTab extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                AppDropdown(
-                  label: "Store",
-                  selectedValue:
-                      controller.storeDropdownController.selectedStoreId,
-                  options: controller.storeDropdownController.storeMap,
-                  isLoading: controller.storeDropdownController.isLoadingStores,
-                  onChanged: (val) {
-                    controller.selectedCustomerStoreId.value = val;
-                  },
+                Expanded(
+                  child: AppDropdown(
+                    label: "Store",
+                    selectedValue:
+                        controller.storeDropdownController.selectedStoreId,
+                    options: controller.storeDropdownController.storeMap,
+                    isLoading:
+                        controller.storeDropdownController.isLoadingStores,
+                    onChanged: (val) {
+                      controller.selectedCustomerStoreId.value = val;
+                    },
+                  ),
                 ),
 
                 const SizedBox(width: 12),

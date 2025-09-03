@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
+import 'package:greenbiller/features/items/model/unit_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:open_file/open_file.dart';
@@ -50,6 +51,12 @@ class AddItemController extends GetxController
   final isLoadingBrands = false.obs;
   final isLoadingWarehouses = false.obs;
 
+  final taxMap = <String, double>{}.obs; // tax_name -> tax value
+  final taxList = <String>[].obs; // dropdown options
+  final unitList = <UnitItem>[].obs;
+  final selectedUnit = Rxn<UnitItem>();
+  late TextEditingController unitValueController;
+
   // Form controllers
   late TextEditingController itemNameController;
   late TextEditingController brandController;
@@ -76,7 +83,6 @@ class AddItemController extends GetxController
     commonApi = CommonApiFunctionsController();
     authController = Get.find<AuthController>();
     storeDropdownController = Get.find<DropdownController>();
-    loadAwaitData();
     picker = ImagePicker();
     userId.value = authController.user.value?.userId ?? 0;
     tabController = TabController(length: 3, vsync: this);
@@ -104,6 +110,11 @@ class AddItemController extends GetxController
     openingStockController = TextEditingController();
     alertQuantityController = TextEditingController();
     subUnitController = TextEditingController();
+    unitValueController = TextEditingController();
+
+    loadAwaitData();
+    loadTaxList();
+    loadUnits();
   }
 
   @override
@@ -130,9 +141,35 @@ class AddItemController extends GetxController
     super.onClose();
   }
 
+  Future<void> loadUnits() async {
+    final unitModel = await commonApi.viewUnit();
+    unitList.assignAll(unitModel.data ?? []);
+  }
+
   Future<void> loadAwaitData() async {
     await storeDropdownController.loadStores();
     await storeDropdownController.loadUnits();
+  }
+
+  Future<void> loadTaxList() async {
+    try {
+      final taxes = await commonApi.fetchTaxList();
+      taxMap.clear();
+      taxList.clear();
+
+      // Always append "None"
+      taxMap["None"] = 0;
+      taxList.add("None");
+
+      for (final tax in taxes) {
+        final name = tax['tax_name'] as String;
+        final value = double.tryParse(tax['tax'].toString()) ?? 0;
+        taxMap[name] = value;
+        taxList.add(name);
+      }
+    } catch (e) {
+      _logger.e("Error loading tax list: $e");
+    }
   }
 
   Future<void> pickFile() async {
