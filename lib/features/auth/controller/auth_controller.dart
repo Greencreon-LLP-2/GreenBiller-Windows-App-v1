@@ -83,6 +83,13 @@ class AuthController extends GetxController {
     // });
   }
 
+  void resetOtp() {
+    try {
+      otp.value = '';
+    }
+    catch(_){}
+  }
+
   Future<bool> _isNetworkError() async {
     try {
       await dioClient.dio.get(
@@ -161,11 +168,11 @@ class AuthController extends GetxController {
 
           if (phoneCode != null) {
             if (_isValidCountryCode(phoneCode)) {
-            if (!phoneCode.startsWith('+')) {
-              phoneCode = '+$phoneCode';
+              if (!phoneCode.startsWith('+')) {
+                phoneCode = '+$phoneCode';
+              }
+              codes.add(phoneCode);
             }
-            codes.add(phoneCode);
-          }
           }
         }
 
@@ -186,44 +193,41 @@ class AuthController extends GetxController {
   }
 
   bool _isValidCountryCode(String phoneCode) {
-
     final code = phoneCode.startsWith('+') ? phoneCode.substring(1) : phoneCode;
-    
-  
+
     final numericCode = int.tryParse(code);
     if (numericCode == null) return false;
-    
-    
-    return code.length >= 1 && code.length <= 4 && numericCode >= 1 && numericCode <= 9999;
+
+    return code.length >= 1 &&
+        code.length <= 4 &&
+        numericCode >= 1 &&
+        numericCode <= 9999;
   }
 
   Future<void> sendOtp() async {
     try {
       isLoading.value = true;
       if (!_isValidCountryCode(countryCode.value)) {
-      Get.snackbar(
-        'Error',
-        'Invalid country code. Please select a valid country code.',
-        backgroundColor: Colors.red,
-      );
-      return;
-    }
+        Get.snackbar(
+          'Error',
+          'Invalid country code. Please select a valid country code.',
+          backgroundColor: Colors.red,
+        );
+        return;
+      }
       if (phoneNumber.value.isEmpty || phoneNumber.value.length != 10) {
-      Get.snackbar(
-        'Error',
-        'Please enter a valid 10-digit phone number.',
-        backgroundColor: Colors.red,
+        Get.snackbar(
+          'Error',
+          'Please enter a valid 10-digit phone number.',
+          backgroundColor: Colors.red,
+        );
+        return;
+      }
+      final response = await dioClient.dio.post(
+        ApiConstants.sendOtpUrl,
+        data: {'country_code': countryCode.value, 'mobile': phoneNumber.value},
       );
-      return;
-    }
-         final response = await dioClient.dio.post(
-      ApiConstants.sendOtpUrl,
-      data: {
-        'country_code': countryCode.value,
-        'mobile': phoneNumber.value,
-      },
-    );
-  
+
       if (response.statusCode == 200) {
         Get.snackbar(
           'Success',
