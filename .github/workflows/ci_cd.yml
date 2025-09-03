@@ -3,10 +3,10 @@ name: Flutter CI/CD
 on:
   push:
     branches:
-      - shilpi_flutter_cicd
+      - flutter_cicd_shilpi
   pull_request:
     branches:
-      - shilpi_flutter_cicd
+      - flutter_cicd_shilpi
 
 jobs:
   build:
