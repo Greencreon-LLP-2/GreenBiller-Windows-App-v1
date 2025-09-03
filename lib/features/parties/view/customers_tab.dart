@@ -6,7 +6,7 @@ import 'package:greenbiller/features/parties/controller/parties_controller.dart'
 import 'package:greenbiller/features/parties/models/customer_model.dart';
 import 'package:greenbiller/features/parties/view/custom_filter_chip.dart';
 import 'package:greenbiller/features/parties/view/customers_card.dart';
-import 'package:greenbiller/features/parties/view/store_dropdown.dart';
+import 'package:greenbiller/core/gloabl_widgets/store_dropdown.dart';
 import 'package:greenbiller/features/parties/view/summary_card_page.dart';
 
 class CustomersTab extends StatelessWidget {

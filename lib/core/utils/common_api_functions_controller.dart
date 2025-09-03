@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
+import 'package:greenbiller/features/items/model/unit_model.dart';
 import 'package:logger/logger.dart';
 
 class CommonApiFunctionsController extends GetxController {
@@ -113,6 +114,20 @@ class CommonApiFunctionsController extends GetxController {
     } catch (e) {
       Get.snackbar('Error', 'Failed to fetch stores: $e');
       throw e; // Re-throwing error for caller to handle
+    }
+  }
+
+  Future<UnitModel> viewUnit() async {
+    try {
+      final response = await dioClient.dio.get(viewUnitUrl);
+      if (response.statusCode == 200) {
+        return UnitModel.fromJson(response.data);
+      } else {
+        return UnitModel(message: response.data.toString());
+      }
+    } catch (e, stackTrace) {
+      logger.e('Error fetching units: $e', e, stackTrace);
+      throw Exception(e);
     }
   }
 }
