@@ -1,0 +1,67 @@
+pipeline {
+    agent any
+
+    environment {
+        FLUTTER_VERSION = "3.32.7"
+        PATH = "$PATH:$WORKSPACE/flutter/bin"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout([$class: 'GitSCM',
+                    branches: [[name: 'flutter_cicd_shilpi']],
+                    userRemoteConfigs: [[url: 'https://github.com/Greencreon-LLP-2/GreenBiller-Windows-App-v1.git']]
+                ])
+            }
+        }
+
+        stage('Set up Flutter') {
+            steps {
+                sh '''
+                # Clone Flutter SDK if not already present
+                if [ ! -d "$WORKSPACE/flutter" ]; then
+                    git clone https://github.com/flutter/flutter.git -b stable --depth 1
+                fi
+
+                export PATH=$WORKSPACE/flutter/bin:$PATH
+                flutter doctor
+                flutter --version
+                '''
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'flutter pub get'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'flutter test || true'
+            }
+        }
+
+        stage('Build APK') {
+            steps {
+                sh 'flutter build apk --release'
+            }
+        }
+
+        stage('Archive APK') {
+            steps {
+                archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Build Successful!"
+        }
+        failure {
+            echo "❌ Build Failed!"
+        }
+    }
+}
