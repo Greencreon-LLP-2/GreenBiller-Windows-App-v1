@@ -16,7 +16,9 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final ValueNotifier<bool> _passwordVisible = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> _confirmPasswordVisible = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _confirmPasswordVisible = ValueNotifier<bool>(
+    false,
+  );
 
   @override
   void dispose() {
@@ -38,10 +40,7 @@ class _SignUpPageState extends State<SignUpPage> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: Row(
                 children: [
-                  Expanded(
-                    flex: 2,
-                    child: LogoHeaderWidget(),
-                  ),
+                  Expanded(flex: 2, child: LogoHeaderWidget()),
                   const SizedBox(width: 20),
                   Expanded(
                     flex: 1,
@@ -116,14 +115,16 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
   final _confirmPasswordController = TextEditingController();
   final _referralController = TextEditingController();
   final ValueNotifier<bool> _passwordVisible = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> _confirmPasswordVisible = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _confirmPasswordVisible = ValueNotifier<bool>(
+    false,
+  );
   final _formKey = GlobalKey<FormState>();
-  
+
   @override
   void initState() {
     super.initState();
     final authController = Get.find<AuthController>();
-    _phoneController.text = authController.phoneNumber.value;
+    _phoneController.text = authController.phoneNumber.value ?? '';
   }
 
   @override
@@ -140,10 +141,13 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
   }
 
   void _signUp() {
-    
     if (!_formKey.currentState!.validate()) {
-      Get.snackbar('Error', 'Please fix form errors',
-          backgroundColor: errorColor, colorText: Colors.white);
+      Get.snackbar(
+        'Error',
+        'Please fix form errors',
+        backgroundColor: errorColor,
+        colorText: Colors.white,
+      );
       return;
     }
 
@@ -153,14 +157,22 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
         _phoneController.text.isEmpty ||
         _passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
-      Get.snackbar('Error', 'Please fill all required fields',
-          backgroundColor: errorColor, colorText: Colors.white);
+      Get.snackbar(
+        'Error',
+        'Please fill all required fields',
+        backgroundColor: errorColor,
+        colorText: Colors.white,
+      );
       return;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      Get.snackbar('Error', 'Passwords do not match',
-          backgroundColor: errorColor, colorText: Colors.white);
+      Get.snackbar(
+        'Error',
+        'Passwords do not match',
+        backgroundColor: errorColor,
+        colorText: Colors.white,
+      );
       return;
     }
 
@@ -186,7 +198,7 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
             label: 'Full Name',
             prefixIcon: Icons.person_outline,
             controller: _nameController,
-           validator:NameValidator.validate ,
+            validator: NameValidator.validate,
           ),
           const SizedBox(height: 16),
           CustomTextField(
@@ -195,13 +207,18 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
             prefixIcon: Icons.email_outlined,
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            validator: EmailValidator.validate
+            validator: EmailValidator.validate,
           ),
           const SizedBox(height: 16),
-          CustomTextField(
+          TextFormField(
+            decoration: InputDecoration(
             hintText: 'Phone Number',
-            label: 'Phone Number',
-            prefixIcon: Icons.phone_android,
+            labelText: 'Phone Number',
+            prefixIcon: Icon(Icons.phone_android),
+            ),
+            
+            readOnly: true,
+            enabled: false,
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             
@@ -211,7 +228,6 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
             valueListenable: _passwordVisible,
             builder: (context, isVisible, child) {
               return CustomTextField(
-                
                 hintText: 'Enter your password',
                 label: 'Password',
                 prefixIcon: Icons.lock_outline,
@@ -224,11 +240,10 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
                 obscureText: !isVisible,
                 inputFormatters: [
                   LengthLimitingTextInputFormatter(30),
-                  FilteringTextInputFormatter.deny(RegExp(r'\s'))
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
                 ],
                 validator: PasswordValidator.validate,
               );
-              
             },
           ),
           const SizedBox(height: 16),
@@ -243,12 +258,13 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
                 isPassword: true,
                 passwordVisible: isVisible,
                 onToggleVisibility: () {
-                  _confirmPasswordVisible.value = !_confirmPasswordVisible.value;
+                  _confirmPasswordVisible.value =
+                      !_confirmPasswordVisible.value;
                 },
                 obscureText: !isVisible,
-                 inputFormatters: [
+                inputFormatters: [
                   LengthLimitingTextInputFormatter(30),
-                  FilteringTextInputFormatter.deny(RegExp(r'\s'))
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
                 ],
                 validator: PasswordValidator.validate,
               );
@@ -262,18 +278,21 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
             controller: _referralController,
           ),
           const SizedBox(height: 24),
-          Obx(() => authController.isLoading.value
-              ? const Center(child: CircularProgressIndicator(color: accentColor))
-              : ActionButton(
-                  text: 'Create Account',
-                  onPressed: _signUp,
-                )),
+          Obx(
+            () => authController.isLoading.value
+                ? const Center(
+                    child: CircularProgressIndicator(color: accentColor),
+                  )
+                : ActionButton(text: 'Create Account', onPressed: _signUp),
+          ),
           const SizedBox(height: 16),
           TextButton(
             onPressed: () => Get.back(),
             child: Text(
               'Already have an account? Sign in',
-              style: AppTextStyles.labelMedium.copyWith(color: textSecondaryColor),
+              style: AppTextStyles.labelMedium.copyWith(
+                color: textSecondaryColor,
+              ),
             ),
           ),
         ],
