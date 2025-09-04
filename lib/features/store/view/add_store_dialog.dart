@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:greenbiller/core/colors.dart';
+import 'package:greenbiller/core/gloabl_widgets/dropdowns/custom_dropdown.dart';
 import 'package:greenbiller/core/gloabl_widgets/text_fields/text_field_widget.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:greenbiller/features/store/controller/store_controller.dart';
 
-class AddStoreDialog extends GetView<AddStoreController> {
+class AddStoreDialog extends GetView<StoreController> {
   final VoidCallback? callback;
 
   const AddStoreDialog({super.key, this.callback});
@@ -20,7 +21,7 @@ class AddStoreDialog extends GetView<AddStoreController> {
         padding: const EdgeInsets.all(24),
         child: SingleChildScrollView(
           child: Form(
-            key: controller.formKey,
+            key: controller.storeFormKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +34,11 @@ class AddStoreDialog extends GetView<AddStoreController> {
                         color: textPrimaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.store, color: textPrimaryColor, size: 24),
+                      child: const Icon(
+                        Icons.store,
+                        color: textPrimaryColor,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     const Text(
@@ -50,46 +55,59 @@ class AddStoreDialog extends GetView<AddStoreController> {
                 Center(
                   child: Column(
                     children: [
-                      Obx(() => InkWell(
-                            onTap: () => controller.pickImage(),
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              width: 120,
-                              height: 120,
-                              decoration: BoxDecoration(
-                                color: backgroundColor,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: textLightColor, width: 1),
-                                image: controller.storeImage.value != null
-                                    ? DecorationImage(
-                                        image: FileImage(File(controller.storeImage.value!)),
-                                        fit: BoxFit.cover,
-                                      )
-                                    : null,
+                      Obx(
+                        () => InkWell(
+                          onTap: () => controller.pickStoreImage(),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              color: backgroundColor,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: textLightColor,
+                                width: 1,
                               ),
-                              child: controller.storeImage.value == null
-                                  ? const Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.add_photo_alternate_outlined,
-                                            size: 32, color: textSecondaryColor),
-                                        SizedBox(height: 8),
-                                        Text(
-                                          'Add Logo',
-                                          style: TextStyle(
-                                            color: textSecondaryColor,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ],
+                              image: controller.storeImage.value != null
+                                  ? DecorationImage(
+                                      image: FileImage(
+                                        File(controller.storeImage.value!),
+                                      ),
+                                      fit: BoxFit.cover,
                                     )
                                   : null,
                             ),
-                          )),
+                            child: controller.storeImage.value == null
+                                ? const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_photo_alternate_outlined,
+                                        size: 32,
+                                        color: textSecondaryColor,
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Add Logo',
+                                        style: TextStyle(
+                                          color: textSecondaryColor,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : null,
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       const Text(
                         'Recommended size: 200x200px',
-                        style: TextStyle(color: textSecondaryColor, fontSize: 12),
+                        style: TextStyle(
+                          color: textSecondaryColor,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -132,6 +150,7 @@ class AddStoreDialog extends GetView<AddStoreController> {
                   controller: controller.storeEmailController,
                   keyboardType: TextInputType.emailAddress,
                 ),
+
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -139,19 +158,33 @@ class AddStoreDialog extends GetView<AddStoreController> {
                     TextButton(
                       onPressed: () => Get.back(),
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                       ),
-                      child: const Text('Cancel', style: TextStyle(color: textSecondaryColor)),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(color: textSecondaryColor),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton(
                       onPressed: () => controller.addStore(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: accentColor,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                      child: const Text('Add Store', style: TextStyle(color: Colors.white)),
+                      child: const Text(
+                        'Add Store',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -161,93 +194,5 @@ class AddStoreDialog extends GetView<AddStoreController> {
         ),
       ),
     );
-  }
-}
-
-class AddStoreController extends GetxController {
-  final storeNameController = TextEditingController();
-  final storeWebsiteController = TextEditingController();
-  final storeAddressController = TextEditingController();
-  final storePhoneController = TextEditingController();
-  final storeEmailController = TextEditingController();
-  final storeImage = Rxn<String>();
-  final formKey = GlobalKey<FormState>();
-
-
-  @override
-  void onInit() {
-    super.onInit();
-   
-  }
-
-  Future<void> pickImage() async {
-    try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 80,
-      );
-      if (pickedFile != null) {
-        storeImage.value = pickedFile.path;
-      }
-    } catch (e) {
-      Get.snackbar('Error', 'Error picking image: $e', backgroundColor: Colors.red, colorText: Colors.white);
-    }
-  }
-
-  void addStore() async {
-    if (storeNameController.text.isEmpty) {
-      Get.snackbar('Error', 'Store name is required', backgroundColor: Colors.red, colorText: Colors.white);
-      return;
-    }
-    if (!RegExp(r'^[0-9]{10}$').hasMatch(storePhoneController.text)) {
-      Get.snackbar('Error', 'Invalid phone number (10 digits required)', backgroundColor: Colors.red, colorText: Colors.white);
-      return;
-    }
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(storeEmailController.text)) {
-      Get.snackbar('Error', 'Invalid email address', backgroundColor: Colors.red, colorText: Colors.white);
-      return;
-    }
-    
-    if (storeImage.value == null) {
-      Get.snackbar('Error', 'Please select an image', backgroundColor: Colors.red, colorText: Colors.white);
-      return;
-    }
-
-    try {
-      // final file = File(storeImage.value!);
-      // final response = await addStoreService(
-      //   user.value!.accessToken!,
-      //   user.value!.user!.id.toString(),
-      //   'store-${DateTime.now().millisecondsSinceEpoch}',
-      //   file,
-      //   storeNameController.text,
-      //   storeWebsiteController.text,
-      //   storeAddressController.text,
-      //   storePhoneController.text,
-      //   storeEmailController.text,
-      // );
-      // if (response == 'Store added successfully') {
-      //   Get.snackbar('Success', 'Store added successfully', backgroundColor: Colors.green, colorText: Colors.white);
-      //   // Get.find<ViewStoreController>().fetchStores();
-      //   Get.back();
-      // } else {
-      //   Get.snackbar('Error', 'Failed to add store: $response', backgroundColor: Colors.red, colorText: Colors.white);
-      // }
-    } catch (e) {
-      Get.snackbar('Error', 'Error: $e', backgroundColor: Colors.red, colorText: Colors.white);
-    }
-  }
-
-  @override
-  void onClose() {
-    storeNameController.dispose();
-    storeWebsiteController.dispose();
-    storeAddressController.dispose();
-    storePhoneController.dispose();
-    storeEmailController.dispose();
-    super.onClose();
   }
 }

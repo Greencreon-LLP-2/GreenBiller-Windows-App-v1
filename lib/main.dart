@@ -37,6 +37,10 @@ import 'package:greenbiller/features/settings/controller/store_user_creation_con
 import 'package:greenbiller/features/settings/view/business_profile_page.dart';
 import 'package:greenbiller/features/settings/view/invoice_settings_page.dart';
 import 'package:greenbiller/features/settings/view/store_users.dart';
+import 'package:greenbiller/features/store/controller/admin_stores_controller.dart';
+import 'package:greenbiller/features/store/controller/admin_warehouse_controller.dart';
+import 'package:greenbiller/features/store/controller/store_controller.dart';
+import 'package:greenbiller/features/store/view/store_page.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 import 'package:greenbiller/screens/dashboards.dart';
 import 'package:greenbiller/screens/store_admin/store_admin_entry_point.dart';
@@ -197,8 +201,17 @@ class MyApp extends StatelessWidget {
           page: () => AllItemsPage(),
           binding: BindingsBuilder(() {
             Get.put(AllItemsController());
-             Get.put(AddItemController());
+            Get.put(AddItemController());
             Get.put(EditItemController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.viewStore,
+          page: () => StorePage(),
+          binding: BindingsBuilder(() {
+            Get.put(StoreController());
+            Get.put(AdminStoresController());
+            Get.put(AdminWarehousesController());
           }),
         ),
       ],

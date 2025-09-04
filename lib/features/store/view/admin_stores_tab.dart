@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/colors.dart';
-import 'package:greenbiller/features/store/view/store_detail_page.dart';
+import 'package:greenbiller/features/store/controller/store_controller.dart';
 
-class AdminStoresTab extends GetView<AdminStoresController> {
+class AdminStoresTab extends GetView<StoreController> {
   const AdminStoresTab({super.key});
 
   @override
@@ -50,7 +50,7 @@ class AdminStoresTab extends GetView<AdminStoresController> {
                         ],
                       ),
                       child: TextField(
-                        controller: controller.searchController,
+                        controller: controller.storeSearchController,
                         decoration: InputDecoration(
                           hintText: 'Search stores, locations, contacts...',
                           hintStyle: TextStyle(
@@ -69,12 +69,13 @@ class AdminStoresTab extends GetView<AdminStoresController> {
                               size: 20,
                             ),
                           ),
-                          suffixIcon: controller.searchQuery.value.isNotEmpty
+                          suffixIcon:
+                              controller.storeSearchQuery.value.isNotEmpty
                               ? IconButton(
                                   icon: const Icon(Icons.clear_rounded),
                                   onPressed: () {
-                                    controller.searchController.clear();
-                                    controller.searchQuery.value = '';
+                                    controller.storeSearchController.clear();
+                                    controller.storeSearchQuery.value = '';
                                   },
                                 )
                               : null,
@@ -85,7 +86,8 @@ class AdminStoresTab extends GetView<AdminStoresController> {
                           ),
                         ),
                         onChanged: (value) {
-                          controller.searchQuery.value = value.toLowerCase();
+                          controller.storeSearchQuery.value = value
+                              .toLowerCase();
                         },
                       ),
                     ),
@@ -103,7 +105,7 @@ class AdminStoresTab extends GetView<AdminStoresController> {
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
-                                value: controller.selectedFilter.value,
+                                value: controller.storeSelectedFilter.value,
                                 icon: const Icon(
                                   Icons.keyboard_arrow_down_rounded,
                                 ),
@@ -154,7 +156,8 @@ class AdminStoresTab extends GetView<AdminStoresController> {
                                 ],
                                 onChanged: (value) {
                                   if (value != null) {
-                                    controller.selectedFilter.value = value;
+                                    controller.storeSelectedFilter.value =
+                                        value;
                                   }
                                 },
                               ),
@@ -185,7 +188,7 @@ class AdminStoresTab extends GetView<AdminStoresController> {
                 ),
               ),
               Expanded(
-                child: controller.isLoading.value
+                child: controller.isStoreLoading.value
                     ? _buildLoadingState()
                     : controller.stores.isEmpty
                     ? _buildEmptyState()
@@ -198,13 +201,13 @@ class AdminStoresTab extends GetView<AdminStoresController> {
                         child: _buildListView(
                           context,
                           controller.filteredStores,
-                          controller.isLoading,
+                          controller.isStoreLoading,
                         ),
                       ),
               ),
             ],
           ),
-          if (controller.isLoading.value)
+          if (controller.isStoreLoading.value)
             Positioned.fill(
               child: Container(
                 color: Colors.black.withOpacity(0.4),
@@ -266,17 +269,14 @@ class AdminStoresTab extends GetView<AdminStoresController> {
     final storeName = store.storeName ?? 'Unnamed Store';
     final customersCount = store.customersCount ?? 0;
     final suppliersCount = store.suppliersCount ?? 0;
-    final storeId = store.id?.toString() ?? '';
+    final storeId = store.id;
     final location = store.storeAddress ?? 'No address';
     final phone = store.storePhone ?? '';
     final email = store.storeEmail ?? '';
-    final city = store.storeCity ?? '';
-    final country = store.storeCountry ?? '';
     final status = store.status;
     final logo = "$publicUrl/${store.storeLogo}";
     final isActive = status == 'active';
 
-    final controller = Get.find<AdminStoresController>();
     final warehouseCount = controller.warehouseCounts[storeId] ?? 0;
     final categories = controller.categories[storeId] ?? [];
     final salesCount = controller.salesCounts[storeId] ?? 0;
@@ -488,8 +488,7 @@ class AdminStoresTab extends GetView<AdminStoresController> {
                       icon: Icons.delete_outline_rounded,
                       color: Colors.red,
                       tooltip: 'Delete Store',
-                      onTap: () =>
-                          controller.deleteStore(context, storeName, storeId),
+                      onTap: () => controller.deleteStore(storeId),
                     ),
                   ],
                 ),
@@ -736,209 +735,5 @@ class AdminStoresTab extends GetView<AdminStoresController> {
         ),
       ],
     );
-  }
-}
-
-class AdminStoresController extends GetxController {
-  final searchController = TextEditingController();
-  final searchQuery = ''.obs;
-  final selectedFilter = 'all'.obs;
-  final isLoading = false.obs;
-
-  final stores = <dynamic>[].obs;
-  final filteredStores = <dynamic>[].obs;
-  final warehouseCounts = <String, int>{}.obs;
-  final categories = <String, List<dynamic>>{}.obs;
-  final salesCounts = <String, int>{}.obs;
-  final salesReturnCounts = <String, int>{}.obs;
-  final purchaseCounts = <String, int>{}.obs;
-  final purchaseReturnCounts = <String, int>{}.obs;
-
-  @override
-  void onInit() {
-    super.onInit();
-
-    fetchStores();
-    ever(searchQuery, (_) => _filterStores());
-    ever(selectedFilter, (_) => _filterStores());
-  }
-
-  void fetchStores() async {
-    isLoading.value = true;
-    try {
-      // final storeController = Get.find<ViewStoreController>();
-      // final storeModel = await storeController.fetchStores();
-      // stores.assignAll(storeModel.data ?? []);
-      // for (var store in stores) {
-      //   final storeId = store.id.toString();
-      //   warehouseCounts[storeId] = await Get.find<ViewWarehouseController>()
-      //       .getWarehouseCount(storeId);
-      //   categories[storeId] = await Get.find<ViewStoreController>()
-      //       .getCategories(storeId);
-      //   salesCounts[storeId] = await Get.find<ViewStoreController>()
-      //       .getSalesCount(storeId);
-      //   salesReturnCounts[storeId] = await Get.find<ViewStoreController>()
-      //       .getSalesReturnCount(storeId);
-      //   purchaseCounts[storeId] = await Get.find<ViewStoreController>()
-      //       .getPurchaseCount(storeId);
-      //   purchaseReturnCounts[storeId] = await Get.find<ViewStoreController>()
-      //       .getPurchaseReturnCount(storeId);
-      // }
-      // _filterStores();
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load stores: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  void _filterStores() {
-    final query = searchQuery.value;
-    final filter = selectedFilter.value;
-    filteredStores.assignAll(
-      stores.where((store) {
-        if (query.isNotEmpty) {
-          final searchableFields = [
-            store.storeName ?? '',
-            store.address ?? '',
-            store.phone ?? '',
-            store.email ?? '',
-            store.city ?? '',
-            store.country ?? '',
-          ].join(' ').toLowerCase();
-          if (!searchableFields.contains(query)) return false;
-        }
-        if (filter != 'all') {
-          final isActive = store.status == 'active';
-          if (filter == 'active' && !isActive) return false;
-          if (filter == 'inactive' && isActive) return false;
-        }
-        return true;
-      }).toList(),
-    );
-  }
-
-  void deleteStore(
-    BuildContext context,
-    String storeName,
-    String storeId,
-  ) async {
-    final shouldDelete = await Get.dialog<bool>(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(
-              Icons.warning_amber_rounded,
-              color: Colors.orange.shade600,
-              size: 28,
-            ),
-            const SizedBox(width: 12),
-            const Text('Delete Store'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Are you sure you want to delete "$storeName"?'),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: Colors.red.shade600,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'This action cannot be undone.',
-                      style: TextStyle(fontSize: 13),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Get.back(result: true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldDelete == true) {
-      isLoading.value = true;
-      // try {
-      //   final response = await deleteStoreSerivce(
-      //     user.value?.accessToken ?? '',
-      //     storeId,
-      //   );
-      //   if (response == 200) {
-      //     fetchStores();
-      //     Get.snackbar(
-      //       'Success',
-      //       'Store deleted successfully',
-      //       backgroundColor: Colors.green.shade600,
-      //       colorText: Colors.white,
-      //       snackPosition: SnackPosition.BOTTOM,
-      //       margin: const EdgeInsets.all(16),
-      //       borderRadius: 12,
-      //     );
-      //   } else {
-      //     Get.snackbar(
-      //       'Error',
-      //       'Failed to delete store',
-      //       backgroundColor: Colors.red.shade600,
-      //       colorText: Colors.white,
-      //       snackPosition: SnackPosition.BOTTOM,
-      //       margin: const EdgeInsets.all(16),
-      //       borderRadius: 12,
-      //     );
-      //   }
-      // } catch (e) {
-      //   Get.snackbar(
-      //     'Error',
-      //     'Error: $e',
-      //     backgroundColor: Colors.red.shade600,
-      //     colorText: Colors.white,
-      //     snackPosition: SnackPosition.BOTTOM,
-      //     margin: const EdgeInsets.all(16),
-      //     borderRadius: 12,
-      //   );
-      // } finally {
-      //   isLoading.value = false;
-      // }
-    }
-  }
-
-  @override
-  void onClose() {
-    searchController.dispose();
-    super.onClose();
   }
 }

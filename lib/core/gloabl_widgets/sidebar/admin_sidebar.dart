@@ -131,6 +131,14 @@ class AdminSidebar extends StatelessWidget {
                     currentRoute: currentRoute,
                     onTap: () => Get.toNamed(AppRoutes.parties),
                   ),
+                   _buildSectionHeader("Store & warehouse"),
+                  _buildNavTile(
+                    title: "View All",
+                    icon: Icons.person_outline,
+                    route: AppRoutes.viewStore,
+                    currentRoute: currentRoute,
+                    onTap: () => Get.toNamed(AppRoutes.viewStore),
+                  ),
                   _buildSectionHeader("items"),
                   ExpansionTile(
                     leading: const Icon(

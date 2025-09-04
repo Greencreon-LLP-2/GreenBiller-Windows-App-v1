@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
+import 'package:greenbiller/features/store/model/store_model.dart';
+import 'package:greenbiller/features/store/model/warehouse_model.dart';
 import 'package:logger/logger.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
@@ -207,6 +211,40 @@ class CommonApiFunctionsController extends GetxController {
     } catch (e, stackTrace) {
       logger.e('Error fetching units: $e', stackTrace);
       throw Exception(e);
+    }
+  }
+
+  Future<StoreModel> fetchStore({int? storeId}) async {
+    try {
+      final url = storeId != null ? "$viewStoreUrl/$storeId" : viewStoreUrl;
+      final response = await dioClient.dio.get(url);
+
+      if (response.statusCode == 200) {
+        return StoreModel.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        throw Exception('API Error: ${response.statusCode} - ${response.data}');
+      }
+    } catch (e, st) {
+      logger.e('Error fetching stores: $e', st);
+      rethrow;
+    }
+  }
+
+  Future<WarehouseModel> fetchWarehouse({int? warehouseId}) async {
+    try {
+      final url = warehouseId != null
+          ? "$viewWarehouseUrl/$warehouseId"
+          : viewWarehouseUrl;
+      final response = await dioClient.dio.get(url);
+
+      if (response.statusCode == 200) {
+        return WarehouseModel.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        throw Exception('API Error: ${response.statusCode} - ${response.data}');
+      }
+    } catch (e, st) {
+      logger.e('Error fetching warehouses: $e', st);
+      rethrow;
     }
   }
 }

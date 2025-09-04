@@ -107,3 +107,5 @@ const String businessProfileViewUrl = '$baseUrl/profile-view';
 const String businessProfileEditUrl = '$baseUrl/profile-update';
 
 const String updatePasswordUrl = '$baseUrl/update-password';
+//*===================================Others===================================*//
+const String sampleExcellTemplateUrl = '$baseUrl/item-bulk/csv/items';

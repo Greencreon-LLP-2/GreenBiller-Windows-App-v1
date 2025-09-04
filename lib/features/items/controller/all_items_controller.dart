@@ -273,7 +273,7 @@ class AllItemsController extends GetxController {
   Future<void> downloadTemplate() async {
     try {
       final response = await dioClient.dio.get(
-        '$baseUrl/item-bulk-template',
+        sampleExcellTemplateUrl,
         options: dio.Options(responseType: dio.ResponseType.bytes),
       );
 

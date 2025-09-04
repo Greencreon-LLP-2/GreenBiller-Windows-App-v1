@@ -26,4 +26,5 @@ class AppRoutes {
   static const String categoryView = '/category-page';
   static const String brands = '/brands-page';
   static const String units = '/units-page';
+  static const String viewStore = '/view-store-page';
 }

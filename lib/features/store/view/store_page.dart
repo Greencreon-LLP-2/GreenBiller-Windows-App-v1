@@ -8,7 +8,7 @@ import 'package:greenbiller/features/store/view/add_warehouse_dialog.dart';
 import 'package:greenbiller/features/store/view/admin_stores_tab.dart';
 import 'package:greenbiller/features/store/view/admin_warehouse_tab.dart';
 
-class StorePage extends GetView<AdminStoreController> {
+class StorePage extends GetView<StoreController> {
   const StorePage({super.key});
 
   @override
@@ -45,53 +45,32 @@ class StorePage extends GetView<AdminStoreController> {
         controller: controller.tabController,
         children: const [AdminStoresTab(), AdminWarehousesTab()],
       ),
-      // floatingActionButton: Obx(
-      //   () => _buildFloatingActionButton(
-      //     context,
-      //     controller.currentTabIndex.value,
-      //     UserRoleModel.nameFromId(controller.authController.user.value?.userLevel ?? 0),
-      //     controller.user.value?.accessToken,
-      //     controller.warehouseNameController,
-      //     controller.warehouseAddressController,
-      //     controller.warehouseTypeController,
-      //     controller.warehouseEmailController,
-      //     controller.warehousePhoneController,
-      //     controller.user.value?.user?.id.toString(),
-      //   ),
-      // ),
+      floatingActionButton: Obx(
+        () => _buildFloatingActionButton(
+          context,
+          controller.currentTabIndex.value,
+        ),
+      ),
     );
   }
 
-  Widget _buildFloatingActionButton(
-    BuildContext context,
-    int currentTabIndex,
-    UserRoleModel role,
-    String? accessToken,
-    TextEditingController warehouseNameController,
-    TextEditingController warehouseAddressController,
-    TextEditingController warehouseTypeController,
-    TextEditingController warehouseEmailController,
-    TextEditingController warehousePhoneController,
-    String? userId,
-  ) {
+  Widget _buildFloatingActionButton(BuildContext context, int currentTabIndex) {
     return FloatingActionButton.extended(
       onPressed: () {
         if (currentTabIndex == 0) {
           Get.dialog(
             AddStoreDialog(
               callback: () {
-                // Get.find<ViewStoreController>().fetchStores();
+                controller.getStoreList();
               },
             ),
           );
         } else {
           Get.dialog(
             AddWarehouseDialog(
-             
               onSuccess: () {
-                // Get.find<ViewWarehouseController>().fetchWarehouses();
+                controller.getWarehouseList();
               },
-              parentContext: context,
             ),
           );
         }
