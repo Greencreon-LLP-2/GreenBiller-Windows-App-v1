@@ -16,11 +16,13 @@ class StoreWarehouseDetailsController extends GetxController {
   final isWarehouseLoading = true.obs;
   final error = ''.obs;
   final warehouseError = ''.obs;
-
+  late final int storeId;
   @override
   void onInit() {
     super.onInit();
     commonApi = CommonApiFunctionsController();
+    storeId = int.parse(Get.parameters['storeId']!);
+    fetchStoreDetails(storeId);
   }
 
   Future<void> fetchStoreDetails(int storeId) async {
@@ -61,7 +63,6 @@ class StoreWarehouseDetailsController extends GetxController {
 //     fetchWarehouseDetails();
 //     fetchWarehouseItems();
 //   }
-
 
 //   Future<void> fetchWarehouseDetails() async {
 //     isLoadingWarehouse.value = true;

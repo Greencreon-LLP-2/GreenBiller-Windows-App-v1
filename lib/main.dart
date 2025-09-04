@@ -39,6 +39,7 @@ import 'package:greenbiller/features/settings/view/invoice_settings_page.dart';
 import 'package:greenbiller/features/settings/view/store_users.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
 import 'package:greenbiller/features/store/controller/store_warehouse_details_controller.dart';
+import 'package:greenbiller/features/store/view/store_detail_page.dart';
 import 'package:greenbiller/features/store/view/store_page.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 import 'package:greenbiller/screens/dashboards.dart';
@@ -213,9 +214,9 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: AppRoutes.singleStoreView,
-          page: () => StorePage(),
+          page: () => const StoreDetailScreen(),
           binding: BindingsBuilder(() {
-            Get.put(StoreWarehouseDetailsController);
+            Get.put(StoreWarehouseDetailsController());
           }),
         ),
       ],
