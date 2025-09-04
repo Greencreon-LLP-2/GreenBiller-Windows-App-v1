@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
-import 'package:greenbiller/features/store/controller/admin_warehouse_controller.dart';
+import 'package:greenbiller/features/store/controller/store_controller.dart';
 
-class AdminWarehousesTab extends GetView<AdminWarehousesController> {
+class AdminWarehousesTab extends GetView<StoreController> {
   const AdminWarehousesTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-   
     return Obx(
       () => Stack(
         children: [
-          if (controller.isLoading.value)
+          if (controller.isWarehouseLoading.value)
             Positioned.fill(
               child: Container(
                 color: Colors.black.withOpacity(0.3),
@@ -58,7 +57,7 @@ class AdminWarehousesTab extends GetView<AdminWarehousesController> {
                           ),
                         ),
                         child: TextField(
-                          controller: controller.searchController,
+                          controller: controller.warehouseSearchController,
                           decoration: InputDecoration(
                             hintText: 'Search warehouses...',
                             hintStyle: TextStyle(
@@ -74,8 +73,9 @@ class AdminWarehousesTab extends GetView<AdminWarehousesController> {
                               vertical: 14,
                             ),
                           ),
-                          onChanged: (value) => controller.searchQuery.value =
-                              value.toLowerCase(),
+                          onChanged: (value) =>
+                              controller.warehouseSearchQuery.value = value
+                                  .toLowerCase(),
                         ),
                       ),
                     ),
@@ -127,7 +127,7 @@ class AdminWarehousesTab extends GetView<AdminWarehousesController> {
                           ),
                         ],
                         onSelected: (value) =>
-                            controller.selectedFilter.value = value,
+                            controller.warehouseSelectedFilter.value = value,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -138,7 +138,7 @@ class AdminWarehousesTab extends GetView<AdminWarehousesController> {
                       ),
                       child: IconButton(
                         onPressed: () {
-                          // Get.find<ViewWarehouseController>().fetchWarehouses();
+                          controller.getWarehouseList();
                         },
                         icon: const Icon(Icons.refresh),
                         tooltip: 'Refresh',
@@ -148,7 +148,7 @@ class AdminWarehousesTab extends GetView<AdminWarehousesController> {
                 ),
               ),
               Expanded(
-                child: controller.isLoading.value
+                child: controller.isWarehouseLoading.value
                     ? const Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -162,7 +162,7 @@ class AdminWarehousesTab extends GetView<AdminWarehousesController> {
                     : controller.warehouses.isEmpty
                     ? RefreshIndicator(
                         onRefresh: () async {
-                          // await Get.find<ViewWarehouseController>().fetchWarehouses();
+                          controller.getWarehouseList();
                         },
                         child: ListView(
                           physics: const AlwaysScrollableScrollPhysics(),
@@ -202,7 +202,7 @@ class AdminWarehousesTab extends GetView<AdminWarehousesController> {
                       )
                     : RefreshIndicator(
                         onRefresh: () async {
-                          // await Get.find<ViewWarehouseController>().fetchWarehouses();
+                           controller.getWarehouseList();
                         },
                         child: ListView.builder(
                           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -521,8 +521,9 @@ class AdminWarehousesTab extends GetView<AdminWarehousesController> {
                                                     onPressed: () {
                                                       controller
                                                           .deleteWarehouse(
-                                                            context,
-                                                            warehouse,
+                                                            int.parse(
+                                                              warehouse.id,
+                                                            ),
                                                           );
                                                     },
                                                   ),

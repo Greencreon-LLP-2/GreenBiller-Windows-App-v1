@@ -41,6 +41,7 @@ class StoreController extends GetxController
   final storeSelectedFilter = 'all'.obs;
   final filteredStores = <dynamic>[].obs;
   final warehouseCounts = <String, int>{}.obs;
+
   final categories = <String, List<dynamic>>{}.obs;
   final salesCounts = <String, int>{}.obs;
   final salesReturnCounts = <String, int>{}.obs;
@@ -152,6 +153,7 @@ class StoreController extends GetxController
       isStoreLoading.value = true;
       final result = await commonApi.fetchStore();
       stores.assignAll(result.data ?? []);
+      filteredStores.assignAll(result.data ?? []);
     } catch (e) {
       print("Failed to fetch stores: $e");
     } finally {
@@ -165,6 +167,7 @@ class StoreController extends GetxController
       isWarehouseLoading.value = true;
       final result = await commonApi.fetchWarehouse();
       warehouses.assignAll(result.data ?? []);
+      filteredWarehouses.assignAll(result.data ?? []);
     } catch (e) {
       print("Failed to fetch warehouses: $e");
     } finally {

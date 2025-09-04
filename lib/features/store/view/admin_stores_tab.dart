@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
+import 'package:greenbiller/features/store/view/store_detail_page.dart';
 
 class AdminStoresTab extends GetView<StoreController> {
   const AdminStoresTab({super.key});
@@ -173,7 +174,7 @@ class AdminStoresTab extends GetView<StoreController> {
                           ),
                           child: IconButton(
                             onPressed: () {
-                              // Get.find<ViewStoreController>().fetchStores();
+                              controller.getStoreList();
                             },
                             icon: const Icon(
                               Icons.refresh_rounded,
@@ -196,7 +197,7 @@ class AdminStoresTab extends GetView<StoreController> {
                     ? _buildNoResultsState()
                     : RefreshIndicator(
                         onRefresh: () async {
-                          // await Get.find<ViewStoreController>().fetchStores();
+                          controller.getStoreList();
                         },
                         child: _buildListView(
                           context,
@@ -269,7 +270,7 @@ class AdminStoresTab extends GetView<StoreController> {
     final storeName = store.storeName ?? 'Unnamed Store';
     final customersCount = store.customersCount ?? 0;
     final suppliersCount = store.suppliersCount ?? 0;
-    final storeId = store.id;
+    final storeId = store.id?.toString() ?? '';
     final location = store.storeAddress ?? 'No address';
     final phone = store.storePhone ?? '';
     final email = store.storeEmail ?? '';
@@ -325,12 +326,7 @@ class AdminStoresTab extends GetView<StoreController> {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            // Get.to(
-            //   () => StoreDetailScreen(
-            //     accessToken: controller.user.value?.accessToken ?? '',
-            //     storeId: int.parse(storeId),
-            //   ),
-            // );
+            Get.to(() => StoreDetailScreen(storeId: int.parse(storeId)));
           },
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -474,13 +470,9 @@ class AdminStoresTab extends GetView<StoreController> {
                       color: Colors.grey,
                       tooltip: 'View Details',
                       onTap: () {
-                        // Get.to(
-                        //   () => StoreDetailScreen(
-                        //     accessToken:
-                        //         controller.user.value?.accessToken ?? '',
-                        //     storeId: int.parse(storeId),
-                        //   ),
-                        // );
+                        Get.to(
+                          () => StoreDetailScreen(storeId: int.parse(storeId)),
+                        );
                       },
                     ),
                     const SizedBox(height: 8),
@@ -488,7 +480,7 @@ class AdminStoresTab extends GetView<StoreController> {
                       icon: Icons.delete_outline_rounded,
                       color: Colors.red,
                       tooltip: 'Delete Store',
-                      onTap: () => controller.deleteStore(storeId),
+                      onTap: () => controller.deleteStore(int.parse(store.id)),
                     ),
                   ],
                 ),
@@ -606,7 +598,7 @@ class AdminStoresTab extends GetView<StoreController> {
   Widget _buildEmptyState() {
     return RefreshIndicator(
       onRefresh: () async {
-        // await Get.find<ViewStoreController>().fetchStores();
+        controller.getStoreList();
       },
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -647,7 +639,7 @@ class AdminStoresTab extends GetView<StoreController> {
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: () {
-                    // Get.find<ViewStoreController>().fetchStores();
+                    controller.getStoreList();
                   },
                   icon: const Icon(Icons.refresh_rounded),
                   label: const Text('Refresh'),
