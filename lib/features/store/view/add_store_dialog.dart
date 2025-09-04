@@ -1,11 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:green_biller/core/constants/colors.dart';
-import 'package:green_biller/features/auth/login/model/user_model.dart';
-import 'package:green_biller/features/sales/view/widgets/textfield_widget.dart';
-import 'package:green_biller/features/store/controllers/view_store_controller.dart';
-import 'package:green_biller/features/store/services/add_store_service.dart';
+
+import 'package:greenbiller/core/colors.dart';
+import 'package:greenbiller/core/gloabl_widgets/text_fields/text_field_widget.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AddStoreDialog extends GetView<AddStoreController> {
@@ -174,12 +172,12 @@ class AddStoreController extends GetxController {
   final storeEmailController = TextEditingController();
   final storeImage = Rxn<String>();
   final formKey = GlobalKey<FormState>();
-  final user = Rxn<UserModel>();
+
 
   @override
   void onInit() {
     super.onInit();
-    user.value = Get.find<UserController>().user.value;
+   
   }
 
   Future<void> pickImage() async {
@@ -212,35 +210,32 @@ class AddStoreController extends GetxController {
       Get.snackbar('Error', 'Invalid email address', backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
-    if (user.value?.accessToken == null || user.value?.user?.id == null) {
-      Get.snackbar('Error', 'Please login first', backgroundColor: Colors.red, colorText: Colors.white);
-      return;
-    }
+    
     if (storeImage.value == null) {
       Get.snackbar('Error', 'Please select an image', backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
 
     try {
-      final file = File(storeImage.value!);
-      final response = await addStoreService(
-        user.value!.accessToken!,
-        user.value!.user!.id.toString(),
-        'store-${DateTime.now().millisecondsSinceEpoch}',
-        file,
-        storeNameController.text,
-        storeWebsiteController.text,
-        storeAddressController.text,
-        storePhoneController.text,
-        storeEmailController.text,
-      );
-      if (response == 'Store added successfully') {
-        Get.snackbar('Success', 'Store added successfully', backgroundColor: Colors.green, colorText: Colors.white);
-        Get.find<ViewStoreController>().fetchStores();
-        Get.back();
-      } else {
-        Get.snackbar('Error', 'Failed to add store: $response', backgroundColor: Colors.red, colorText: Colors.white);
-      }
+      // final file = File(storeImage.value!);
+      // final response = await addStoreService(
+      //   user.value!.accessToken!,
+      //   user.value!.user!.id.toString(),
+      //   'store-${DateTime.now().millisecondsSinceEpoch}',
+      //   file,
+      //   storeNameController.text,
+      //   storeWebsiteController.text,
+      //   storeAddressController.text,
+      //   storePhoneController.text,
+      //   storeEmailController.text,
+      // );
+      // if (response == 'Store added successfully') {
+      //   Get.snackbar('Success', 'Store added successfully', backgroundColor: Colors.green, colorText: Colors.white);
+      //   // Get.find<ViewStoreController>().fetchStores();
+      //   Get.back();
+      // } else {
+      //   Get.snackbar('Error', 'Failed to add store: $response', backgroundColor: Colors.red, colorText: Colors.white);
+      // }
     } catch (e) {
       Get.snackbar('Error', 'Error: $e', backgroundColor: Colors.red, colorText: Colors.white);
     }

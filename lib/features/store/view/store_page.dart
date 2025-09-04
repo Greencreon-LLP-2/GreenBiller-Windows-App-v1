@@ -3,6 +3,10 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/auth/model/user_role_model.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
+import 'package:greenbiller/features/store/view/add_store_dialog.dart';
+import 'package:greenbiller/features/store/view/add_warehouse_dialog.dart';
+import 'package:greenbiller/features/store/view/admin_stores_tab.dart';
+import 'package:greenbiller/features/store/view/admin_warehouse_tab.dart';
 
 class StorePage extends GetView<AdminStoreController> {
   const StorePage({super.key});
@@ -41,20 +45,20 @@ class StorePage extends GetView<AdminStoreController> {
         controller: controller.tabController,
         children: const [AdminStoresTab(), AdminWarehousesTab()],
       ),
-      floatingActionButton: Obx(
-        () => _buildFloatingActionButton(
-          context,
-          controller.currentTabIndex.value,
-          UserRoleModel.fromLevel(controller.user.value?.user?.userLevel ?? 0),
-          controller.user.value?.accessToken,
-          controller.warehouseNameController,
-          controller.warehouseAddressController,
-          controller.warehouseTypeController,
-          controller.warehouseEmailController,
-          controller.warehousePhoneController,
-          controller.user.value?.user?.id.toString(),
-        ),
-      ),
+      // floatingActionButton: Obx(
+      //   () => _buildFloatingActionButton(
+      //     context,
+      //     controller.currentTabIndex.value,
+      //     UserRoleModel.nameFromId(controller.authController.user.value?.userLevel ?? 0),
+      //     controller.user.value?.accessToken,
+      //     controller.warehouseNameController,
+      //     controller.warehouseAddressController,
+      //     controller.warehouseTypeController,
+      //     controller.warehouseEmailController,
+      //     controller.warehousePhoneController,
+      //     controller.user.value?.user?.id.toString(),
+      //   ),
+      // ),
     );
   }
 
@@ -76,17 +80,16 @@ class StorePage extends GetView<AdminStoreController> {
           Get.dialog(
             AddStoreDialog(
               callback: () {
-                Get.find<ViewStoreController>().fetchStores();
+                // Get.find<ViewStoreController>().fetchStores();
               },
             ),
           );
         } else {
           Get.dialog(
             AddWarehouseDialog(
-              accessToken: accessToken,
-              userId: userId,
+             
               onSuccess: () {
-                Get.find<ViewWarehouseController>().fetchWarehouses();
+                // Get.find<ViewWarehouseController>().fetchWarehouses();
               },
               parentContext: context,
             ),

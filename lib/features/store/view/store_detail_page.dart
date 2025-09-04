@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:green_biller/core/constants/colors.dart';
-import 'package:green_biller/features/store/controllers/view_store_controller.dart';
-import 'package:green_biller/features/store/controllers/view_warehouse_controller.dart';
+import 'package:greenbiller/core/api_constants.dart';
+import 'package:greenbiller/core/colors.dart';
+import 'package:greenbiller/features/store/controller/store_details_controller.dart';
 
 class StoreDetailScreen extends GetView<StoreDetailController> {
   final String accessToken;
@@ -105,16 +105,30 @@ class StoreDetailScreen extends GetView<StoreDetailController> {
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(12),
+                                width: 60,
+                                height: 60,
                                 decoration: BoxDecoration(
                                   color: Colors.blue.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
+                                  image: controller.store.value!.storeLogo != null
+                                      ? DecorationImage(
+                                          image: NetworkImage("$publicUrl/${controller.store.value!.storeLogo}"),
+                                          fit: BoxFit.cover,
+                                          onError: (exception, stackTrace) => const Icon(
+                                            Icons.store_rounded,
+                                            color: accentColor,
+                                            size: 24,
+                                          ),
+                                        )
+                                      : null,
                                 ),
-                                child: const Icon(
-                                  Icons.store_rounded,
-                                  color: accentColor,
-                                  size: 24,
-                                ),
+                                child: controller.store.value!.storeLogo == null
+                                    ? const Icon(
+                                        Icons.store_rounded,
+                                        color: accentColor,
+                                        size: 24,
+                                      )
+                                    : null,
                               ),
                               const SizedBox(width: 16),
                               Expanded(
@@ -154,7 +168,7 @@ class StoreDetailScreen extends GetView<StoreDetailController> {
                                           ),
                                           const SizedBox(width: 6),
                                           Text(
-                                            controller.store.value!.status.toUpperCase(),
+                                            controller.store.value!.status!.toUpperCase(),
                                             style: TextStyle(
                                               color: controller.store.value!.status == 'active'
                                                   ? Colors.green[700]
@@ -176,14 +190,14 @@ class StoreDetailScreen extends GetView<StoreDetailController> {
                             spacing: 8,
                             runSpacing: 8,
                             children: [
-                              InfoChip(
-                                icon: Icons.location_on_rounded,
-                                label: [
-                                  controller.store.value!.storeAddress ?? 'No address',
-                                  controller.store.value!.storeCity ?? '',
-                                  controller.store.value!.storeCountry ?? ''
-                                ].where((s) => s.isNotEmpty).join(', '),
-                              ),
+                              // InfoChip(
+                              //   icon: Icons.location_on_rounded,
+                              //   label: [
+                              //     controller.store.value!.storeAddress ?? 'No address',
+                              //     controller.store.value!.storeCity ?? '',
+                              //     controller.store.value!.storeCountry ?? ''
+                              //   ].where((s) => s.isNotEmpty).join(', '),
+                              // ),
                               InfoChip(
                                 icon: Icons.phone_rounded,
                                 label: controller.store.value!.storePhone ?? 'N/A',
@@ -199,7 +213,7 @@ class StoreDetailScreen extends GetView<StoreDetailController> {
                                   label: 'Website',
                                   isClickable: true,
                                   onTap: () {
-                                    // launch URL
+                                    // Implement URL launch logic here
                                   },
                                 ),
                             ],
@@ -236,7 +250,7 @@ class StoreDetailScreen extends GetView<StoreDetailController> {
                               title: 'Total Warehouses',
                               value: controller.warehouses.length.toString(),
                               icon: Icons.warehouse_rounded,
-                              IconColor: accentColor,
+                              color: accentColor,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -268,7 +282,10 @@ class StoreDetailScreen extends GetView<StoreDetailController> {
                           Expanded(
                             child: SummaryCard(
                               title: 'Total Items',
-                              value: controller.warehouses.fold<int>(0, (prev, w) => 20).toString(),
+                              // value: controller.warehouses
+                              //     .fold<int>(0, (prev, w) => prev + (w.itemsCount ?? 0))
+                              //     .toString(),
+                              value:'sdfdsf',
                               icon: Icons.inventory_2_rounded,
                               color: Colors.purple,
                             ),
@@ -277,6 +294,7 @@ class StoreDetailScreen extends GetView<StoreDetailController> {
                       ),
                     ),
                   const SizedBox(height: 16),
+                  // WAREHOUSES SECTION
                   Row(
                     children: [
                       Container(
@@ -299,5 +317,221 @@ class StoreDetailScreen extends GetView<StoreDetailController> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  CardContainer(
-                    margin:
+                  if (controller.warehouses.isEmpty)
+                    const CardContainer(
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      child: Column(
+                        children: [
+                          Icon(Icons.warehouse_outlined, size: 48, color: Colors.grey),
+                          SizedBox(height: 8),
+                          Text('No warehouses found', style: TextStyle(color: Colors.grey)),
+                        ],
+                      ),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: controller.warehouses.length,
+                      itemBuilder: (context, index) {
+                        final warehouse = controller.warehouses[index];
+                        return CardContainer(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          child: ListTile(
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: accentColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.warehouse_rounded, color: accentColor),
+                            ),
+                            title: Text(
+                              warehouse.warehouseName ?? 'Unnamed Warehouse',
+                              style: const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (warehouse.address != null && warehouse.address!.isNotEmpty)
+                                  Text(
+                                    warehouse.address!,
+                                    style: const TextStyle(color: textSecondaryColor),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Items: ${warehouse.itemsCount ?? 0}',
+                                  style: const TextStyle(color: textSecondaryColor, fontSize: 12),
+                                ),
+                              ],
+                            ),
+                            trailing: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: warehouse.status == 'active'
+                                    ? Colors.green.withOpacity(0.1)
+                                    : Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                warehouse.status.toUpperCase(),
+                                style: TextStyle(
+                                  color: warehouse.status == 'active' ? Colors.green[700] : Colors.red[700],
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            onTap: () {
+                              // Get.to(() => WarehouseDetailScreen(
+                              //       accessToken: accessToken,
+                              //       storeId: warehouse.storeId!,
+                              //     ));
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              )),
+        ),
+      ),
+    );
+  }
+}
+
+class CardContainer extends StatelessWidget {
+  final Widget child;
+  final EdgeInsets margin;
+  final EdgeInsets padding;
+  final Color? backgroundColor;
+
+  const CardContainer({
+    super.key,
+    required this.child,
+    this.margin = const EdgeInsets.all(0),
+    this.padding = const EdgeInsets.all(16),
+    this.backgroundColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: margin,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: backgroundColor ?? Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+class InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isClickable;
+  final VoidCallback? onTap;
+
+  const InfoChip({
+    super.key,
+    required this.icon,
+    required this.label,
+    this.isClickable = false,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: isClickable ? onTap : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: textSecondaryColor),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(fontSize: 12, color: textSecondaryColor),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SummaryCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const SummaryCard({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CardContainer(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 16, color: color),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: 12, color: textSecondaryColor),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

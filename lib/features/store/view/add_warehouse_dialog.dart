@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:green_biller/core/constants/colors.dart';
-import 'package:green_biller/features/sales/view/widgets/textfield_widget.dart';
-import 'package:green_biller/features/store/controllers/view_store_controller.dart';
-import 'package:green_biller/features/store/model/store_model/store_model.dart';
-import 'package:green_biller/features/store/services/add_warehouse_service.dart';
+
+import 'package:greenbiller/core/colors.dart';
+import 'package:greenbiller/core/gloabl_widgets/text_fields/text_field_widget.dart';
 
 class AddWarehouseDialog extends GetView<AddWarehouseController> {
-  final String? accessToken;
-  final String? userId;
+
   final VoidCallback? onSuccess;
   final BuildContext parentContext;
 
   const AddWarehouseDialog({
     super.key,
-    required this.accessToken,
-    required this.userId,
+  
     this.onSuccess,
     required this.parentContext,
   });
@@ -59,32 +55,32 @@ class AddWarehouseDialog extends GetView<AddWarehouseController> {
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
-              Obx(() => controller.isLoading.value
-                  ? const SizedBox(
-                      height: 48,
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  : controller.stores.isEmpty
-                      ? const Text(
-                          'No stores available',
-                          style: TextStyle(color: Colors.red),
-                        )
-                      : DropdownButtonFormField<StoreData>(
-                          value: controller.selectedStore.value,
-                          items: controller.stores
-                              .map((s) => DropdownMenuItem<StoreData>(
-                                    value: s,
-                                    child: Text(s.storeName ?? 'Unnamed Store'),
-                                  ))
-                              .toList(),
-                          onChanged: (v) => controller.selectedStore.value = v,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                          ),
-                          hint: const Text('Choose store'),
-                        )),
+              // Obx(() => controller.isLoading.value
+              //     ? const SizedBox(
+              //         height: 48,
+              //         child: Center(child: CircularProgressIndicator()),
+              //       )
+              //     : controller.stores.isEmpty
+              //         ? const Text(
+              //             'No stores available',
+              //             style: TextStyle(color: Colors.red),
+              //           )
+              //         : DropdownButtonFormField<StoreData>(
+              //             value: controller.selectedStore.value,
+              //             items: controller.stores
+              //                 .map((s) => DropdownMenuItem<StoreData>(
+              //                       value: s,
+              //                       child: Text(s.storeName ?? 'Unnamed Store'),
+              //                     ))
+              //                 .toList(),
+              //             onChanged: (v) => controller.selectedStore.value = v,
+              //             decoration: const InputDecoration(
+              //               border: OutlineInputBorder(),
+              //               isDense: true,
+              //               contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              //             ),
+              //             hint: const Text('Choose store'),
+              //           )),
               const SizedBox(height: 16),
               TextfieldWidget(
                 controller: controller.warehouseNameController,
@@ -159,8 +155,8 @@ class AddWarehouseController extends GetxController {
   final warehouseTypeController = TextEditingController();
   final warehouseEmailController = TextEditingController();
   final warehousePhoneController = TextEditingController();
-  final selectedStore = Rxn<StoreData>();
-  final stores = <StoreData>[].obs;
+  // final selectedStore = Rxn<StoreData>();
+  // final stores = <StoreData>[].obs;
   final isLoading = false.obs;
   final String? accessToken;
   final String? userId;
@@ -174,25 +170,25 @@ class AddWarehouseController extends GetxController {
   }
 
   void fetchStores() async {
-    isLoading.value = true;
-    try {
-      final storeController = Get.find<ViewStoreController>();
-      final storeModel = await storeController.fetchStores();
-      stores.assignAll(storeModel.data ?? []);
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to load stores: $e', backgroundColor: Colors.red, colorText: Colors.white);
-    } finally {
-      isLoading.value = false;
-    }
+    // isLoading.value = true;
+    // try {
+    //   final storeController = Get.find<ViewStoreController>();
+    //   final storeModel = await storeController.fetchStores();
+    //   stores.assignAll(storeModel.data ?? []);
+    // } catch (e) {
+    //   Get.snackbar('Error', 'Failed to load stores: $e', backgroundColor: Colors.red, colorText: Colors.white);
+    // } finally {
+    //   isLoading.value = false;
+    // }
   }
 
   void addWarehouse(BuildContext parentContext, VoidCallback? onSuccess) async {
-    if (selectedStore.value == null) {
-      ScaffoldMessenger.of(parentContext).showSnackBar(
-        const SnackBar(content: Text('Please select a store'), backgroundColor: Colors.red),
-      );
-      return;
-    }
+    // if (selectedStore.value == null) {
+    //   ScaffoldMessenger.of(parentContext).showSnackBar(
+    //     const SnackBar(content: Text('Please select a store'), backgroundColor: Colors.red),
+    //   );
+    //   return;
+    // }
     if (warehouseNameController.text.isEmpty) {
       ScaffoldMessenger.of(parentContext).showSnackBar(
         const SnackBar(content: Text('Warehouse name is required'), backgroundColor: Colors.red),
@@ -206,33 +202,33 @@ class AddWarehouseController extends GetxController {
       return;
     }
 
-    try {
-      final response = await addWarehouseService(
-        warehouseNameController.text,
-        warehouseAddressController.text,
-        warehouseTypeController.text,
-        warehouseEmailController.text,
-        warehousePhoneController.text,
-        accessToken!,
-        selectedStore.value!.id.toString(),
-        userId,
-      );
-      if (response == 'Warehouse created successfully') {
-        Get.back();
-        ScaffoldMessenger.of(parentContext).showSnackBar(
-          const SnackBar(content: Text('Warehouse added successfully'), backgroundColor: Colors.green),
-        );
-        onSuccess?.call();
-      } else {
-        ScaffoldMessenger.of(parentContext).showSnackBar(
-          SnackBar(content: Text('Failed to add warehouse: $response'), backgroundColor: Colors.red),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(parentContext).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-      );
-    }
+    // try {
+    //   final response = await addWarehouseService(
+    //     warehouseNameController.text,
+    //     warehouseAddressController.text,
+    //     warehouseTypeController.text,
+    //     warehouseEmailController.text,
+    //     warehousePhoneController.text,
+    //     accessToken!,
+    //     selectedStore.value!.id.toString(),
+    //     userId,
+    //   );
+    //   if (response == 'Warehouse created successfully') {
+    //     Get.back();
+    //     ScaffoldMessenger.of(parentContext).showSnackBar(
+    //       const SnackBar(content: Text('Warehouse added successfully'), backgroundColor: Colors.green),
+    //     );
+    //     onSuccess?.call();
+    //   } else {
+    //     ScaffoldMessenger.of(parentContext).showSnackBar(
+    //       SnackBar(content: Text('Failed to add warehouse: $response'), backgroundColor: Colors.red),
+    //     );
+    //   }
+    // } catch (e) {
+    //   ScaffoldMessenger.of(parentContext).showSnackBar(
+    //     SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+    //   );
+    // }
   }
 
   @override

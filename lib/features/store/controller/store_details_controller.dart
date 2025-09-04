@@ -1,5 +1,7 @@
 
-import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:greenbiller/features/store/model/store_model.dart';
 
 class StoreDetailController extends GetxController {
   final store = Rxn<StoreData>();
@@ -13,12 +15,12 @@ class StoreDetailController extends GetxController {
     isLoading.value = true;
     error.value = '';
     try {
-      final storeController = Get.find<ViewStoreController>();
-      final storeModel = await storeController.fetchStoreById(storeId.toString());
-      store.value = storeModel.data?.firstWhereOrNull((s) => s.id == storeId);
-      if (store.value == null) {
-        error.value = 'Store not found';
-      }
+      // final storeController = Get.find<ViewStoreController>();
+      // final storeModel = await storeController.fetchStoreById(storeId.toString());
+      // store.value = storeModel.data?.firstWhereOrNull((s) => s.id == storeId);
+      // if (store.value == null) {
+      //   error.value = 'Store not found';
+      // }
     } catch (e) {
       error.value = e.toString();
       Get.snackbar('Error', 'Failed to load store details: $e',
@@ -32,9 +34,9 @@ class StoreDetailController extends GetxController {
     isWarehouseLoading.value = true;
     warehouseError.value = '';
     try {
-      final warehouseController = Get.find<ViewWarehouseController>();
-      final warehouseModel = await warehouseController.fetchWarehouses();
-      warehouses.assignAll(warehouseModel?.data ?? []);
+      // final warehouseController = Get.find<ViewWarehouseController>();
+      // final warehouseModel = await warehouseController.fetchWarehouses();
+      // warehouses.assignAll(warehouseModel?.data ?? []);
     } catch (e) {
       warehouseError.value = e.toString();
       Get.snackbar('Error', 'Failed to load warehouses: $e',
