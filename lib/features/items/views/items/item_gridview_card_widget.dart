@@ -4,83 +4,46 @@ import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/core/gloabl_widgets/dialog_field.dart';
 import 'package:greenbiller/features/items/controller/all_items_controller.dart';
 import 'package:greenbiller/features/items/controller/edit_item_controller.dart';
+import 'package:greenbiller/features/items/model/item_model.dart';
 import 'package:greenbiller/features/items/views/items/items_details_dialog.dart';
 
 class ItemGridViewCardWidget extends StatelessWidget {
-
-  final String itemId;
-  final dynamic stock;
-  final String itemName;
-  final String itemCode;
-  final String barcode;
-  final int category;
-  final int brand;
-  final double price;
-  final String mrp;
-  final String unit;
-  final String sku;
-  final String taxType;
-  final String discountType;
-  final String discount;
-  final String alertQuantity;
-  final double profitMargin;
-  final double taxRate;
   final VoidCallback? onRefresh;
-  final String categoryName;
-  final String brandName;
-  final String storeName;
-  final String? imageUrl;
+  final Item item;
 
-  const ItemGridViewCardWidget({
-    super.key,
- 
-    required this.itemId,
-    required this.stock,
-    required this.itemName,
-    required this.itemCode,
-    required this.barcode,
-    required this.category,
-    required this.brand,
-    required this.price,
-    required this.mrp,
-    required this.unit,
-    required this.sku,
-    required this.taxType,
-    required this.discountType,
-    required this.discount,
-    required this.alertQuantity,
-    required this.profitMargin,
-    required this.taxRate,
-    this.onRefresh,
-    required this.categoryName,
-    required this.brandName,
-    required this.storeName,
-    this.imageUrl,
-  });
+  const ItemGridViewCardWidget({super.key, this.onRefresh, required this.item});
 
   @override
   Widget build(BuildContext context) {
-    final itemNameController = TextEditingController(text: itemName);
-    final skuController = TextEditingController(text: sku);
-    final itemCodeController = TextEditingController(text: itemCode);
-    final barcodeController = TextEditingController(text: barcode);
+    final itemNameController = TextEditingController(text: item.itemName);
+    final skuController = TextEditingController(text: item.sku);
+    final itemCodeController = TextEditingController(text: item.itemCode);
+    final barcodeController = TextEditingController(text: item.barcode);
     final purchasePriceController = TextEditingController(
-      text: price.toString(),
+      text: item.purchasePrice.toString(),
     );
-    final salesPriceController = TextEditingController(text: price.toString());
-    final mrpController = TextEditingController(text: mrp);
+    final salesPriceController = TextEditingController(
+      text: item.salesPrice.toString(),
+    );
+    final mrpController = TextEditingController(text: item.mrp);
     final profitMarginController = TextEditingController(
-      text: profitMargin.toString(),
+      text: item.profitMargin.toString(),
     );
-    final taxTypeController = TextEditingController(text: taxType);
-    final taxRateController = TextEditingController(text: taxRate.toString());
-    final discountTypeController = TextEditingController(text: discountType);
-    final discountController = TextEditingController(text: discount);
-    final unitController = TextEditingController(text: unit);
+    final taxTypeController = TextEditingController(text: item.taxType);
+    final taxRateController = TextEditingController(
+      text: item.taxRate.toString(),
+    );
+    final discountTypeController = TextEditingController(
+      text: item.discountType,
+    );
+    final discountController = TextEditingController(text: item.discount);
+    final unitController = TextEditingController(text: item.unitId);
     final openingStockController = TextEditingController(
-      text: stock.toString(),
+      text: item.openingStock.toString(),
     );
-    final alertQuantityController = TextEditingController(text: alertQuantity);
+    final alertQuantityController = TextEditingController(
+      text: item.alertQuantity,
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -100,28 +63,7 @@ class ItemGridViewCardWidget extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
-              showItemDetailsDialog(
-                context: context,
-                itemId: itemId,
-                itemName: itemName,
-                itemCode: itemCode,
-                barcode: barcode,
-                categoryName: categoryName,
-                brandName: brandName,
-                storeName: storeName,
-                stock: int.tryParse(stock.toString()) ?? 0,
-                price: price,
-                mrp: mrp,
-                unit: unit,
-                sku: sku,
-                profitMargin: profitMargin,
-                taxRate: taxRate,
-                taxType: taxType,
-                discountType: discountType,
-                discount: discount,
-                alertQuantity: alertQuantity,
-                imageUrl: imageUrl,
-              );
+              showItemDetailsDialog(context: context, item: item);
             },
             child: Container(
               decoration: BoxDecoration(
@@ -225,7 +167,7 @@ class ItemGridViewCardWidget extends StatelessWidget {
                                     if (shouldDelete == true) {
                                       final success =
                                           await Get.find<AllItemsController>()
-                                              .deleteItem(itemId);
+                                              .deleteItem(item.id);
                                       if (success) {
                                         onRefresh?.call();
                                       }
@@ -257,7 +199,7 @@ class ItemGridViewCardWidget extends StatelessWidget {
                                   onPressed: () {
                                     showCustomEditDialog(
                                       context: context,
-                                      title: 'Edit Item: $itemName',
+                                      title: 'Edit Item: ${item.itemName}',
                                       subtitle: 'Update all item details',
                                       sections: [
                                         DialogSection(
@@ -383,96 +325,50 @@ class ItemGridViewCardWidget extends StatelessWidget {
                                         ),
                                       ],
                                       onSave: () async {
-                                        try {
-                                          // Validate required fields before calling the controller
-                                          if (itemNameController.text.isEmpty) {
-                                            Get.snackbar(
-                                              'Error',
-                                              'Item name is required',
-                                              backgroundColor: Colors.red,
-                                              colorText: Colors.white,
-                                            );
-                                            return;
-                                          }
-                                          if (skuController.text.isEmpty) {
-                                            Get.snackbar(
-                                              'Error',
-                                              'SKU is required',
-                                              backgroundColor: Colors.red,
-                                              colorText: Colors.white,
-                                            );
-                                            return;
-                                          }
-                                          if (salesPriceController
-                                              .text
-                                              .isEmpty) {
-                                            Get.snackbar(
-                                              'Error',
-                                              'Sales price is required',
-                                              backgroundColor: Colors.red,
-                                              colorText: Colors.white,
-                                            );
-                                            return;
-                                          }
+                                        final controller = Get.put(
+                                          EditItemController(),
+                                        );
 
-                                          // Instantiate and initialize the controller
-                                          final controller = Get.put(
-                                            EditItemController(),
-                                          );
-                                          controller.initialize({
-                                           
-                                            'itemId': itemId,
-                                            'itemName': itemNameController.text,
-                                            'sku': skuController.text,
-                                            'itemCode': itemCodeController.text,
-                                            'barcode': barcodeController.text,
-                                            'unit': unitController.text,
-                                            'purchasePrice':
-                                                purchasePriceController.text,
-                                            'salesPrice':
-                                                salesPriceController.text,
-                                            'mrp': mrpController.text,
-                                            'profitMargin':
-                                                profitMarginController.text,
-                                            'taxType': taxTypeController.text,
-                                            'taxRate': taxRateController.text,
-                                            'discountType':
-                                                discountTypeController.text,
-                                            'discount': discountController.text,
-                                            'openingStock':
-                                                openingStockController.text,
-                                            'alertQuantity':
-                                                alertQuantityController.text,
-                                          });
+                                        controller.initialize({
+                                          'storeId': item.storeId.toString(),
+                                          'itemId': item.id.toString(),
+                                          'itemName': itemNameController.text,
+                                          'sku': skuController.text,
+                                          'itemCode': itemCodeController.text,
+                                          'barcode': barcodeController.text,
+                                          'unit': unitController.text,
+                                          'purchasePrice':
+                                              purchasePriceController.text,
+                                          'salesPrice':
+                                              salesPriceController.text,
+                                          'mrp': mrpController.text,
+                                          'profitMargin':
+                                              profitMarginController.text,
+                                          'taxType': taxTypeController.text,
+                                          'taxRate': taxRateController.text,
+                                          'discountType':
+                                              discountTypeController.text,
+                                          'discount': discountController.text,
+                                          'Opening_Stock':
+                                              openingStockController.text,
+                                          'alertQuantity':
+                                              alertQuantityController.text,
+                                        });
 
-                                          final response = await controller
-                                              .editItemController(context);
+                                        final success = await controller
+                                            .editItem();
 
-                                          if (response ==
-                                              'Item updated successfully') {
-                                            onRefresh?.call();
-                                            Get.back(); // Close the dialog on success
-                                          } else {
-                                            // Error is already handled in EditItemController, but we can reinforce it
-                                            Get.snackbar(
-                                              'Error',
-                                              response,
-                                              backgroundColor: Colors.red,
-                                              colorText: Colors.white,
-                                            );
-                                          }
-
-                                          // Clean up the controller to avoid memory leaks
-                                          Get.delete<EditItemController>();
-                                        } catch (e) {
-                                          Get.snackbar(
-                                            'Error',
-                                            'Failed to edit item: $e',
-                                            backgroundColor: Colors.red,
-                                            colorText: Colors.white,
-                                          );
+                                        if (success) {
+                                          onRefresh?.call();
+                                          await Future.delayed(
+                                            const Duration(milliseconds: 600),
+                                          ); // ⏳ let snackbar show
+                                          Get.back(); // Close after showing success
                                         }
+
+                                        Get.delete<EditItemController>();
                                       },
+
                                       saveButtonText: 'Save Changes',
                                       primaryColor: accentColor,
                                       secondaryColor: accentColor,
@@ -501,7 +397,7 @@ class ItemGridViewCardWidget extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            itemName,
+                            item.itemName,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: fontSize,
@@ -517,22 +413,30 @@ class ItemGridViewCardWidget extends StatelessWidget {
                             runSpacing: fontSize * 0.3,
                             children: [
                               _buildTag(
-                                categoryName,
+                                item.categoryName,
                                 Icons.category_sharp,
                                 smallFontSize,
                               ),
                               _buildTag(
-                                brandName,
+                                item.brandName,
                                 Icons.branding_watermark,
                                 smallFontSize,
                               ),
-                              _buildTag(storeName, Icons.store, smallFontSize),
                               _buildTag(
-                                sku,
+                                item.storeName,
+                                Icons.store,
+                                smallFontSize,
+                              ),
+                              _buildTag(
+                                item.sku,
                                 Icons.qr_code_outlined,
                                 smallFontSize,
                               ),
-                              _buildTag(unit, Icons.inventory, smallFontSize),
+                              _buildTag(
+                                item.unitId.toString(),
+                                Icons.inventory,
+                                smallFontSize,
+                              ),
                             ],
                           ),
                           SizedBox(height: fontSize * 0.4),
@@ -562,7 +466,7 @@ class ItemGridViewCardWidget extends StatelessWidget {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Text(
-                                                  '₹$price',
+                                                  '₹${item.salesPrice}',
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     color: accentColor,
@@ -571,7 +475,7 @@ class ItemGridViewCardWidget extends StatelessWidget {
                                                   ),
                                                 ),
                                                 Text(
-                                                  'MRP: ₹$mrp',
+                                                  'MRP: ₹${item.mrp}',
                                                   style: TextStyle(
                                                     color: Colors.grey.shade500,
                                                     fontSize: smallFontSize,
@@ -599,7 +503,7 @@ class ItemGridViewCardWidget extends StatelessWidget {
                                               ),
                                             ),
                                             child: Text(
-                                              '$stock $unit',
+                                              'Stock : ${item.openingStock} Unit#${item.unitId}',
                                               style: TextStyle(
                                                 color: Colors.grey.shade700,
                                                 fontSize: smallFontSize,
@@ -617,13 +521,13 @@ class ItemGridViewCardWidget extends StatelessWidget {
                                         children: [
                                           _buildInfoChip(
                                             'Profit',
-                                            '$profitMargin%',
+                                            '${item.profitMargin}%',
                                             Colors.green,
                                             smallFontSize,
                                           ),
                                           _buildInfoChip(
                                             'Tax',
-                                            '$taxRate%',
+                                            '${item.taxRate}%',
                                             Colors.blue,
                                             smallFontSize,
                                           ),

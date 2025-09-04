@@ -48,6 +48,8 @@ class AddItemController extends GetxController
   final taxList = <String>[].obs; // dropdown options
   final unitList = <UnitItem>[].obs;
   final selectedUnit = Rxn<UnitItem>();
+  final selectedSubUnit = Rxn<UnitItem>();
+  final subUnitValueText = ''.obs;
   final isShowSubUnit = false.obs;
   late TextEditingController unitValueController;
 
@@ -107,7 +109,9 @@ class AddItemController extends GetxController
     subUnitController = TextEditingController();
     unitValueController = TextEditingController();
     wholesalePriceController = TextEditingController(text: '0.0');
-
+    subUnitController.addListener(() {
+      subUnitValueText.value = subUnitController.text;
+    });
     loadAwaitData();
     loadTaxList();
     loadUnits();
@@ -274,16 +278,63 @@ class AddItemController extends GetxController
         if (itemNameController.text.isEmpty) {
           throw Exception('Item name is required');
         }
-        if (barcodeController.text.isNotEmpty &&
-            barcodeController.text.length != 13) {
-          throw Exception('Barcode length should be 13 characters');
+
+        // ✅ SKU validation
+        if (skuController.text.isEmpty) {
+          throw Exception('SKU is required');
         }
+        if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(skuController.text)) {
+          throw Exception(
+            'SKU must be alphanumeric (letters, numbers, _ or -)',
+          );
+        }
+
+        // ✅ HSN validation
+        if (hsnCodeController.text.isEmpty) {
+          throw Exception('HSN code is required');
+        }
+        if (!RegExp(r'^\d{4,8}$').hasMatch(hsnCodeController.text)) {
+          throw Exception('HSN code must be 4–8 digits');
+        }
+
+        // ✅ Item Code validation
+        if (itemCodeController.text.isEmpty) {
+          throw Exception('Item code is required');
+        }
+        if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(itemCodeController.text)) {
+          throw Exception(
+            'Item code must be alphanumeric (letters, numbers, _ or -)',
+          );
+        }
+
+        // ✅ Barcode validation → Code128 (ASCII, min 6 chars)
+        if (barcodeController.text.isEmpty) {
+          throw Exception('Barcode is required');
+        }
+        if (barcodeController.text.length < 6) {
+          throw Exception('Barcode must be at least 6 characters');
+        }
+        if (!barcodeController.text.runes.every((c) => c >= 0 && c <= 127)) {
+          throw Exception(
+            'Barcode must contain only ASCII characters (Code128)',
+          );
+        }
+
+        // ✅ Unit & Subunit validation
         if (selectedUnit.value == null) {
           throw Exception('Unit is required');
         }
-        if (subUnitController.text.isEmpty) {
-          throw Exception('SubUnit is required');
+        if (isShowSubUnit.value) {
+          if (selectedSubUnit.value == null) {
+            throw Exception('Subunit is required');
+          }
+          if (subUnitController.text.isEmpty ||
+              double.tryParse(subUnitController.text) == null ||
+              double.parse(subUnitController.text) <= 0) {
+            throw Exception('Valid subunit value is required');
+          }
         }
+
         if (purchasePriceController.text.isEmpty) {
           throw Exception('Purchase price is required');
         }
@@ -299,7 +350,6 @@ class AddItemController extends GetxController
         if (taxRateController.text.isEmpty) {
           throw Exception('Tax rate is required');
         }
-
         if (storeDropdownController.selectedStoreId.value == null) {
           throw Exception('Warehouse is required');
         }
@@ -342,8 +392,11 @@ class AddItemController extends GetxController
           'HSN_code': hsnCodeController.text,
           'Item_code': itemCodeController.text,
           'Barcode': barcodeController.text,
-          'Unit': selectedUnit.value?.id ?? 0,
-          'Sub_unit': subUnitController.text.toString(),
+          'unit_id': selectedUnit.value?.id ?? 0,
+          'subunit_id': isShowSubUnit.value
+              ? (selectedSubUnit.value?.id ?? 0)
+              : null,
+          'subunit_value': isShowSubUnit.value ? subUnitController.text : null,
           'Purchase_price': purchasePrice.toString(),
           'Tax_type': selectedTaxType.value!,
           'Tax_rate': taxRate.toString(),
@@ -378,11 +431,9 @@ class AddItemController extends GetxController
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM,
           );
-
           Future.delayed(const Duration(seconds: 2), () {
             Get.back();
           });
-
           return true;
         } else {
           throw Exception(response.data['message'] ?? 'Failed to add item');

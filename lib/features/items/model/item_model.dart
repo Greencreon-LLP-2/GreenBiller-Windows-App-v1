@@ -24,7 +24,7 @@ class Item {
   final int id;
   final int? userId;
   final String itemImage;
-  final dynamic storeId;
+  final String? storeId;
   final String itemName;
   final int? categoryId;
   final int? brandId;
@@ -32,19 +32,25 @@ class Item {
   final String hsnCode;
   final String itemCode;
   final String barcode;
-  final String unit;
-  final dynamic description;
+  final String? unitId;
+  final String? subunitId;
+  final String? subunitValue;
+  final String? unitConversion;
+  final String? description;
   final String purchasePrice;
   final String taxType;
   final String taxRate;
   final String salesPrice;
   final String mrp;
+  final String wholesalePrice;
   final String discountType;
   final String discount;
   final String profitMargin;
-  final dynamic warehouse;
-  final dynamic openingStock;
+  final String? warehouse;
+  final String? openingStock;
+  final String? quantity;
   final String alertQuantity;
+  final String? batchNo;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String storeName;
@@ -53,29 +59,35 @@ class Item {
   final int status;
   Item({
     required this.id,
-    required this.userId,
+    this.userId,
     required this.itemImage,
-    required this.storeId,
+    this.storeId,
     required this.itemName,
-    required this.categoryId,
-    required this.brandId,
+    this.categoryId,
+    this.brandId,
     required this.sku,
     required this.hsnCode,
     required this.itemCode,
     required this.barcode,
-    required this.unit,
-    required this.description,
+    this.unitId,
+    this.subunitId,
+    this.subunitValue,
+    this.unitConversion,
+    this.description,
     required this.purchasePrice,
     required this.taxType,
     required this.taxRate,
     required this.salesPrice,
     required this.mrp,
+    required this.wholesalePrice,
     required this.discountType,
     required this.discount,
     required this.profitMargin,
-    required this.warehouse,
-    required this.openingStock,
+    this.warehouse,
+    this.openingStock,
+    this.quantity,
     required this.alertQuantity,
+    this.batchNo,
     required this.createdAt,
     required this.updatedAt,
     required this.storeName,
@@ -87,9 +99,9 @@ class Item {
   factory Item.fromJson(Map<String, dynamic> json) {
     return Item(
       id: json['id'],
-      userId: json['user_id'] ?? 0,
+      userId: json['user_id'],
       itemImage: json['item_image'] ?? '',
-      storeId: json['store_id'],
+      storeId: json['store_id']?.toString(),
       itemName: json['item_name'] ?? '',
       categoryId: json['category_id'],
       brandId: json['brand_id'],
@@ -97,25 +109,31 @@ class Item {
       hsnCode: json['HSN_code'] ?? '',
       itemCode: json['Item_code'] ?? '',
       barcode: json['Barcode'] ?? '',
-      unit: json['Unit'] ?? '',
-      description: json['Description'] ?? '',
-      purchasePrice: json['Purchase_price']?.toString() ?? '',
+      unitId: json['unit_id']?.toString(),
+      subunitId: json['Subunit_id']?.toString(),
+      subunitValue: json['subunit_value']?.toString(),
+      unitConversion: json['Unit_conversion']?.toString(),
+      description: json['Description'],
+      purchasePrice: json['Purchase_price']?.toString() ?? '0.0',
       taxType: json['Tax_type'] ?? '',
-      taxRate: json['Tax_rate']?.toString() ?? '',
-      salesPrice: json['Sales_Price']?.toString() ?? '',
-      mrp: json['MRP']?.toString() ?? '',
+      taxRate: json['Tax_rate']?.toString() ?? '0.0',
+      salesPrice: json['Sales_Price']?.toString() ?? '0.0',
+      mrp: json['MRP']?.toString() ?? '0.0',
+      wholesalePrice: json['wholesale_price']?.toString() ?? '0.0',
       discountType: json['Discount_type'] ?? '',
-      discount: json['Discount']?.toString() ?? '',
-      profitMargin: json['Profit_margin']?.toString() ?? '',
-      warehouse: json['Warehouse'] ?? '',
-      openingStock: json['Opening_Stock']?.toString() ?? '',
-      alertQuantity: json['Alert_Quantity']?.toString() ?? '',
+      discount: json['Discount']?.toString() ?? '0.0',
+      profitMargin: json['Profit_margin']?.toString() ?? '0.0',
+      warehouse: json['Warehouse']?.toString(),
+      openingStock: json['Opening_Stock']?.toString(),
+      quantity: json['quantity']?.toString(),
+      alertQuantity: json['Alert_Quantity']?.toString() ?? '0',
+      batchNo: json['batch_no']?.toString(),
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
       storeName: json['store_name'] ?? '',
       categoryName: json['category_name'] ?? '',
       brandName: json['brand_name'] ?? '',
-      status: json['status'] ?? 1,
+      status: int.tryParse(json['status']?.toString() ?? '0') ?? 0,
     );
   }
 
@@ -131,19 +149,25 @@ class Item {
     "HSN_code": hsnCode,
     "Item_code": itemCode,
     "Barcode": barcode,
-    "Unit": unit,
+    "unit_id": unitId,
+    "Subunit_id": subunitId,
+    "subunit_value": subunitValue,
+    "Unit_conversion": unitConversion,
     "Description": description,
     "Purchase_price": purchasePrice,
     "Tax_type": taxType,
     "Tax_rate": taxRate,
     "Sales_Price": salesPrice,
     "MRP": mrp,
+    "wholesale_price": wholesalePrice,
     "Discount_type": discountType,
     "Discount": discount,
     "Profit_margin": profitMargin,
     "Warehouse": warehouse,
     "Opening_Stock": openingStock,
+    "quantity": quantity,
     "Alert_Quantity": alertQuantity,
+    "batch_no": batchNo,
     "created_at": createdAt.toIso8601String(),
     "updated_at": updatedAt.toIso8601String(),
     "store_name": storeName,

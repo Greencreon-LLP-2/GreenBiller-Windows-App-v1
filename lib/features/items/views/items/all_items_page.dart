@@ -28,79 +28,20 @@ class AllItemsPage extends GetView<AllItemsController> {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          Obx(
-            () => Tooltip(
-              message: controller.importedFile.value != null
-                  ? 'Open ${controller.importedFile.value!['name']}'
-                  : 'No file selected',
-              child: TextButton(
-                onPressed: controller.openFile,
-                style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(Colors.white),
-                  padding: WidgetStateProperty.all(
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  ),
-                  minimumSize: WidgetStateProperty.all(const Size(0, 0)),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  overlayColor: WidgetStateProperty.resolveWith<Color?>((
-                    states,
-                  ) {
-                    if (states.contains(WidgetState.hovered)) {
-                      return Colors.white.withOpacity(0.2);
-                    }
-                    if (states.contains(WidgetState.pressed)) {
-                      return Colors.white.withOpacity(0.3);
-                    }
-                    return null;
-                  }),
-                  backgroundColor: WidgetStateProperty.all(
-                    controller.importedFile.value != null
-                        ? Colors.transparent
-                        : Colors.white.withOpacity(0.1),
-                  ),
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (controller.importedFile.value != null) ...[
-                      const Icon(
-                        Icons.insert_drive_file,
-                        size: 16,
-                        color: Colors.white70,
-                      ),
-                      const SizedBox(width: 4),
-                    ],
-                    Flexible(
-                      child: Text(
-                        controller.importedFile.value != null
-                            ? controller.importedFile.value!['name']
-                            : 'No File',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: controller.importedFile.value != null
-                              ? Colors.white
-                              : Colors.white70,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          // File Upload Button
           IconButton(
-            icon: const Icon(Icons.download_sharp),
+            icon: const Icon(Icons.upload_file),
             onPressed: controller.pickFile,
-            tooltip: 'Import Items',
+            tooltip: 'Upload File',
           ),
+
+          // Download Template Button
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: controller.downloadTemplate, // add method below
+            tooltip: 'Download Template',
+          ),
+
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => Get.to(() => const AddItemsPage()),
@@ -384,30 +325,11 @@ class AllItemsPage extends GetView<AllItemsController> {
           ),
           itemCount: controller.items.length,
           itemBuilder: (context, index) {
-            final item = controller.items[index];
             return ItemGridViewCardWidget(
-              itemId: item.id.toString(),
-              stock: item.openingStock,
-              itemName: item.itemName,
-              itemCode: item.itemCode,
-              barcode: item.barcode,
-              category: item.categoryId ?? 0,
-              brand: item.brandId ?? 0,
-              price: double.tryParse(item.salesPrice) ?? 0.0,
-              mrp: item.mrp,
-              unit: item.unit,
-              sku: item.sku,
-              profitMargin: double.tryParse(item.profitMargin) ?? 0.0,
-              taxRate: double.tryParse(item.taxRate) ?? 0.0,
-              taxType: item.taxType,
-              discountType: item.discountType,
-              discount: item.discount,
-              alertQuantity: item.alertQuantity,
-              onRefresh: controller.fetchItems,
-              brandName: item.brandName,
-              storeName: item.storeName,
-              categoryName: item.categoryName,
-              imageUrl: item.itemImage,
+              item: controller.items[index],
+              onRefresh: () {
+                controller.fetchItems();
+              },
             );
           },
         );

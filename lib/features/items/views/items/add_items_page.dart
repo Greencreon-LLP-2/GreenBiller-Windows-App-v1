@@ -544,26 +544,7 @@ class AddItemsPage extends GetView<AddItemController> {
           Row(
             children: [
               Expanded(child: UnitDropdownWithValue(controller: controller)),
-              const SizedBox(width: 12),
-              IconButton(
-                onPressed: () {
-                  controller.isShowSubUnit.value = true;
-                },
-                icon: Icon(Icons.add),
-              ),
-              // Expanded(
-              //   child: _buildInputField(
-              //     label: controller.unitValueController.text.isEmpty
-              //         ? "Sub Unit"
-              //         : "Quantity (${controller.unitValueController.text})",
-              //     hint: controller.unitValueController.text.isEmpty
-              //         ? "Enter subunit"
-              //         : "Enter ${controller.unitValueController.text} quantity",
-              //     prefixIcon: Icons.numbers_outlined,
-              //     controller: controller.subUnitController,
-              //     keyboardType: TextInputType.number,
-              //   ),
-              // ),
+              
             ],
           ),
           _buildInputField(

@@ -2,54 +2,15 @@ import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
+import 'package:greenbiller/features/items/model/item_model.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-
 class ItemDetailsDialog extends StatefulWidget {
-  final String itemId;
-  final String itemName;
-  final String itemCode;
-  final String barcode;
-  final String categoryName;
-  final String brandName;
-  final String storeName;
-  final int stock;
-  final double price;
-  final String mrp;
-  final String unit;
-  final String sku;
-  final double profitMargin;
-  final double taxRate;
-  final String taxType;
-  final String discountType;
-  final String discount;
-  final String alertQuantity;
-  final String? imageUrl;
+  final Item item;
 
-  const ItemDetailsDialog({
-    super.key,
-    required this.itemId,
-    required this.itemName,
-    required this.itemCode,
-    required this.barcode,
-    required this.categoryName,
-    required this.brandName,
-    required this.storeName,
-    required this.stock,
-    required this.price,
-    required this.mrp,
-    required this.unit,
-    required this.sku,
-    required this.profitMargin,
-    required this.taxRate,
-    required this.taxType,
-    required this.discountType,
-    required this.discount,
-    required this.alertQuantity,
-    this.imageUrl,
-  });
+  const ItemDetailsDialog({super.key, required this.item});
 
   @override
   _ItemDetailsDialogState createState() => _ItemDetailsDialogState();
@@ -87,27 +48,30 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                   mainAxisAlignment: pw.MainAxisAlignment.center,
                   children: [
                     pw.Text(
-                      widget.storeName,
-                      style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                      widget.item.storeName,
+                      style: pw.TextStyle(
+                        fontSize: 8,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
                       textAlign: pw.TextAlign.center,
                     ),
                     pw.SizedBox(height: 1),
                     pw.Text(
-                      widget.itemName,
+                      widget.item.itemName,
                       style: const pw.TextStyle(fontSize: 6),
                       textAlign: pw.TextAlign.center,
                       maxLines: 1,
                     ),
                     pw.SizedBox(height: 1),
                     pw.Text(
-                      'MRP: ${widget.price.toStringAsFixed(2)}',
+                      'MRP: ${widget.item.salesPrice.toString()}',
                       style: const pw.TextStyle(fontSize: 7),
                       textAlign: pw.TextAlign.center,
                     ),
                     pw.SizedBox(height: 2),
                     pw.BarcodeWidget(
                       barcode: pw.Barcode.code128(),
-                      data: widget.barcode,
+                      data: widget.item.barcode,
                       width: barcodeWidth,
                       height: barcodeHeight,
                       drawText: false,
@@ -121,12 +85,17 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
       ),
     );
 
-    await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdf.save());
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final safeAlertQty = int.tryParse(widget.alertQuantity) ?? 0;
+    final safeAlertQty = int.tryParse(widget.item.alertQuantity) ?? 0;
+    final openingStock = int.tryParse(widget.item.openingStock ?? '0') ?? 0;
+    final isInStock = openingStock > safeAlertQty;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       elevation: 24,
@@ -171,7 +140,11 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.inventory_2_rounded, color: Colors.white, size: 24),
+                    child: const Icon(
+                      Icons.inventory_2_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   const Expanded(
@@ -192,7 +165,11 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                     ),
                     child: IconButton(
                       onPressed: () => Get.back(),
-                      icon: const Icon(Icons.close_rounded, color: Colors.white, size: 20),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                       splashRadius: 20,
                     ),
                   ),
@@ -214,7 +191,7 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                             Container(
                               width: 190,
                               child: Text(
-                                widget.itemName,
+                                widget.item.itemName,
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w800,
@@ -233,7 +210,10 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade50,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.grey.shade200, width: 1.5),
+                                border: Border.all(
+                                  color: Colors.grey.shade200,
+                                  width: 1.5,
+                                ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.grey.withOpacity(0.1),
@@ -242,28 +222,33 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                                   ),
                                 ],
                               ),
-                              child: widget.imageUrl != null && widget.imageUrl!.isNotEmpty
+                              child: widget.item.itemImage.isNotEmpty
                                   ? ClipRRect(
                                       borderRadius: BorderRadius.circular(14),
                                       child: Image.network(
-                                        widget.imageUrl!,
+                                        widget.item.itemImage,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Container(
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                colors: [Colors.grey.shade100, Colors.grey.shade200],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              ),
-                                            ),
-                                            child: const Icon(
-                                              Icons.image_not_supported_rounded,
-                                              size: 48,
-                                              color: Colors.grey,
-                                            ),
-                                          );
-                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                              return Container(
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: [
+                                                      Colors.grey.shade100,
+                                                      Colors.grey.shade200,
+                                                    ],
+                                                    begin: Alignment.topLeft,
+                                                    end: Alignment.bottomRight,
+                                                  ),
+                                                ),
+                                                child: const Icon(
+                                                  Icons
+                                                      .image_not_supported_rounded,
+                                                  size: 48,
+                                                  color: Colors.grey,
+                                                ),
+                                              );
+                                            },
                                       ),
                                     )
                                   : Container(
@@ -299,7 +284,10 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                                     width: 120,
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey.shade300, width: 1),
+                                      border: Border.all(
+                                        color: Colors.grey.shade300,
+                                        width: 1,
+                                      ),
                                       borderRadius: BorderRadius.circular(12),
                                       color: Colors.white,
                                       boxShadow: [
@@ -313,7 +301,7 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                                     child: Column(
                                       children: [
                                         Text(
-                                          widget.storeName,
+                                          widget.item.storeName,
                                           style: const TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.bold,
@@ -324,7 +312,7 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          widget.itemName,
+                                          widget.item.itemName,
                                           style: const TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.normal,
@@ -336,7 +324,7 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          '₹${widget.price.toStringAsFixed(2)}',
+                                          '₹${widget.item.salesPrice.toString()}',
                                           style: const TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.normal,
@@ -345,16 +333,22 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                                           textAlign: TextAlign.center,
                                         ),
                                         const SizedBox(height: 6),
-                                        widget.barcode.isNotEmpty
+                                        widget.item.barcode.isNotEmpty
                                             ? BarcodeWidget(
                                                 barcode: Barcode.code128(),
-                                                data: widget.barcode,
+                                                data: widget.item.barcode,
                                                 drawText: false,
                                                 color: Colors.black,
                                                 height: 40,
-                                                padding: const EdgeInsets.all(5),
+                                                padding: const EdgeInsets.all(
+                                                  5,
+                                                ),
                                               )
-                                            : const Icon(Icons.broken_image, size: 40, color: Colors.grey),
+                                            : const Icon(
+                                                Icons.broken_image,
+                                                size: 40,
+                                                color: Colors.grey,
+                                              ),
                                       ],
                                     ),
                                   ),
@@ -369,33 +363,58 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                                           keyboardType: TextInputType.number,
                                           decoration: InputDecoration(
                                             hintText: 'Count',
-                                            hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                                            border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(12),
-                                              borderSide: BorderSide(color: Colors.grey.shade300),
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey.shade500,
+                                              fontSize: 12,
                                             ),
-                                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color: Colors.grey.shade300,
+                                              ),
+                                            ),
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 8,
+                                                ),
                                           ),
                                           style: const TextStyle(fontSize: 14),
                                           textAlign: TextAlign.center,
                                           onChanged: (value) {
                                             setState(() {
-                                              _barcodeCount = int.tryParse(value) ?? 1;
-                                              if (_barcodeCount < 1) _barcodeCount = 1;
+                                              _barcodeCount =
+                                                  int.tryParse(value) ?? 1;
+                                              if (_barcodeCount < 1)
+                                                _barcodeCount = 1;
                                             });
                                           },
                                         ),
                                       ),
                                       const SizedBox(width: 12),
                                       ElevatedButton.icon(
-                                        onPressed: widget.barcode.isNotEmpty ? _printBarcode : null,
+                                        onPressed:
+                                            widget.item.barcode.isNotEmpty
+                                            ? _printBarcode
+                                            : null,
                                         icon: const Icon(Icons.print, size: 16),
-                                        label: const Text('Print', style: TextStyle(fontSize: 12)),
+                                        label: const Text(
+                                          'Print',
+                                          style: TextStyle(fontSize: 12),
+                                        ),
                                         style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 8,
+                                          ),
                                           backgroundColor: accentColor,
                                           foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
                                           elevation: 2,
                                         ),
                                       ),
@@ -405,19 +424,29 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                               ),
                               const SizedBox(height: 16),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 10,
+                                    ),
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
-                                        colors: [accentColor.withOpacity(0.15), primaryColor.withOpacity(0.1)],
+                                        colors: [
+                                          accentColor.withOpacity(0.15),
+                                          primaryColor.withOpacity(0.1),
+                                        ],
                                       ),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: accentColor.withOpacity(0.3), width: 1.5),
+                                      border: Border.all(
+                                        color: accentColor.withOpacity(0.3),
+                                        width: 1.5,
+                                      ),
                                     ),
                                     child: Text(
-                                      widget.categoryName,
+                                      widget.item.categoryName,
                                       style: const TextStyle(
                                         color: textPrimaryColor,
                                         fontWeight: FontWeight.w600,
@@ -428,14 +457,17 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                                   ),
                                   const SizedBox(width: 12),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 10,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: widget.stock > safeAlertQty
+                                      color: isInStock
                                           ? Colors.green.withOpacity(0.15)
                                           : Colors.orange.withOpacity(0.15),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: widget.stock > safeAlertQty
+                                        color: isInStock
                                             ? Colors.green.withOpacity(0.3)
                                             : Colors.orange.withOpacity(0.3),
                                         width: 1.5,
@@ -445,19 +477,23 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(
-                                          widget.stock > safeAlertQty
+                                          isInStock
                                               ? Icons.check_circle_rounded
                                               : Icons.warning_rounded,
-                                          color: widget.stock > safeAlertQty ? Colors.green : Colors.orange,
+                                          color: isInStock
+                                              ? Colors.green
+                                              : Colors.orange,
                                           size: 16,
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          widget.stock > safeAlertQty
-                                              ? 'In Stock (${widget.stock})'
-                                              : 'Low Stock (${widget.stock})',
+                                          isInStock
+                                              ? 'In Stock ($openingStock)'
+                                              : 'Low Stock ($openingStock)',
                                           style: TextStyle(
-                                            color: widget.stock > safeAlertQty ? Colors.green : Colors.orange,
+                                            color: isInStock
+                                                ? Colors.green
+                                                : Colors.orange,
                                             fontWeight: FontWeight.w600,
                                             fontSize: 14,
                                           ),
@@ -478,7 +514,10 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                       decoration: BoxDecoration(
                         color: accentColor.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: primaryColor.withOpacity(0.15), width: 1.5),
+                        border: Border.all(
+                          color: primaryColor.withOpacity(0.15),
+                          width: 1.5,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: primaryColor.withOpacity(0.08),
@@ -490,35 +529,103 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildPriceInfo('Sales Price', '₹${widget.price.toStringAsFixed(2)}', textSecondaryColor),
+                          _buildPriceInfo(
+                            'Sales Price',
+                            '₹${widget.item.salesPrice.toString()}',
+                            textSecondaryColor,
+                          ),
                           _buildDivider(),
-                          _buildPriceInfo('MRP', '₹${widget.mrp}', textSecondaryColor),
+                          _buildPriceInfo(
+                            'MRP',
+                            '₹${widget.item.mrp}',
+                            textSecondaryColor,
+                          ),
                           _buildDivider(),
-                          _buildPriceInfo('Stock', '${widget.stock}', widget.stock > safeAlertQty ? Colors.green : Colors.orange),
+                          _buildPriceInfo(
+                            'Stock',
+                            '${openingStock}',
+                            openingStock > safeAlertQty
+                                ? Colors.green
+                                : Colors.orange,
+                          ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 28),
-                    _buildSectionTitle('Product Information', Icons.info_rounded),
+                    _buildSectionTitle(
+                      'Product Information',
+                      Icons.info_rounded,
+                    ),
                     const SizedBox(height: 16),
                     _buildDetailsGrid([
-                      _buildDetailRow('Item Code', Icons.numbers, widget.itemCode),
-                      _buildDetailRow('SKU', Icons.qr_code, widget.sku),
-                      _buildDetailRow('Barcode', Icons.barcode_reader, widget.barcode),
-                      _buildDetailRow('Brand', Icons.branding_watermark_rounded, widget.brandName),
-                      _buildDetailRow('Store', Icons.store, widget.storeName),
-                      _buildDetailRow('Unit', Icons.scale, widget.unit),
+                      _buildDetailRow(
+                        'Item Code',
+                        Icons.numbers,
+                        widget.item.itemCode,
+                      ),
+                      _buildDetailRow('SKU', Icons.qr_code, widget.item.sku),
+                      _buildDetailRow(
+                        'Barcode',
+                        Icons.barcode_reader,
+                        widget.item.barcode,
+                      ),
+                      _buildDetailRow(
+                        'Brand',
+                        Icons.branding_watermark_rounded,
+                        widget.item.brandName,
+                      ),
+                      _buildDetailRow(
+                        'Store',
+                        Icons.store,
+                        widget.item.storeName,
+                      ),
+                      _buildDetailRow(
+                        'Unit',
+                        Icons.scale,
+                        widget.item.unitId.toString(),
+                      ),
                     ]),
                     const SizedBox(height: 24),
-                    _buildSectionTitle('Pricing & Tax', Icons.attach_money_rounded),
+                    _buildSectionTitle(
+                      'Pricing & Tax',
+                      Icons.attach_money_rounded,
+                    ),
                     const SizedBox(height: 16),
                     _buildDetailsGrid([
-                      _buildDetailRow('Profit Margin', Icons.trending_up_rounded, '${widget.profitMargin.toStringAsFixed(1)}%'),
-                      _buildDetailRow('Tax Rate', Icons.percent_rounded, '${widget.taxRate.toStringAsFixed(1)}%'),
-                      _buildDetailRow('Tax Type', Icons.receipt_long_rounded, widget.taxType.toUpperCase()),
-                      _buildDetailRow('Discount Type', Icons.discount_rounded, widget.discountType.isEmpty ? 'None' : widget.discountType),
-                      _buildDetailRow('Discount', Icons.percent_rounded, widget.discount.isEmpty ? '0%' : '${widget.discount}%'),
-                      _buildDetailRow('Alert Quantity', Icons.notifications_active_rounded, widget.alertQuantity),
+                      _buildDetailRow(
+                        'Profit Margin',
+                        Icons.trending_up_rounded,
+                        '${widget.item.profitMargin.toString()}%',
+                      ),
+                      _buildDetailRow(
+                        'Tax Rate',
+                        Icons.percent_rounded,
+                        '${widget.item.taxRate.toString()}%',
+                      ),
+                      _buildDetailRow(
+                        'Tax Type',
+                        Icons.receipt_long_rounded,
+                        widget.item.taxType.toUpperCase(),
+                      ),
+                      _buildDetailRow(
+                        'Discount Type',
+                        Icons.discount_rounded,
+                        widget.item.discountType.isEmpty
+                            ? 'None'
+                            : widget.item.discountType,
+                      ),
+                      _buildDetailRow(
+                        'Discount',
+                        Icons.percent_rounded,
+                        widget.item.discount.isEmpty
+                            ? '0%'
+                            : '${widget.item.discount}%',
+                      ),
+                      _buildDetailRow(
+                        'Alert Quantity',
+                        Icons.notifications_active_rounded,
+                        widget.item.alertQuantity,
+                      ),
                     ]),
                   ],
                 ),
@@ -530,7 +637,11 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
     );
   }
 
-  Map<String, dynamic> _buildDetailRow(String title, IconData icon, String value) {
+  Map<String, dynamic> _buildDetailRow(
+    String title,
+    IconData icon,
+    String value,
+  ) {
     return {'title': title, 'icon': icon, 'value': value};
   }
 
@@ -617,7 +728,9 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
             decoration: BoxDecoration(
               border: isLast
                   ? null
-                  : Border(bottom: BorderSide(color: Colors.grey.shade300, width: 1)),
+                  : Border(
+                      bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+                    ),
             ),
             child: Row(
               children: [
@@ -668,48 +781,7 @@ class _ItemDetailsDialogState extends State<ItemDetailsDialog> {
 
 void showItemDetailsDialog({
   required BuildContext context,
-  required String itemId,
-  required String itemName,
-  required String itemCode,
-  required String barcode,
-  required String categoryName,
-  required String brandName,
-  required String storeName,
-  required int stock,
-  required double price,
-  required String mrp,
-  required String unit,
-  required String sku,
-  required double profitMargin,
-  required double taxRate,
-  required String taxType,
-  required String discountType,
-  required String discount,
-  required String alertQuantity,
-  String? imageUrl,
+  required Item item,
 }) {
-  Get.dialog(
-    ItemDetailsDialog(
-      itemId: itemId,
-      itemName: itemName,
-      itemCode: itemCode,
-      barcode: barcode,
-      categoryName: categoryName,
-      brandName: brandName,
-      storeName: storeName,
-      stock: stock,
-      price: price,
-      mrp: mrp,
-      unit: unit,
-      sku: sku,
-      profitMargin: profitMargin,
-      taxRate: taxRate,
-      taxType: taxType,
-      discountType: discountType,
-      discount: discount,
-      alertQuantity: alertQuantity,
-      imageUrl: imageUrl,
-    ),
-    barrierDismissible: true,
-  );
+  Get.dialog(ItemDetailsDialog(item: item), barrierDismissible: true);
 }

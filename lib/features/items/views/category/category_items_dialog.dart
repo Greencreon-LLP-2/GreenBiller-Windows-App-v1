@@ -41,7 +41,9 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    Get.find<CategoryController>().getCategoryIcon(categoryName),
+                    Get.find<CategoryController>().getCategoryIcon(
+                      categoryName,
+                    ),
                     color: accentColor,
                     size: 24,
                   ),
@@ -59,10 +61,15 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
                           color: textPrimaryColor,
                         ),
                       ),
-                      Obx(() => Text(
-                            '${controller.filteredItems.length} items',
-                            style: TextStyle(fontSize: 14, color: textSecondaryColor.withOpacity(0.8)),
-                          )),
+                      Obx(
+                        () => Text(
+                          '${controller.filteredItems.length} items',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: textSecondaryColor.withOpacity(0.8),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -71,7 +78,9 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
                   icon: const Icon(Icons.close),
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.grey.shade100,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ],
@@ -92,9 +101,15 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
                       decoration: const InputDecoration(
                         hintText: 'Search items...',
                         hintStyle: TextStyle(color: textLightColor),
-                        prefixIcon: Icon(Icons.search, color: textSecondaryColor),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: textSecondaryColor,
+                        ),
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                   ),
@@ -107,19 +122,40 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.grey.shade200),
                   ),
-                  child: Obx(() => DropdownButton<String>(
-                        value: controller.selectedFilter.value,
-                        items: const [
-                          DropdownMenuItem(value: 'All', child: Text('All Items')),
-                          DropdownMenuItem(value: 'Active', child: Text('Active')),
-                          DropdownMenuItem(value: 'Inactive', child: Text('Inactive')),
-                          DropdownMenuItem(value: 'In Stock', child: Text('In Stock')),
-                          DropdownMenuItem(value: 'Out of Stock', child: Text('Out of Stock')),
-                        ],
-                        onChanged: (value) => controller.selectedFilter.value = value!,
-                        underline: Container(),
-                        icon: const Icon(Icons.arrow_drop_down, color: textSecondaryColor),
-                      )),
+                  child: Obx(
+                    () => DropdownButton<String>(
+                      value: controller.selectedFilter.value,
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'All',
+                          child: Text('All Items'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Active',
+                          child: Text('Active'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Inactive',
+                          child: Text('Inactive'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'In Stock',
+                          child: Text('In Stock'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Out of Stock',
+                          child: Text('Out of Stock'),
+                        ),
+                      ],
+                      onChanged: (value) =>
+                          controller.selectedFilter.value = value!,
+                      underline: Container(),
+                      icon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: textSecondaryColor,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -127,7 +163,9 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator(color: accentColor));
+                  return const Center(
+                    child: CircularProgressIndicator(color: accentColor),
+                  );
                 }
                 if (controller.filteredItems.isEmpty) {
                   return _buildEmptyState();
@@ -147,7 +185,10 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
               children: [
                 TextButton(
                   onPressed: () => Get.back(),
-                  child: const Text('Close', style: TextStyle(color: textSecondaryColor)),
+                  child: const Text(
+                    'Close',
+                    style: TextStyle(color: textSecondaryColor),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 ElevatedButton.icon(
@@ -160,8 +201,13 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accentColor,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ],
@@ -174,7 +220,7 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
 
   Widget _buildItemCard(Item item) {
     final isActive = item.status == 1;
-    final stock = int.tryParse(item.openingStock) ?? 0;
+    final stock = int.tryParse(item.quantity ?? item.openingStock ?? '0') ?? 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -184,7 +230,11 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Row(
@@ -202,7 +252,8 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
                     child: Image.network(
                       item.itemImage,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.inventory, color: accentColor),
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.inventory, color: accentColor),
                     ),
                   )
                 : const Icon(Icons.inventory, color: accentColor, size: 24),
@@ -225,9 +276,14 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                        color: isActive
+                            ? Colors.green.withOpacity(0.1)
+                            : Colors.red.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -244,20 +300,32 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
                 const SizedBox(height: 4),
                 Text(
                   item.sku,
-                  style: TextStyle(fontSize: 12, color: textSecondaryColor.withOpacity(0.8)),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: textSecondaryColor.withOpacity(0.8),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Text(
                       '₹${item.salesPrice}',
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: accentColor),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: accentColor,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: stock > 0 ? Colors.blue.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                        color: stock > 0
+                            ? Colors.blue.withOpacity(0.1)
+                            : Colors.orange.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -275,44 +343,57 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
             ),
           ),
           PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: textSecondaryColor.withOpacity(0.6)),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            icon: Icon(
+              Icons.more_vert,
+              color: textSecondaryColor.withOpacity(0.6),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             itemBuilder: (context) => [
               const PopupMenuItem(
                 value: 'view',
-                child: Row(children: [
-                  Icon(Icons.visibility, size: 18, color: accentColor),
-                  SizedBox(width: 8),
-                  Text('View Details'),
-                ]),
+                child: Row(
+                  children: [
+                    Icon(Icons.visibility, size: 18, color: accentColor),
+                    SizedBox(width: 8),
+                    Text('View Details'),
+                  ],
+                ),
               ),
               const PopupMenuItem(
                 value: 'edit',
-                child: Row(children: [
-                  Icon(Icons.edit, size: 18, color: accentColor),
-                  SizedBox(width: 8),
-                  Text('Edit'),
-                ]),
+                child: Row(
+                  children: [
+                    Icon(Icons.edit, size: 18, color: accentColor),
+                    SizedBox(width: 8),
+                    Text('Edit'),
+                  ],
+                ),
               ),
               PopupMenuItem(
                 value: isActive ? 'deactivate' : 'activate',
-                child: Row(children: [
-                  Icon(
-                    isActive ? Icons.block : Icons.check_circle,
-                    size: 18,
-                    color: isActive ? Colors.orange : Colors.green,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(isActive ? 'Deactivate' : 'Activate'),
-                ]),
+                child: Row(
+                  children: [
+                    Icon(
+                      isActive ? Icons.block : Icons.check_circle,
+                      size: 18,
+                      color: isActive ? Colors.orange : Colors.green,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(isActive ? 'Deactivate' : 'Activate'),
+                  ],
+                ),
               ),
               const PopupMenuItem(
                 value: 'delete',
-                child: Row(children: [
-                  Icon(Icons.delete_outline, size: 18, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Delete'),
-                ]),
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Delete'),
+                  ],
+                ),
               ),
             ],
             onSelected: (value) => controller.handleItemAction(value, item),
@@ -327,16 +408,29 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.inventory_2_outlined, size: 64, color: textSecondaryColor.withOpacity(0.5)),
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 64,
+            color: textSecondaryColor.withOpacity(0.5),
+          ),
           const SizedBox(height: 16),
           Text(
             'No items found',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: textSecondaryColor.withOpacity(0.8)),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: textSecondaryColor.withOpacity(0.8),
+            ),
           ),
           const SizedBox(height: 8),
           Text(
-            controller.searchController.text.isNotEmpty ? 'Try adjusting your search terms' : 'Add items to this category to see them here',
-            style: TextStyle(fontSize: 14, color: textSecondaryColor.withOpacity(0.6)),
+            controller.searchController.text.isNotEmpty
+                ? 'Try adjusting your search terms'
+                : 'Add items to this category to see them here',
+            style: TextStyle(
+              fontSize: 14,
+              color: textSecondaryColor.withOpacity(0.6),
+            ),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
@@ -350,7 +444,9 @@ class CategoryItemsDialog extends GetView<CategoryItemsController> {
               backgroundColor: accentColor,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ],

@@ -68,16 +68,24 @@ class CategoryItemsController extends GetxController {
     filteredItems.value = items.where((item) {
       final name = item.itemName.toLowerCase();
       if (selectedFilter.value == 'All') return name.contains(query);
-      if (selectedFilter.value == 'Active')
+      if (selectedFilter.value == 'Active') {
         return name.contains(query) && item.status == '1';
-      if (selectedFilter.value == 'Inactive')
+      }
+      if (selectedFilter.value == 'Inactive') {
         return name.contains(query) && item.status != '1';
-      if (selectedFilter.value == 'In Stock')
-        return name.contains(query) &&
-            (int.tryParse(item.openingStock) ?? 0) > 0;
-      if (selectedFilter.value == 'Out of Stock')
-        return name.contains(query) &&
-            (int.tryParse(item.openingStock) ?? 0) == 0;
+      }
+      if (selectedFilter.value == 'In Stock') {
+        final stock =
+            int.tryParse(item.quantity ?? item.openingStock ?? '0') ?? 0;
+        return name.contains(query) && stock > 0;
+      }
+
+      if (selectedFilter.value == 'Out of Stock') {
+        final stock =
+            int.tryParse(item.quantity ?? item.openingStock ?? '0') ?? 0;
+        return name.contains(query) && stock == 0;
+      }
+
       return true;
     }).toList();
   }
@@ -92,9 +100,9 @@ class CategoryItemsController extends GetxController {
           children: [
             Text('SKU: ${item.sku}'),
             Text('Price: ₹${item.salesPrice}'),
-            Text('Stock: ${item.openingStock}'),
-            const Text('Status: Active'),
-            if (item.description.isNotEmpty) ...[
+            Text('Stock: ${item.quantity ?? item.openingStock ?? "0"}'),
+            Text('Status: ${item.status == 1 ? "Active" : "Inactive"}'),
+            if ((item.description ?? '').toString().isNotEmpty) ...[
               const SizedBox(height: 8),
               Text('Description: ${item.description}'),
             ],

@@ -49,6 +49,7 @@ const String addItemUrl = "$baseUrl/items-create";
 const String viewAllItemUrl = "$baseUrl/items-view";
 const String editItemUrl = "$baseUrl/items-update";
 const String deleteItemUrl = "$baseUrl/items-delete";
+const String bulkItemUpdate = "$baseUrl/item-bulk";
 
 //^===================================supplier=================================^//
 const String addSupplierUrl = "$baseUrl/supplier-create";

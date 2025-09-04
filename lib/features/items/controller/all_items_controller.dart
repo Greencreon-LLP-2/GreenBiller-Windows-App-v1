@@ -12,6 +12,7 @@ import 'package:greenbiller/features/items/model/item_model.dart';
 
 import 'package:logger/logger.dart';
 import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AllItemsController extends GetxController {
   final DioClient dioClient = DioClient();
@@ -231,8 +232,6 @@ class AllItemsController extends GetxController {
       }
 
       final file = importedFile.value!['file'] as File;
-      // Placeholder for file processing logic (API call to process file)
-      // Assuming an API endpoint for processing the file
       final formData = dio.FormData.fromMap({
         'store_id': storeDropdownController.selectedStoreId.value,
         'file': await dio.MultipartFile.fromFile(
@@ -242,18 +241,19 @@ class AllItemsController extends GetxController {
       });
 
       final response = await dioClient.dio.post(
-        '$viewAllItemUrl/import', // Replace with actual import endpoint
+        bulkItemUpdate, // ✅ correct API
         data: formData,
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201 && response.data['status'] == true) {
         Get.snackbar(
           'Success',
-          'Items imported successfully',
+          response.data['message'] ?? 'Items imported successfully',
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
-        fetchItems(); // Refresh items after import
+        importedFile.value = null;
+        fetchItems();
       } else {
         throw Exception(response.data['message'] ?? 'Failed to import items');
       }
@@ -270,7 +270,39 @@ class AllItemsController extends GetxController {
     }
   }
 
-  Future<bool> deleteItem(String itemId) async {
+  Future<void> downloadTemplate() async {
+    try {
+      final response = await dioClient.dio.get(
+        '$baseUrl/item-bulk-template',
+        options: dio.Options(responseType: dio.ResponseType.bytes),
+      );
+
+      if (response.statusCode == 200) {
+        final dir = await getApplicationDocumentsDirectory();
+        final file = File('${dir.path}/item_bulk_template.xlsx');
+        await file.writeAsBytes(response.data);
+        Get.snackbar(
+          'Success',
+          'Template downloaded: ${file.path}',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        await OpenFile.open(file.path);
+      } else {
+        throw Exception('Failed to download template');
+      }
+    } catch (e) {
+      _logger.e('Error downloading template: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to download template: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  Future<bool> deleteItem(int itemId) async {
     try {
       final response = await dioClient.dio.delete('$deleteItemUrl/$itemId');
 
