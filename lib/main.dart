@@ -13,13 +13,16 @@ import 'package:greenbiller/features/auth/view/notification_page.dart';
 import 'package:greenbiller/features/auth/view/otp_verify_page.dart';
 import 'package:greenbiller/features/auth/view/signup_page.dart';
 import 'package:greenbiller/features/items/controller/add_items_controller.dart';
+import 'package:greenbiller/features/items/controller/all_items_controller.dart';
 import 'package:greenbiller/features/items/controller/brand_controller.dart';
 import 'package:greenbiller/features/items/controller/category_controller.dart';
 import 'package:greenbiller/features/items/controller/category_items_controller.dart';
+import 'package:greenbiller/features/items/controller/edit_item_controller.dart';
 import 'package:greenbiller/features/items/controller/unit_controller.dart';
 import 'package:greenbiller/features/items/views/brands/brand_page.dart';
 import 'package:greenbiller/features/items/views/category/categories_page.dart';
 import 'package:greenbiller/features/items/views/items/add_items_page.dart';
+import 'package:greenbiller/features/items/views/items/all_items_page.dart';
 import 'package:greenbiller/features/items/views/units/units_page.dart';
 import 'package:greenbiller/features/parties/controller/parties_controller.dart';
 import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
@@ -79,6 +82,7 @@ void main() {
     },
   );
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -89,18 +93,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: AppRoutes.login,
       getPages: [
-        GetPage(
-          name: AppRoutes.login,
-          page: () => const LoginPage(),
-        ),
-        GetPage(
-          name: AppRoutes.otpVerify,
-          page: () => const OtpVerifyPage(),
-        ),
-        GetPage(
-          name: AppRoutes.signUp,
-          page: () => const SignUpPage(),
-        ),
+        GetPage(name: AppRoutes.login, page: () => const LoginPage()),
+        GetPage(name: AppRoutes.otpVerify, page: () => const OtpVerifyPage()),
+        GetPage(name: AppRoutes.signUp, page: () => const SignUpPage()),
         GetPage(
           name: AppRoutes.adminDashboard,
           page: () => const StoreAdminEntryPoint(),
@@ -121,10 +116,7 @@ class MyApp extends StatelessWidget {
           name: AppRoutes.homepage,
           page: () => const CustomerDashboard(),
         ),
-        GetPage(
-          name: AppRoutes.maintenance,
-          page: () => const Maintenance(),
-        ),
+        GetPage(name: AppRoutes.maintenance, page: () => const Maintenance()),
         GetPage(
           name: AppRoutes.oneSignalNotificationPage,
           page: () => const NotificationDetailsPage(),
@@ -198,6 +190,15 @@ class MyApp extends StatelessWidget {
           page: () => AddItemsPage(),
           binding: BindingsBuilder(() {
             Get.put(AddItemController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.viewItems,
+          page: () => AllItemsPage(),
+          binding: BindingsBuilder(() {
+            Get.put(AllItemsController());
+             Get.put(AddItemController());
+            Get.put(EditItemController());
           }),
         ),
       ],

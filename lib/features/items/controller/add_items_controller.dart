@@ -32,18 +32,11 @@ class AddItemController extends GetxController
   // Reactive state
   final RxInt userId = 0.obs;
   final isProcessing = false.obs;
-  final selectedStoreId = Rxn<int>();
-  final selectedStore = Rxn<String>();
-  final selectedCategory = Rxn<String>();
+
   final selectedTaxType = Rxn<String>();
   final selectedDiscountType = Rxn<String>();
-  final selectedWarehouse = Rxn<String>();
-  final selectedBrand = Rxn<String>();
   final calculatedProfit = 0.0.obs;
-  final categoryMap = <String, int>{}.obs;
-  final unitMap = <String, int>{}.obs;
-  final brandMap = <String, int>{}.obs;
-  final warehouseMap = <String, String>{}.obs;
+
   final importedFile = Rxn<Map<String, dynamic>>();
   final imageFile = Rxn<File>();
   final isLoadingCategories = false.obs;
@@ -55,6 +48,7 @@ class AddItemController extends GetxController
   final taxList = <String>[].obs; // dropdown options
   final unitList = <UnitItem>[].obs;
   final selectedUnit = Rxn<UnitItem>();
+  final isShowSubUnit = false.obs;
   late TextEditingController unitValueController;
 
   // Form controllers
@@ -64,9 +58,10 @@ class AddItemController extends GetxController
   late TextEditingController hsnCodeController;
   late TextEditingController itemCodeController;
   late TextEditingController barcodeController;
-  late TextEditingController unitController;
+
   late TextEditingController descriptionController;
   late TextEditingController purchasePriceController;
+  late TextEditingController wholesalePriceController;
   late TextEditingController taxRateController;
   late TextEditingController salesPriceController;
   late TextEditingController mrpController;
@@ -99,7 +94,7 @@ class AddItemController extends GetxController
     hsnCodeController = TextEditingController();
     itemCodeController = TextEditingController();
     barcodeController = TextEditingController();
-    unitController = TextEditingController();
+
     descriptionController = TextEditingController();
     purchasePriceController = TextEditingController();
     taxRateController = TextEditingController();
@@ -111,6 +106,7 @@ class AddItemController extends GetxController
     alertQuantityController = TextEditingController();
     subUnitController = TextEditingController();
     unitValueController = TextEditingController();
+    wholesalePriceController = TextEditingController(text: '0.0');
 
     loadAwaitData();
     loadTaxList();
@@ -127,7 +123,7 @@ class AddItemController extends GetxController
     hsnCodeController.dispose();
     itemCodeController.dispose();
     barcodeController.dispose();
-    unitController.dispose();
+
     descriptionController.dispose();
     purchasePriceController.dispose();
     taxRateController.dispose();
@@ -138,6 +134,7 @@ class AddItemController extends GetxController
     openingStockController.dispose();
     alertQuantityController.dispose();
     subUnitController.dispose();
+    wholesalePriceController.dispose();
     super.onClose();
   }
 
@@ -270,15 +267,10 @@ class AddItemController extends GetxController
     }
   }
 
-  Future<bool> addItem(
-    BuildContext context,
-    GlobalKey<FormState> formKey,
-  ) async {
+  Future<bool> addItem(GlobalKey<FormState> formKey) async {
     isProcessing.value = true;
     try {
       if (formKey.currentState!.validate()) {
-        _logger.i('Form validated successfully - saving item');
-
         if (itemNameController.text.isEmpty) {
           throw Exception('Item name is required');
         }
@@ -286,11 +278,17 @@ class AddItemController extends GetxController
             barcodeController.text.length != 13) {
           throw Exception('Barcode length should be 13 characters');
         }
-        if (unitController.text.isEmpty) {
+        if (selectedUnit.value == null) {
           throw Exception('Unit is required');
+        }
+        if (subUnitController.text.isEmpty) {
+          throw Exception('SubUnit is required');
         }
         if (purchasePriceController.text.isEmpty) {
           throw Exception('Purchase price is required');
+        }
+        if (wholesalePriceController.text.isEmpty) {
+          throw Exception('Wholesale price is required');
         }
         if (salesPriceController.text.isEmpty) {
           throw Exception('Sales price is required');
@@ -301,14 +299,16 @@ class AddItemController extends GetxController
         if (taxRateController.text.isEmpty) {
           throw Exception('Tax rate is required');
         }
-        if (selectedWarehouse.value == null) {
+
+        if (storeDropdownController.selectedStoreId.value == null) {
           throw Exception('Warehouse is required');
         }
 
-        final purchasePrice = int.tryParse(purchasePriceController.text);
-        final salesPrice = int.tryParse(salesPriceController.text);
-        final taxRate = int.tryParse(taxRateController.text);
-        final discount = int.tryParse(discountController.text);
+        final purchasePrice = double.tryParse(purchasePriceController.text);
+        final salesPrice = double.tryParse(salesPriceController.text);
+        final taxRate = double.tryParse(taxRateController.text);
+        final wholeSalePrice = double.tryParse(wholesalePriceController.text);
+        final discount = double.tryParse(discountController.text);
         final alertQuantity = int.tryParse(alertQuantityController.text);
         final profitMargin = double.tryParse(profitMarginController.text);
 
@@ -332,16 +332,18 @@ class AddItemController extends GetxController
         }
 
         final formData = dio.FormData.fromMap({
-          'store_id': selectedStoreId.value.toString(),
+          'store_id': storeDropdownController.selectedStoreId.value.toString(),
           'user_id': userId.value.toString(),
-          'category_id': categoryMap[selectedCategory.value]?.toString() ?? '',
-          'brand_id': brandMap[selectedBrand.value]?.toString() ?? '',
+          'category_id': storeDropdownController.selectedCategoryId.value
+              .toString(),
+          'brand_id': storeDropdownController.selectedBrandId.toString(),
           'item_name': itemNameController.text,
           'SKU': skuController.text,
           'HSN_code': hsnCodeController.text,
           'Item_code': itemCodeController.text,
           'Barcode': barcodeController.text,
-          'Unit': unitController.text,
+          'Unit': selectedUnit.value?.id ?? 0,
+          'Sub_unit': subUnitController.text.toString(),
           'Purchase_price': purchasePrice.toString(),
           'Tax_type': selectedTaxType.value!,
           'Tax_rate': taxRate.toString(),
@@ -350,9 +352,11 @@ class AddItemController extends GetxController
           'Discount_type': selectedDiscountType.value ?? '',
           'Discount': discount?.toString() ?? '0',
           'Profit_margin': profitMargin?.toString() ?? '0.0',
-          'Warehouse': selectedWarehouse.value!,
+          'Warehouse': storeDropdownController.selectedWarehouseId.value
+              .toString(),
           'Opening_Stock': openingStockController.text,
           'Alert_Quantity': alertQuantity?.toString() ?? '0',
+          'wholesale_price': wholeSalePrice.toString(),
         });
 
         if (imageFile.value != null) {
@@ -365,14 +369,20 @@ class AddItemController extends GetxController
         }
 
         final response = await dioClient.dio.post(addItemUrl, data: formData);
+
         if (response.statusCode == 201) {
           Get.snackbar(
             'Success',
             response.data['message'] ?? 'Item added successfully',
             backgroundColor: Colors.green,
             colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM,
           );
-          Get.back();
+
+          Future.delayed(const Duration(seconds: 2), () {
+            Get.back();
+          });
+
           return true;
         } else {
           throw Exception(response.data['message'] ?? 'Failed to add item');
@@ -382,7 +392,7 @@ class AddItemController extends GetxController
         return false;
       }
     } catch (e, stackTrace) {
-      _logger.e('Error adding item: $e', stackTrace);
+      _logger.e('Error adding item: $e');
       Get.snackbar(
         'Error',
         'Error: $e',

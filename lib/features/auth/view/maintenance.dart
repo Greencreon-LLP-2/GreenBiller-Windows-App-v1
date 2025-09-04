@@ -10,7 +10,7 @@ class Maintenance extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Maintanance Details')),
       body: Center(
-        child: Text(payload?['body']?.toString() ?? 'No details available'),
+        child: Text(payload?['body']?.toString() ?? 'Server Is Down'),
       ),
     );
   }

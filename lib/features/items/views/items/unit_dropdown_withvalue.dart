@@ -50,27 +50,26 @@ class UnitDropdownWithValue extends StatelessWidget {
               },
             ),
           ),
+
           const SizedBox(width: 12),
-          const SizedBox(child: Text("=")),
-          // Editable TextField for Unit Value
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 1,
-            child: TextFormField(
-              controller: controller.unitValueController,
-              decoration: InputDecoration(
-                labelText: "Value",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+          if (controller.isShowSubUnit.value)
+            Expanded(
+              flex: 1,
+              child: TextFormField(
+                controller: controller.unitValueController,
+                decoration: InputDecoration(
+                  labelText: "Value",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
+                keyboardType: TextInputType.number,
               ),
-              keyboardType: TextInputType.number,
             ),
-          ),
         ],
       );
     });

@@ -42,6 +42,10 @@ dependencies:
   csv: ^6.0.0
   path_provider: ^2.1.5
   permission_handler: ^12.0.1
+  pdf: ^3.11.3
+  barcode_widget: ^2.0.4
+  barcode: ^2.2.9
+  printing: ^5.14.2
 
 dev_dependencies:
   flutter_test:

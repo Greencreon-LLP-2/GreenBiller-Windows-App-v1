@@ -149,11 +149,19 @@ class AdminSidebar extends StatelessWidget {
                         currentRoute == AppRoutes.units,
                     children: [
                       _buildNavTile(
-                        title: "Items",
+                        title: "Add Item",
                         icon: Icons.tune_outlined,
                         route: AppRoutes.addItems,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.addItems),
+                        indent: 16,
+                      ),
+                      _buildNavTile(
+                        title: "View Items",
+                        icon: Icons.tune_outlined,
+                        route: AppRoutes.addItems,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.viewItems),
                         indent: 16,
                       ),
                       _buildNavTile(

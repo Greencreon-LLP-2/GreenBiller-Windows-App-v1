@@ -437,7 +437,6 @@ class AddItemsPage extends GetView<AddItemController> {
                                     .loadCategories(val);
                                 await controller.storeDropdownController
                                     .loadWarehouses(val);
-                                    
                               }
                             },
                           ),
@@ -544,23 +543,27 @@ class AddItemsPage extends GetView<AddItemController> {
           ),
           Row(
             children: [
-              Expanded(
-                child: UnitDropdownWithValue(controller: controller),
-              ),
+              Expanded(child: UnitDropdownWithValue(controller: controller)),
               const SizedBox(width: 12),
-              Expanded(
-                child: _buildInputField(
-                  label: controller.unitController.text.isEmpty
-                      ? "Sub Unit"
-                      : "Quantity (${controller.unitController.text})",
-                  hint: controller.unitController.text.isEmpty
-                      ? "Enter subunit"
-                      : "Enter ${controller.unitController.text} quantity",
-                  prefixIcon: Icons.numbers_outlined,
-                  controller: controller.subUnitController,
-                  keyboardType: TextInputType.number,
-                ),
+              IconButton(
+                onPressed: () {
+                  controller.isShowSubUnit.value = true;
+                },
+                icon: Icon(Icons.add),
               ),
+              // Expanded(
+              //   child: _buildInputField(
+              //     label: controller.unitValueController.text.isEmpty
+              //         ? "Sub Unit"
+              //         : "Quantity (${controller.unitValueController.text})",
+              //     hint: controller.unitValueController.text.isEmpty
+              //         ? "Enter subunit"
+              //         : "Enter ${controller.unitValueController.text} quantity",
+              //     prefixIcon: Icons.numbers_outlined,
+              //     controller: controller.subUnitController,
+              //     keyboardType: TextInputType.number,
+              //   ),
+              // ),
             ],
           ),
           _buildInputField(
@@ -698,6 +701,13 @@ class AddItemsPage extends GetView<AddItemController> {
                         ),
                         const SizedBox(height: 20),
                         _buildInputField(
+                          label: "Selling Price",
+                          hint: "0.00",
+                          prefixIcon: Icons.currency_rupee,
+                          controller: controller.wholesalePriceController,
+                          keyboardType: TextInputType.number,
+                        ),
+                        _buildInputField(
                           label: "Sales Price",
                           hint: "0.00",
                           prefixIcon: Icons.currency_rupee,
@@ -712,6 +722,7 @@ class AddItemsPage extends GetView<AddItemController> {
                           controller: controller.mrpController,
                           keyboardType: TextInputType.number,
                         ),
+
                         Row(
                           children: [
                             Expanded(
@@ -920,6 +931,7 @@ class AddItemsPage extends GetView<AddItemController> {
                               .isLoadingWarehouses,
                           onChanged: (val) {},
                         ),
+                        const SizedBox(height: 20),
                         _buildInputField(
                           label: "Opening Stock",
                           hint: "10",
@@ -1264,6 +1276,8 @@ class AddItemsPage extends GetView<AddItemController> {
         case "Tax Type":
           selectedValue = controller.selectedTaxType.value;
           onChanged = (value) {
+            print(value);
+            print(controller.taxMap[value]?.toString());
             controller.selectedTaxType.value = value;
             if (value != null) {
               controller.taxRateController.text =
@@ -1288,7 +1302,7 @@ class AddItemsPage extends GetView<AddItemController> {
       return Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: DropdownButtonFormField<String>(
-          value: selectedValue,
+          initialValue: selectedValue,
           onChanged: onChanged,
           icon: const Icon(Icons.keyboard_arrow_down, size: 20),
           iconEnabledColor: accentColor.withOpacity(0.7),
@@ -1364,9 +1378,10 @@ class AddItemsPage extends GetView<AddItemController> {
         child: ElevatedButton(
           onPressed:
               controller.isProcessing.value ||
-                  controller.selectedStoreId.value == null
+                  controller.storeDropdownController.selectedStoreId.value ==
+                      null
               ? null
-              : () => controller.addItem(Get.context!, formKey),
+              : () => controller.addItem(formKey),
           style: ElevatedButton.styleFrom(
             backgroundColor: accentColor,
             foregroundColor: Colors.white,

@@ -43,7 +43,7 @@ class SessionService {
   void _handleStatusUpdate(AppStatusModel newStatus) {
     // Maintenance or shutdown → go to maintenance screen
     if (newStatus.shutdown == true || newStatus.settings?.appMaintenanceMode == true) {
-      Get.offAllNamed('/maintenance');
+      Get.offAllNamed(AppRoutes.maintenance);
       return;
     }
 
