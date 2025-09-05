@@ -95,6 +95,7 @@ class MyApp extends StatelessWidget {
       title: 'GreenBiller',
       debugShowCheckedModeBanner: false,
       initialRoute: AppRoutes.login,
+      // initialRoute: AppRoutes.addItems,
       getPages: [
         GetPage(name: AppRoutes.login, page: () => const LoginPage()),
         GetPage(name: AppRoutes.otpVerify, page: () => const OtpVerifyPage()),
