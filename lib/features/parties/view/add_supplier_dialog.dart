@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
+import 'package:greenbiller/features/auth/validator/validator.dart';
 import 'package:greenbiller/features/parties/controller/parties_controller.dart';
 import 'package:greenbiller/core/gloabl_widgets/dropdowns/custom_dropdown.dart';
 
@@ -18,16 +20,20 @@ class AddSupplierDialog extends StatelessWidget {
     final addressController = TextEditingController();
     final gstController = TextEditingController();
     final taxController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         width: 500,
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: Form(
+          key: formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             Row(
               children: [
                 Container(
@@ -51,7 +57,7 @@ class AddSupplierDialog extends StatelessWidget {
                     color: textPrimaryColor,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(width: 8),
               ],
             ),
             const SizedBox(height: 24),
@@ -76,6 +82,11 @@ class AddSupplierDialog extends StatelessWidget {
               label: 'Supplier Name',
               hint: 'Enter supplier name',
               icon: Icons.business_outlined,
+              validator: NameValidator.validate,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                LengthLimitingTextInputFormatter(100),
+              ],
             ),
             const SizedBox(height: 16),
             _buildTextField(
@@ -84,6 +95,11 @@ class AddSupplierDialog extends StatelessWidget {
               hint: 'Enter phone number',
               icon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
+              validator: PhoneValidator.validate,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
             ),
             const SizedBox(height: 16),
             _buildTextField(
@@ -92,6 +108,10 @@ class AddSupplierDialog extends StatelessWidget {
               hint: 'Enter email address',
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
+              validator: EmailValidator.validate,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+              ],
             ),
             const SizedBox(height: 16),
             _buildTextField(
@@ -100,6 +120,8 @@ class AddSupplierDialog extends StatelessWidget {
               hint: 'Enter address',
               icon: Icons.location_on_outlined,
               maxLines: 2,
+              validator: AddressValidator.validate,
+              
             ),
             const SizedBox(height: 16),
             _buildTextField(
@@ -107,6 +129,11 @@ class AddSupplierDialog extends StatelessWidget {
               label: 'GST Number',
               hint: 'Enter GST number',
               icon: Icons.numbers_outlined,
+              validator: GSTValidator.validate,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
+               LengthLimitingTextInputFormatter(40),
+              ],
             ),
             const SizedBox(height: 16),
             _buildTextField(
@@ -114,6 +141,11 @@ class AddSupplierDialog extends StatelessWidget {
               label: 'Tax Number',
               hint: 'Enter Tax number',
               icon: Icons.branding_watermark_outlined,
+              validator: TaxValidator.validate,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9\s-]')),
+                LengthLimitingTextInputFormatter(40),
+              ],
             ),
             const SizedBox(height: 16),
             AppDropdown(
@@ -146,24 +178,27 @@ class AddSupplierDialog extends StatelessWidget {
                 const SizedBox(width: 12),
                 ElevatedButton(
                   onPressed: () {
-                    controller
+                    if (formKey.currentState!.validate()) {
+                      if (controller.storeDropdownController.selectedStoreId.value == null) {
+                       
+                        return;
+                      }
+                      controller
                         .addSupplier(
                           context,
-                          nameController.text,
-                          phoneController.text,
-                          emailController.text,
-                          addressController.text,
-                          gstController.text,
-                          taxController.text,
-                          controller
-                              .storeDropdownController
-                              .selectedStoreId
-                              .value,
+                          nameController.text.trim(),
+                          phoneController.text.trim(),
+                          emailController.text.trim(),
+                          addressController.text.trim(),
+                          gstController.text.trim().toUpperCase(),
+                          taxController.text.trim(),
+                          controller.storeDropdownController.selectedStoreId.value,
                         )
                         .then((_) {
                           Get.back();
                           onSuccess();
                         });
+                    } 
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accentColor,
@@ -183,6 +218,8 @@ class AddSupplierDialog extends StatelessWidget {
           ],
         ),
       ),
+    )
+    )
     );
   }
 
@@ -193,8 +230,10 @@ class AddSupplierDialog extends StatelessWidget {
     required IconData icon,
     TextInputType? keyboardType,
     int maxLines = 1,
+    String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
@@ -212,6 +251,8 @@ class AddSupplierDialog extends StatelessWidget {
       ),
       keyboardType: keyboardType,
       maxLines: maxLines,
+      validator: validator,
+      inputFormatters: inputFormatters,
     );
   }
 }

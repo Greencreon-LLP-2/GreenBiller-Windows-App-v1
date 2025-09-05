@@ -1,8 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/core/gloabl_widgets/dialog_field.dart';
+import 'package:greenbiller/features/auth/validator/validator.dart';
 import 'package:greenbiller/features/parties/controller/parties_controller.dart';
 import 'package:greenbiller/features/parties/models/customer_model.dart';
 
@@ -13,7 +13,6 @@ class CustomerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<PartiesController>();
     final name = customer.customerName ?? "Unknown";
     final status = customer.status == '1' ? 'Active' : 'Inactive';
     final statusColor = customer.status == '1' ? Colors.green : Colors.red;
@@ -37,7 +36,7 @@ class CustomerCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Avatar
+      
             CircleAvatar(
               radius: 28,
               backgroundColor: Colors.grey.shade200,
@@ -51,7 +50,7 @@ class CustomerCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 18),
-            // Info
+    
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +154,7 @@ class CustomerCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Actions
+       
             Column(
               children: [
                 _buildActionButton(
@@ -230,42 +229,104 @@ class CustomerCard extends StatelessWidget {
               label: 'Customer name',
               icon: Icons.person_outline_rounded,
               controller: customerNameController,
+              validator: NameValidator.validate,
             ),
             DialogField(
               label: 'Phone',
               icon: Icons.phone_outlined,
               controller: phoneController,
               keyboardType: TextInputType.phone,
+              validator: PhoneValidator.validate,
             ),
             DialogField(
               label: 'Email',
               icon: Icons.email_outlined,
               controller: emailController,
               keyboardType: TextInputType.emailAddress,
+              validator: EmailValidator.validate,
             ),
             DialogField(
               label: 'Address',
               icon: Icons.location_on_outlined,
               controller: addressController,
               maxLines: 2,
+              validator: AddressValidator.validate,
             ),
             DialogField(
               label: 'GST Number',
               icon: Icons.business_outlined,
               controller: gstController,
+              validator: GSTINValidator.validate,
             ),
           ],
         ),
       ],
-      onSave: () => controller.handleSaveCustomerChanges(
-        context,
-        customer.id.toString(),
-        customerNameController.text,
-        phoneController.text,
-        emailController.text,
-        addressController.text,
-        gstController.text,
-      ),
+      onSave: () async {
+      
+        final name = customerNameController.text.trim();
+        final phone = phoneController.text.trim();
+        final email = emailController.text.trim();
+        final address = addressController.text.trim();
+        final gstin = gstController.text.trim();
+
+        String? nameError = NameValidator.validate(name);
+        String? phoneError = PhoneValidator.validate(phone);
+        String? emailError = EmailValidator.validate(email);
+        String? addressError = AddressValidator.validate(address);
+        String? gstinError = GSTINValidator.validate(gstin);
+
+   
+        List<String> errors = [];
+        if (nameError != null) errors.add("Name: $nameError");
+        if (phoneError != null) errors.add("Phone: $phoneError");
+        if (emailError != null) errors.add("Email: $emailError");
+        if (addressError != null) errors.add("Address: $addressError");
+        if (gstinError != null) errors.add("GSTIN: $gstinError");
+
+    
+        if (errors.isNotEmpty) {
+          Get.snackbar(
+            'Validation Error',
+            errors.first,
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red.withOpacity(0.1),
+            colorText: Colors.red,
+            icon: const Icon(Icons.error_outline, color: Colors.red),
+            duration: const Duration(seconds: 3),
+          );
+          return;
+        }
+
+      
+        final success = await controller.handleSaveCustomerChanges(
+          context,
+          customer.id.toString(),
+          name,
+          phone,
+          email,
+          address,
+          gstin.toUpperCase(),
+        );
+
+        if (success) {
+        
+          Get.back();
+         
+        } else {
+         
+          final err =
+              controller.customerError.value ?? 'Failed to update customer';
+          Get.snackbar(
+            'Error',
+            err,
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red.withOpacity(0.1),
+            colorText: Colors.red,
+            icon: const Icon(Icons.error_outline, color: Colors.red),
+            duration: const Duration(seconds: 3),
+          );
+        }
+      },
     );
   }
 
