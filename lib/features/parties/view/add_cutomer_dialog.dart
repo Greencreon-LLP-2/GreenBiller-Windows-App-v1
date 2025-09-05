@@ -170,7 +170,10 @@ class AddCustomerDialog extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () {
+                     
+                        Get.back();
+                      },
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
@@ -185,7 +188,6 @@ class AddCustomerDialog extends StatelessWidget {
                     const SizedBox(width: 12),
                     ElevatedButton(
                       onPressed: () {
-                        
                         if (formKey.currentState!.validate()) { 
                           if (controller.selectedCustomerStoreId.value == null) {
                             Get.snackbar(
@@ -198,20 +200,31 @@ class AddCustomerDialog extends StatelessWidget {
                             );
                             return;
                           }
-                        controller
-                           .addCustomer(
-                                context,
-                                nameController.text.trim(),
-                                phoneController.text.trim(),
-                                emailController.text.trim(),
-                                addressController.text.trim(),
-                                gstinController.text.trim().toUpperCase(), 
-                              )
+                        
+                          controller
+                            .addCustomer(
+                              context,
+                              nameController.text.trim(),
+                              phoneController.text.trim(),
+                              emailController.text.trim(),
+                              addressController.text.trim(),
+                              gstinController.text.trim().toUpperCase(), 
+                            )
                             .then((_) {
                               Get.back();
                               onSuccess();
                             });
-                      } 
+                        } else {
+                   
+                          Get.snackbar(
+                            'Validation Error',
+                            'Please fix the errors in the form',
+                            snackPosition: SnackPosition.TOP,
+                            backgroundColor: Colors.red.withOpacity(0.1),
+                            colorText: Colors.red,
+                            icon: const Icon(Icons.error_outline, color: Colors.red),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: accentColor,

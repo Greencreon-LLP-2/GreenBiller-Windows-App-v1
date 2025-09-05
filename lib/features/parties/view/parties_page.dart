@@ -115,9 +115,8 @@ class PartiesPage extends StatelessWidget {
       currentTabIndex == 0
           ? AddCustomerDialog(onSuccess: refreshCallback)
           : AddSupplierDialog(onSuccess: refreshCallback),
-    ).then((_) {
-      refreshCallback();
-      Get.back();
-    });
+      barrierDismissible:
+          false, 
+    );
   }
 }
