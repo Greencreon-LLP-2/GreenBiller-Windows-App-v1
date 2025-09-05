@@ -84,12 +84,6 @@ class GSTINValidator {
     if (value == null || value.trim().isEmpty) {
       return 'GSTIN is required';
     }
-    if (value.trim().isNotEmpty) {
-      if (!RegExp(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$')
-          .hasMatch(value.trim().toUpperCase())) {
-        return 'Please enter a valid GSTIN format (e.g., 22AAAAA0000A1Z5)';
-      }
-    }
     return null;
   }
 }
@@ -106,6 +100,41 @@ class AddressValidator {
         return 'Address must not exceed 200 characters';
       }
     }
+    return null;
+  }
+}
+class GSTValidator {
+  static String? validate(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'GST is required';
+    }
+    final cleanedValue = value.replaceAll(RegExp(r'[^0-9.]'), '');
+    if (cleanedValue.isEmpty) {
+      return 'GST must be a number';
+    }
+    final gst = double.tryParse(cleanedValue);
+    if (gst == null) {
+      return 'GST must be a valid number';
+    }
+    if (gst < 0 ) {
+      return 'GST must be between 0 and 100';
+    }
+    
+    return null;
+  }
+}
+class TaxValidator {
+  static String? validate(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Tax number is required';
+    }
+    if (value.trim().length < 3) {
+      return 'Tax number must be at least 3 characters';
+    }
+    if (value.trim().length > 20) {
+      return 'Tax number must not exceed 20 characters';
+    }
+    
     return null;
   }
 }

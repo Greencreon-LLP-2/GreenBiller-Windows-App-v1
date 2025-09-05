@@ -153,6 +153,10 @@ class AddCustomerDialog extends StatelessWidget {
                   hint: 'Enter GSTIN',
                   icon: Icons.account_balance_rounded,
                   validator: GSTINValidator.validate,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
+                    LengthLimitingTextInputFormatter(15),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 AppDropdown(
@@ -190,14 +194,7 @@ class AddCustomerDialog extends StatelessWidget {
                       onPressed: () {
                         if (formKey.currentState!.validate()) { 
                           if (controller.selectedCustomerStoreId.value == null) {
-                            Get.snackbar(
-                              'Validation Error',
-                              'Please select a store',
-                              snackPosition: SnackPosition.TOP,
-                              backgroundColor: Colors.red.withOpacity(0.1),
-                              colorText: Colors.red,
-                              icon: const Icon(Icons.error_outline, color: Colors.red),
-                            );
+                           
                             return;
                           }
                         
