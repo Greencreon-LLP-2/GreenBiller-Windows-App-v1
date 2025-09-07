@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
@@ -443,18 +444,10 @@ class StoreController extends GetxController
         return;
       }
 
-      final formData = dio.FormData.fromMap(payload);
-
       final response = await dioClient.dio.put(
         "$editStoreUrl/$storeId",
-        data: formData,
-        options: dio.Options(
-          headers: {
-            'Authorization':
-                'Bearer ${authController.user.value?.accessToken ?? ''}',
-            'Content-Type': 'multipart/form-data',
-          },
-        ),
+        data: payload,
+        options: Options(contentType: 'application/x-www-form-urlencoded'),
       );
 
       if (response.statusCode == 200) {
@@ -469,6 +462,7 @@ class StoreController extends GetxController
         );
         Future.delayed(const Duration(seconds: 1), () {
           Get.back();
+          getStoreList();
         });
       } else {
         _showError(response.data);
