@@ -9,15 +9,14 @@ import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/features/parties/models/customer_model.dart';
 import 'package:greenbiller/features/parties/models/supplier_model.dart';
-
 class PartiesController extends GetxController {
-  // Services
+
   late DioClient dioClient;
   late HiveService hiveService;
   late AuthController authController;
   late DropdownController storeDropdownController;
 
-  // Customer
+
   late TextEditingController customerSearchController;
   final customerSearchQuery = ''.obs;
   final customerSelectedFilter = 'All Customers'.obs;
@@ -30,7 +29,7 @@ class PartiesController extends GetxController {
   final customers = <CustomerData>[].obs;
   final filteredCustomers = <CustomerData>[].obs;
 
-  // Supplier
+
   late TextEditingController supplierSearchController;
   final supplierSearchQuery = ''.obs;
   final supplierSelectedFilter = 'All Suppliers'.obs;
@@ -42,7 +41,7 @@ class PartiesController extends GetxController {
   final suppliers = <SupplierData>[].obs;
   final filteredSuppliers = <SupplierData>[].obs;
 
-  // Misc
+
   final RxInt userId = 0.obs;
   final currentTabIndex = 0.obs;
 
@@ -59,11 +58,11 @@ class PartiesController extends GetxController {
 
     userId.value = authController.user.value?.userId ?? 0;
 
-    // Load initial
+
     loadCustomers();
     loadSuppliers();
 
-    // Listeners
+ 
     ever(customerSearchQuery, (_) => filterCustomers());
     ever(customerSelectedFilter, (_) => filterCustomers());
     ever(selectedCustomerStoreId, (_) => loadCustomers());
@@ -103,9 +102,7 @@ class PartiesController extends GetxController {
         customerModel.value = CustomerModel.fromJson(response.data);
         customers.value = customerModel.value?.data ?? [];
         filterCustomers();
-        // Save to Hive
-        // await hiveService.saveCustomers(customers.toList());
-      }
+  }
     } catch (e) {
       customerError.value = e.toString().replaceAll('Exception:', '').trim();
       log('Error loading customers: $e');
@@ -129,9 +126,7 @@ class PartiesController extends GetxController {
         supplierModel.value = SupplierModel.fromJson(response.data);
         suppliers.value = supplierModel.value?.data ?? [];
         filterSuppliers();
-        // Save to Hive
-        // await hiveService.saveSuppliers(suppliers.toList());
-      }
+     }
     } catch (e) {
       supplierError.value = e.toString().replaceAll('Exception:', '').trim();
       log('Error loading suppliers: $e');
@@ -387,7 +382,7 @@ class PartiesController extends GetxController {
     }
   }
 
-  Future<void> handleSaveCustomerChanges(
+  Future<bool> handleSaveCustomerChanges(
     BuildContext context,
     String customerId,
     String name,
@@ -397,43 +392,47 @@ class PartiesController extends GetxController {
     String gstin,
   ) async {
     try {
-      final response = await dioClient.dio.post(
+      final response = await dioClient.dio.put(
         '$editCustomerUrl/$customerId',
         data: {
-          'name': name,
-          'phone': phone,
+          'customer_name': name,
+          'mobile': phone,
           'email': email,
           'address': address,
           'gstin': gstin,
           'store_id': selectedCustomerStoreId.value,
         },
       );
-      if (response.statusCode == 200 &&
-          response.data['message'] == 'Customer updated successfully') {
-        Get.snackbar(
-          'Success',
-          'Customer updated successfully',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-        refreshCustomers();
-      } else {
-        Get.snackbar(
-          'Error',
-          'Failed to update customer',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+
+      if (response.statusCode == 200) {
+       
+        final message = response.data['message']?.toString() ?? '';
+        if (message.contains('successfully') || message.contains('updated')) {
+     
+          customerError.value = null;
+      
+          refreshCustomers();
+    
+          Get.snackbar(
+            'Success',
+            'Customer updated successfully',
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP,
+            duration: const Duration(seconds: 2),
+          );
+          return true;
+        }
       }
+
+
+      customerError.value =
+          response.data['message']?.toString() ?? 'Update failed';
+      return false;
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Error: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      customerError.value = e.toString();
+      return false;
     }
-    Get.back();
   }
 
   Future<void> handleSaveSupplierChanges(
