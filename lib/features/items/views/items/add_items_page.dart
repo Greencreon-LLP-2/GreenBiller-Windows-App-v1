@@ -544,7 +544,6 @@ class AddItemsPage extends GetView<AddItemController> {
           Row(
             children: [
               Expanded(child: UnitDropdownWithValue(controller: controller)),
-              
             ],
           ),
           _buildInputField(
@@ -571,6 +570,7 @@ class AddItemsPage extends GetView<AddItemController> {
               Expanded(
                 child: Card(
                   elevation: 0,
+                  color: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(color: Colors.grey.shade200),
@@ -646,6 +646,7 @@ class AddItemsPage extends GetView<AddItemController> {
               Expanded(
                 child: Card(
                   elevation: 0,
+                  color: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(color: Colors.grey.shade200),
@@ -736,6 +737,7 @@ class AddItemsPage extends GetView<AddItemController> {
           const SizedBox(height: 24),
           Card(
             elevation: 0,
+            color: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(color: Colors.grey.shade200),
@@ -864,6 +866,7 @@ class AddItemsPage extends GetView<AddItemController> {
               Expanded(
                 child: Card(
                   elevation: 0,
+                  color: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(color: Colors.grey.shade300),
@@ -929,6 +932,7 @@ class AddItemsPage extends GetView<AddItemController> {
               Expanded(
                 child: Card(
                   elevation: 0,
+                  color: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(color: Colors.grey.shade200),

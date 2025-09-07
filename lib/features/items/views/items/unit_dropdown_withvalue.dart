@@ -15,7 +15,9 @@ class UnitDropdownWithValue extends StatelessWidget {
       final selectedSubUnit = controller.selectedSubUnit.value;
 
       return Card(
-        elevation: 2,
+        elevation: 1,
+        color: Colors.white,
+        // shadowColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(8),
         child: Padding(
