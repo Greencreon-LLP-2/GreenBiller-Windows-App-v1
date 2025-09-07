@@ -131,7 +131,7 @@ class MyApp extends StatelessWidget {
           page: () => const NotificationDetailsPage(),
         ),
         GetPage(
-          name: AppRoutes.accountSettings,
+          name: AppRoutes.bankAccountSettings,
           page: () => AccountSetttingsPage(),
           binding: BindingsBuilder(() {
             Get.put(AccountController());

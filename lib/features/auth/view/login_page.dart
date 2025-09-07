@@ -49,7 +49,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<AuthController>();
     final phoneController = TextEditingController(text: '7012545907');
-    final passwordController = TextEditingController(text: '1234567890');
+    final passwordController = TextEditingController(text: "B,%}=29Xco'XO)]+");
 
     return Scaffold(
       backgroundColor: backgroundColor,

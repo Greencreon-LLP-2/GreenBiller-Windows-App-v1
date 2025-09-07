@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
@@ -6,7 +5,10 @@ import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/hive_service.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
+import 'package:greenbiller/features/settings/controller/account_settings_controller.dart';
+import 'package:greenbiller/routes/app_routes.dart';
 import 'package:logger/logger.dart';
+import 'package:dio/dio.dart' as dio;
 
 class PurchaseItem {
   final TextEditingController item = TextEditingController();
@@ -72,7 +74,8 @@ class PurchaseItem {
   }
 
   void _updateQuantityFromSerials() {
-    if (serials.isNotEmpty && serials.length > (double.tryParse(qty.text) ?? 0)) {
+    if (serials.isNotEmpty &&
+        serials.length > (double.tryParse(qty.text) ?? 0)) {
       qty.text = serials.length.toString();
       _calculateAmount();
     }
@@ -100,7 +103,7 @@ class NewPurchaseController extends GetxController {
   late AuthController authController;
   late CommonApiFunctionsController commonApi;
   late Logger logger;
-
+  late AccountController accountController;
   // Form Controllers
   late TextEditingController storeController;
   late TextEditingController warehouseController;
@@ -120,6 +123,7 @@ class NewPurchaseController extends GetxController {
   final RxDouble grandTotal = 0.0.obs;
   final RxDouble paidAmount = 0.0.obs;
   final RxDouble balanceAmount = 0.0.obs;
+  final RxString selectedAccountId = ''.obs;
   final RxList<PurchaseItem> items = <PurchaseItem>[].obs;
   final isLoading = false.obs;
   final isLoadingStores = false.obs;
@@ -145,6 +149,7 @@ class NewPurchaseController extends GetxController {
     dioClient = DioClient();
     hiveService = HiveService();
     authController = Get.find<AuthController>();
+    accountController = Get.put(AccountController());
     commonApi = Get.find<CommonApiFunctionsController>();
     logger = Logger();
 
@@ -176,6 +181,7 @@ class NewPurchaseController extends GetxController {
     // Initial API
     fetchStores();
     fetchTaxes();
+    accountController.fetchAccounts();
   }
 
   @override
@@ -228,7 +234,11 @@ class NewPurchaseController extends GetxController {
     subtotal.value = sub;
     totalDiscount.value = discount;
     totalTax.value = tax;
-    grandTotal.value = subtotal.value - totalDiscount.value + totalTax.value + otherCharges.value;
+    grandTotal.value =
+        subtotal.value -
+        totalDiscount.value +
+        totalTax.value +
+        otherCharges.value;
     calculateBalance();
   }
 
@@ -253,9 +263,12 @@ class NewPurchaseController extends GetxController {
   Future<void> fetchWarehouses(String storeId) async {
     isLoadingWarehouses.value = true;
     try {
-      final List<dynamic> response = await commonApi.fetchWarehousesByStoreID(int.parse(storeId));
+      final List<dynamic> response = await commonApi.fetchWarehousesByStoreID(
+        int.parse(storeId),
+      );
       warehouseMap.value = {
-        for (var warehouse in response) warehouse['warehouse_name']: warehouse['id'].toString(),
+        for (var warehouse in response)
+          warehouse['warehouse_name']: warehouse['id'].toString(),
       };
     } catch (e) {
       Get.snackbar('Error', 'Failed to fetch warehouses: $e');
@@ -269,7 +282,8 @@ class NewPurchaseController extends GetxController {
     try {
       final List<dynamic> response = await commonApi.fetchSuppliers(storeId);
       supplierMap.value = {
-        for (var supplier in response) supplier['supplier_name']: supplier['id'].toString(),
+        for (var supplier in response)
+          supplier['supplier_name']: supplier['id'].toString(),
       };
     } catch (e) {
       Get.snackbar('Error', 'Failed to fetch suppliers: $e');
@@ -285,9 +299,15 @@ class NewPurchaseController extends GetxController {
       if (response.isEmpty) {
         Get.snackbar('Error', 'Please add items first, empty store');
       }
-      itemsList.value = response.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      itemsList.value = response
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
     } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch items: $e', backgroundColor: Colors.redAccent);
+      Get.snackbar(
+        'Error',
+        'Failed to fetch items: $e',
+        backgroundColor: Colors.redAccent,
+      );
     } finally {
       isLoadingItems.value = false;
     }
@@ -343,7 +363,8 @@ class NewPurchaseController extends GetxController {
       purchaseItem.itemId = item['id'].toString();
       purchaseItem.sku.text = item['SKU'] ?? '';
       purchaseItem.unit.text = item['unit_id'].toString();
-      purchaseItem.pricePerUnit.text = (item['Purchase_price'] ?? '0').toString();
+      purchaseItem.pricePerUnit.text = (item['Purchase_price'] ?? '0')
+          .toString();
       purchaseItem.qty.text = '1';
       purchaseItem.discountPercent.text = (item['Discount'] ?? '0').toString();
       purchaseItem.taxPercent.text = (item['Tax_rate'] ?? '0').toString();
@@ -388,16 +409,22 @@ class NewPurchaseController extends GetxController {
         Get.snackbar('Error', 'Please enter item name for row ${i + 1}');
         return false;
       }
-      if (items[i].qty.text.isEmpty || double.tryParse(items[i].qty.text) == 0) {
+      if (items[i].qty.text.isEmpty ||
+          double.tryParse(items[i].qty.text) == 0) {
         Get.snackbar('Error', 'Please enter valid quantity for row ${i + 1}');
         return false;
       }
-      if (items[i].pricePerUnit.text.isEmpty || double.tryParse(items[i].pricePerUnit.text) == 0) {
+      if (items[i].pricePerUnit.text.isEmpty ||
+          double.tryParse(items[i].pricePerUnit.text) == 0) {
         Get.snackbar('Error', 'Please enter valid price for row ${i + 1}');
         return false;
       }
-      if (items[i].serials.isNotEmpty && items[i].serials.length != double.tryParse(items[i].qty.text)) {
-        Get.snackbar('Error', 'Serial numbers count does not match quantity for row ${i + 1}');
+      if (items[i].serials.isNotEmpty &&
+          items[i].serials.length != double.tryParse(items[i].qty.text)) {
+        Get.snackbar(
+          'Error',
+          'Serial numbers count does not match quantity for row ${i + 1}',
+        );
         return false;
       }
     }
@@ -410,10 +437,20 @@ class NewPurchaseController extends GetxController {
 
   Future<void> savePurchase() async {
     if (!validateForm()) return;
-
+    if (selectedAccountId.value.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Please select an account before proceeding.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
     isLoading.value = true;
     try {
-      final purchaseCode = 'G_B_${selectedStoreId.value}_${DateTime.now().millisecondsSinceEpoch}_${userId.value}';
+      final purchaseCode =
+          'G_B_${selectedStoreId.value}_${DateTime.now().millisecondsSinceEpoch}_${userId.value}';
+
       Map<String, dynamic> purchaseData = {
         'user_id': userId.value,
         'store_id': selectedStoreId.value,
@@ -435,10 +472,20 @@ class NewPurchaseController extends GetxController {
         data: purchaseData,
       );
 
-      if (purchaseResponse.statusCode == 200 || purchaseResponse.statusCode == 201) {
+      if (purchaseResponse.statusCode == 200 ||
+          purchaseResponse.statusCode == 201) {
         final purchaseId = purchaseResponse.data['data']['id'].toString();
 
         for (var item in items) {
+          String batchNo = '0';
+          bool ifBatch = item.serials.isNotEmpty;
+          if (ifBatch) {
+            final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+            final batchPrefix =
+                'BAT${timestamp.substring(timestamp.length - 6)}';
+            batchNo = '${item.serials.join(',')},$batchPrefix';
+          }
+
           Map<String, dynamic> itemData = {
             'item_id': item.itemId,
             'store_id': selectedStoreId.value,
@@ -446,30 +493,61 @@ class NewPurchaseController extends GetxController {
             'purchase_id': purchaseId,
             'purchase_qty': item.qty.text,
             'price_per_unit': item.pricePerUnit.text,
-            'tax_name': item.taxName,
-            'tax_amount': item.taxAmount.text,
-            'discount_amount': item.discountAmount.text,
+            'tax_type': item.taxName,
+            'tax_amt': item.taxAmount.text,
+            'discount_amt': item.discountAmount.text,
             'total_cost': item.totalAmount.text,
-            'item_name': item.item.text,
-            'batch_no': item.serials.join(','),
-            'barcode': item.sku.text,
-            'unit': item.unit.text,
+            'unit_total_cost': item.purchasePrice.text,
+            'discount_input': item.discountPercent.text,
+            'description': item.item.text,
+            'if_batch': ifBatch ? 1 : 0,
+            'batch_no': batchNo,
+            'if_expirydate': false,
+            'stock': 0,
+            'status': 1,
+            'purchase_status': 1,
           };
 
           await dioClient.dio.post(
             '$baseUrl/purchaseitem-create',
             data: itemData,
           );
+
+          for (var serial in item.serials) {
+            Map<String, dynamic> serialData = {
+              'store_id': selectedStoreId.value,
+              'item_id': item.itemId,
+              'serialno': serial,
+              'purchase_id': purchaseId,
+              'sales_id': 0,
+              'purchase_return_id': null,
+              'sales_return_id': null,
+              'created_by': userId.value,
+              'status': 1,
+            };
+
+            final serialResponse = await dioClient.dio.post(
+              '$baseUrl/items/serialnumber-create',
+              data: serialData,
+            );
+
+            if (serialResponse.statusCode != 200 &&
+                serialResponse.statusCode != 201) {
+              throw Exception(
+                'Failed to save serial number: ${serialResponse.data['message']}',
+              );
+            }
+          }
         }
 
         Map<String, dynamic> paymentData = {
-          'user_id': userId.value,
-          'purchase_id': purchaseId,
-          'store_id': selectedStoreId.value,
-          'payment_method': paymentType.value,
-          'payment_amount': paidAmountController.text,
+          'store_id': int.parse(selectedStoreId.value),
+          'purchase_id': int.parse(purchaseId),
+          'supplier_id': int.parse(selectedSupplierId.value),
           'payment_date': billDateController.text,
-          'supplier_id': selectedSupplierId.value,
+          'payment_type': paymentType.value,
+          'payment': paidAmountController.text,
+          'account_id': int.parse(selectedAccountId.value), 
           'payment_note': noteController.text,
         };
 
@@ -482,22 +560,24 @@ class NewPurchaseController extends GetxController {
           await hiveService.savePurchase({
             ...purchaseData,
             'items': items
-                .map((item) => {
-                      'item_id': item.itemId,
-                      'item_name': item.item.text,
-                      'serial_no': item.serials.join(','),
-                      'qty': item.qty.text,
-                      'unit': item.unit.text,
-                      'price_per_unit': item.pricePerUnit.text,
-                      'purchase_price': item.purchasePrice.text,
-                      'sku': item.sku.text,
-                      'discount_percent': item.discountPercent.text,
-                      'discount_amount': item.discountAmount.text,
-                      'tax_percent': item.taxPercent.text,
-                      'tax_amount': item.taxAmount.text,
-                      'total_amount': item.totalAmount.text,
-                      'tax_name': item.taxName,
-                    })
+                .map(
+                  (item) => {
+                    'item_id': item.itemId,
+                    'item_name': item.item.text,
+                    'serial_no': item.serials.join(','),
+                    'qty': item.qty.text,
+                    'unit': item.unit.text,
+                    'price_per_unit': item.pricePerUnit.text,
+                    'purchase_price': item.purchasePrice.text,
+                    'sku': item.sku.text,
+                    'discount_percent': item.discountPercent.text,
+                    'discount_amount': item.discountAmount.text,
+                    'tax_percent': item.taxPercent.text,
+                    'tax_amount': item.taxAmount.text,
+                    'total_amount': item.totalAmount.text,
+                    'tax_name': item.taxName,
+                  },
+                )
                 .toList(),
           });
         } catch (e) {
@@ -514,12 +594,24 @@ class NewPurchaseController extends GetxController {
 
         clearForm();
       } else {
-        throw Exception('Failed to save purchase: ${purchaseResponse.data['message']}');
+        _handleErrorResponse(purchaseResponse);
+      }
+    } on dio.DioException catch (e) {
+      if (e.response != null) {
+        _handleErrorResponse(e.response!);
+      } else {
+        Get.snackbar(
+          'Error',
+          'Network error: ${e.message}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
       }
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Failed to save purchase: $e',
+        'Unexpected error: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -527,6 +619,39 @@ class NewPurchaseController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void _handleErrorResponse(dio.Response<dynamic> response) {
+    String message = 'Something went wrong.';
+
+    final data = response.data is Map<String, dynamic> ? response.data : {};
+
+    if (response.statusCode == 500) {
+      message = data['message'] ?? 'Server error. Please try again.';
+    } else if (response.statusCode == 422) {
+      if (data['errors'] != null) {
+        final errors = (data['errors'] as Map<String, dynamic>).values
+            .expand((e) => e)
+            .join('\n');
+        message = errors;
+      } else {
+        message = data['message'] ?? 'Validation failed.';
+      }
+    } else if (response.statusCode == 401) {
+      message = 'Your session has expired. Please login again.';
+      Get.offAllNamed(AppRoutes.login);
+    } else {
+      message = data['message'] ?? 'Unknown error occurred.';
+    }
+
+    Get.snackbar(
+      'Error',
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 5),
+    );
   }
 
   void clearForm() {
@@ -545,6 +670,7 @@ class NewPurchaseController extends GetxController {
     warehouseMap.clear();
     supplierMap.clear();
     itemsList.clear();
+    selectedAccountId.value='';
     for (var item in items) {
       item.dispose();
     }
@@ -555,7 +681,8 @@ class NewPurchaseController extends GetxController {
 
   void generateBillNumber() {
     String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-    billNumberController.text = 'PUR${timestamp.substring(timestamp.length - 6)}';
+    billNumberController.text =
+        'PUR${timestamp.substring(timestamp.length - 6)}';
   }
 
   void setBillDate(DateTime date) {
@@ -609,7 +736,10 @@ class SerialNumberModal extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                prefixIcon: Icon(Icons.qr_code_scanner, color: Colors.green.shade600),
+                prefixIcon: Icon(
+                  Icons.qr_code_scanner,
+                  color: Colors.green.shade600,
+                ),
               ),
               onSubmitted: (value) {
                 if (value.isNotEmpty && !item.serials.contains(value)) {
@@ -619,35 +749,43 @@ class SerialNumberModal extends StatelessWidget {
               },
             ),
             const SizedBox(height: 16),
-            Obx(() => Container(
-                  constraints: const BoxConstraints(maxHeight: 200),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: item.serials.isEmpty
-                          ? [const Text('No serial numbers added')]
-                          : item.serials.asMap().entries.map((entry) {
-                              int idx = entry.key;
-                              String serial = entry.value;
-                              return ListTile(
-                                title: Text(serial),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () {
-                                    item.serials.removeAt(idx);
-                                  },
+            Obx(
+              () => Container(
+                constraints: const BoxConstraints(maxHeight: 200),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: item.serials.isEmpty
+                        ? [const Text('No serial numbers added')]
+                        : item.serials.asMap().entries.map((entry) {
+                            int idx = entry.key;
+                            String serial = entry.value;
+                            return ListTile(
+                              title: Text(serial),
+                              trailing: IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
                                 ),
-                              );
-                            }).toList(),
-                    ),
+                                onPressed: () {
+                                  item.serials.removeAt(idx);
+                                },
+                              ),
+                            );
+                          }).toList(),
                   ),
-                )),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
                   onPressed: () => Get.back(),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(

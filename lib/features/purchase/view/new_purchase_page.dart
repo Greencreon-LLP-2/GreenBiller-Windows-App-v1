@@ -108,7 +108,10 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green.shade700,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -168,7 +171,10 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
     );
   }
 
-  Widget _buildPurchaseInfoCard(BuildContext context, NewPurchaseController controller) {
+  Widget _buildPurchaseInfoCard(
+    BuildContext context,
+    NewPurchaseController controller,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -215,7 +221,9 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                           ? _buildLoadingDropdown("Loading stores...")
                           : _buildDropdown(
                               items: controller.storeMap.keys.toList(),
-                              value: controller.storeController.text.isEmpty ? null : controller.storeController.text,
+                              value: controller.storeController.text.isEmpty
+                                  ? null
+                                  : controller.storeController.text,
                               onChanged: controller.onStoreSelected,
                               hint: "Select Store",
                               icon: Icons.store,
@@ -233,13 +241,19 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                     const Text("Warehouse"),
                     const SizedBox(height: 6),
                     Obx(
-                      () => controller.isLoadingWarehouses.value || controller.warehouseMap.isEmpty
+                      () =>
+                          controller.isLoadingWarehouses.value ||
+                              controller.warehouseMap.isEmpty
                           ? _buildLoadingDropdown(
-                              controller.warehouseMap.isEmpty ? "Select store first" : "Loading warehouses...",
+                              controller.warehouseMap.isEmpty
+                                  ? "Select store first"
+                                  : "Loading warehouses...",
                             )
                           : _buildDropdown(
                               items: controller.warehouseMap.keys.toList(),
-                              value: controller.warehouseController.text.isEmpty ? null : controller.warehouseController.text,
+                              value: controller.warehouseController.text.isEmpty
+                                  ? null
+                                  : controller.warehouseController.text,
                               onChanged: controller.onWarehouseSelected,
                               hint: "Select Warehouse",
                               icon: Icons.warehouse,
@@ -266,10 +280,15 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                               hintText: "Enter bill no.",
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.green.shade300),
+                                borderSide: BorderSide(
+                                  color: Colors.green.shade300,
+                                ),
                               ),
                             ),
                           ),
@@ -282,7 +301,9 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
                             ),
                             child: const Text(
                               "Generate",
@@ -308,13 +329,19 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                     const Text("Suppliers"),
                     const SizedBox(height: 6),
                     Obx(
-                      () => controller.isLoadingSuppliers.value || controller.supplierMap.isEmpty
+                      () =>
+                          controller.isLoadingSuppliers.value ||
+                              controller.supplierMap.isEmpty
                           ? _buildLoadingDropdown(
-                              controller.supplierMap.isEmpty ? "Select store first" : "Loading suppliers...",
+                              controller.supplierMap.isEmpty
+                                  ? "Select store first"
+                                  : "Loading suppliers...",
                             )
                           : _buildDropdown(
                               items: controller.supplierMap.keys.toList(),
-                              value: controller.supplierController.text.isEmpty ? null : controller.supplierController.text,
+                              value: controller.supplierController.text.isEmpty
+                                  ? null
+                                  : controller.supplierController.text,
                               onChanged: controller.onSupplierSelected,
                               hint: "Select Supplier",
                               icon: Icons.person,
@@ -337,8 +364,12 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                         DateTime? date = await showDatePicker(
                           context: context,
                           initialDate: DateTime.now(),
-                          firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          firstDate: DateTime.now().subtract(
+                            const Duration(days: 365),
+                          ),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 365),
+                          ),
                         );
                         if (date != null) {
                           controller.setBillDate(date);
@@ -358,7 +389,10 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             hintText: "Select date",
                             hintStyle: TextStyle(color: Colors.grey.shade500),
                             isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                             border: InputBorder.none,
                             prefixIcon: Icon(
                               Icons.calendar_today,
@@ -406,9 +440,8 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                       children: [
                         _buildHeaderCell("Sl No", baseColumnWidth * 0.5),
                         _buildHeaderCell("Item", itemColumnWidth * 0.97),
-                        _buildHeaderCell("Serial No", baseColumnWidth * 0.7),
+                        _buildHeaderCell("Serial No", baseColumnWidth * 0.9),
                         _buildHeaderCell("Qty", baseColumnWidth * 0.5),
-                        _buildHeaderCell("Unit", baseColumnWidth),
                         _buildHeaderCell("Price/Unit", baseColumnWidth),
                         _buildHeaderCell("Purchase Price", baseColumnWidth),
                         _buildHeaderCell("SKU", baseColumnWidth * 0.5),
@@ -423,7 +456,9 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
 
                   // Rows
                   ...List.generate(rowCount, (index) {
-                    final item = index < items.length ? items[index] : PurchaseItem();
+                    final item = index < items.length
+                        ? items[index]
+                        : PurchaseItem();
 
                     return Container(
                       decoration: BoxDecoration(
@@ -436,73 +471,107 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                       ),
                       child: Row(
                         children: [
-                          _buildDataCell(Text("${index + 1}"), baseColumnWidth * 0.5),
+                          _buildDataCell(
+                            Text("${index + 1}"),
+                            baseColumnWidth * 0.5,
+                          ),
                           _buildDataCell(
                             controller.isLoadingItems.value
                                 ? const Text("Loading...")
                                 : Autocomplete<Map<String, dynamic>>(
-                                    optionsBuilder: (TextEditingValue textEditingValue) {
-                                      if (textEditingValue.text.isEmpty) {
-                                        return const Iterable<Map<String, dynamic>>.empty();
-                                      }
-                                      final query = textEditingValue.text.toLowerCase();
-                                      return controller.itemsList.where(
-                                        (i) =>
-                                            i['item_name'].toLowerCase().contains(query) ||
-                                            (i['Barcode'] ?? '').toLowerCase().contains(query) ||
-                                            (i['SKU'] ?? '').toLowerCase().contains(query),
-                                      );
-                                    },
-                                    displayStringForOption: (item) => item['item_name'],
-                                    onSelected: (selected) => controller.onItemSelected(index, selected),
-                                    fieldViewBuilder: (
-                                      context,
-                                      textEditingController,
-                                      focusNode,
-                                      onFieldSubmitted,
-                                    ) {
-                                      if (index < items.length) {
-                                        textEditingController.text = items[index].item.text;
-                                      }
-                                      return TextField(
-                                        controller: textEditingController,
-                                        focusNode: focusNode,
-                                        onSubmitted: (value) {
-                                          onFieldSubmitted();
-                                          final scannedItem = controller.itemsList.firstWhereOrNull(
-                                            (i) => i['Barcode'] == value || i['SKU'] == value,
-                                          );
-                                          if (scannedItem != null) {
-                                            controller.onItemSelected(index, scannedItem);
+                                    optionsBuilder:
+                                        (TextEditingValue textEditingValue) {
+                                          if (textEditingValue.text.isEmpty) {
+                                            return const Iterable<
+                                              Map<String, dynamic>
+                                            >.empty();
                                           }
+                                          final query = textEditingValue.text
+                                              .toLowerCase();
+                                          return controller.itemsList.where(
+                                            (i) =>
+                                                i['item_name']
+                                                    .toLowerCase()
+                                                    .contains(query) ||
+                                                (i['Barcode'] ?? '')
+                                                    .toLowerCase()
+                                                    .contains(query) ||
+                                                (i['SKU'] ?? '')
+                                                    .toLowerCase()
+                                                    .contains(query),
+                                          );
                                         },
-                                        decoration: InputDecoration(
-                                          isDense: true,
-                                          border: InputBorder.none,
-                                          hintText: 'Scan or type item',
-                                          prefixIcon: Icon(Icons.search, color: Colors.green.shade600),
-                                        ),
-                                      );
-                                    },
+                                    displayStringForOption: (item) =>
+                                        item['item_name'],
+                                    onSelected: (selected) => controller
+                                        .onItemSelected(index, selected),
+                                    fieldViewBuilder:
+                                        (
+                                          context,
+                                          textEditingController,
+                                          focusNode,
+                                          onFieldSubmitted,
+                                        ) {
+                                          if (index < items.length) {
+                                            textEditingController.text =
+                                                items[index].item.text;
+                                          }
+                                          return TextField(
+                                            controller: textEditingController,
+                                            focusNode: focusNode,
+                                            onSubmitted: (value) {
+                                              onFieldSubmitted();
+                                              final scannedItem = controller
+                                                  .itemsList
+                                                  .firstWhereOrNull(
+                                                    (i) =>
+                                                        i['Barcode'] == value ||
+                                                        i['SKU'] == value,
+                                                  );
+                                              if (scannedItem != null) {
+                                                controller.onItemSelected(
+                                                  index,
+                                                  scannedItem,
+                                                );
+                                              }
+                                            },
+                                            decoration: InputDecoration(
+                                              isDense: true,
+                                              border: InputBorder.none,
+                                              hintText: 'Scan or type item',
+                                              prefixIcon: Icon(
+                                                Icons.search,
+                                                color: Colors.green.shade600,
+                                              ),
+                                            ),
+                                          );
+                                        },
                                   ),
                             itemColumnWidth * 0.97,
                           ),
                           _buildDataCell(
-                            Obx(() => TextButton(
-                                  onPressed: () {
-                                    Get.dialog(
-                                      SerialNumberModal(
-                                        item: item,
-                                        onSave: () => controller.calculateTotals(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    item.serials.isEmpty ? 'Add Serial' : '${item.serials.length} Serials',
-                                    style: TextStyle(color: Colors.green.shade700),
+                            Obx(
+                              () => TextButton(
+                                onPressed: () {
+                                  Get.dialog(
+                                    SerialNumberModal(
+                                      item: item,
+                                      onSave: () =>
+                                          controller.calculateTotals(),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  item.serials.isEmpty
+                                      ? 'Add Serial'
+                                      : '${item.serials.length} Serials',
+                                  style: TextStyle(
+                                    color: Colors.green.shade700,
                                   ),
-                                )),
-                            baseColumnWidth * 0.7,
+                                ),
+                              ),
+                            ),
+                            baseColumnWidth * 0.9,
                           ),
                           _buildDataCell(
                             _buildTextField(
@@ -511,10 +580,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             ),
                             baseColumnWidth * 0.5,
                           ),
-                          _buildDataCell(
-                            _buildTextField(item.unit, readOnly: true),
-                            baseColumnWidth,
-                          ),
+
                           _buildDataCell(
                             _buildTextField(
                               item.pricePerUnit,
@@ -567,11 +633,18 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                                       );
                                     }).toList(),
                                     onChanged: (value) {
-                                      final selectedTax = controller.taxList.firstWhere(
-                                        (t) => t['tax_name'] == value,
-                                        orElse: () => {'tax_name': '', 'tax_rate': '0'},
+                                      final selectedTax = controller.taxList
+                                          .firstWhere(
+                                            (t) => t['tax_name'] == value,
+                                            orElse: () => {
+                                              'tax_name': '',
+                                              'tax_rate': '0',
+                                            },
+                                          );
+                                      controller.onTaxSelected(
+                                        index,
+                                        selectedTax,
                                       );
-                                      controller.onTaxSelected(index, selectedTax);
                                     },
                                   ),
                             baseColumnWidth,
@@ -587,8 +660,12 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                           _buildDataCell(
                             index < items.length
                                 ? IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () => controller.removeItem(index),
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                    ),
+                                    onPressed: () =>
+                                        controller.removeItem(index),
                                   )
                                 : const SizedBox(),
                             baseColumnWidth,
@@ -606,7 +683,10 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
     );
   }
 
-  Widget _buildDetailsAndSummary(BuildContext context, NewPurchaseController controller) {
+  Widget _buildDetailsAndSummary(
+    BuildContext context,
+    NewPurchaseController controller,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -631,7 +711,11 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.shopping_cart, color: Colors.green.shade700, size: 24),
+                    Icon(
+                      Icons.shopping_cart,
+                      color: Colors.green.shade700,
+                      size: 24,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       "Purchase Details & Summary",
@@ -658,24 +742,85 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                     const SizedBox(height: 6),
                     Obx(
                       () => DropdownButtonFormField<String>(
-                        value: controller.paymentType.value.isEmpty ? null : controller.paymentType.value,
+                        value: controller.paymentType.value.isEmpty
+                            ? null
+                            : controller.paymentType.value,
                         items: const [
                           DropdownMenuItem(value: "Cash", child: Text('Cash')),
                           DropdownMenuItem(value: "Upi", child: Text('UPI')),
-                          DropdownMenuItem(value: "Cheque", child: Text('Cheque')),
-                          DropdownMenuItem(value: "Bank Transfer", child: Text('Bank Transfer')),
+                          DropdownMenuItem(
+                            value: "Cheque",
+                            child: Text('Cheque'),
+                          ),
+                          DropdownMenuItem(
+                            value: "Bank Transfer",
+                            child: Text('Bank Transfer'),
+                          ),
                         ],
-                        onChanged: (val) => controller.paymentType.value = val ?? "",
+                        onChanged: (val) =>
+                            controller.paymentType.value = val ?? "",
                         decoration: InputDecoration(
                           hintText: "Select Payment Type",
                           hintStyle: TextStyle(color: Colors.grey.shade500),
                           isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.green.shade300),
+                            borderSide: BorderSide(
+                              color: Colors.green.shade300,
+                            ),
                           ),
-                          prefixIcon: Icon(Icons.payment, color: Colors.green.shade600, size: 20),
+                          prefixIcon: Icon(
+                            Icons.payment,
+                            color: Colors.green.shade600,
+                            size: 20,
+                          ),
+                        ),
+                        dropdownColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Obx(
+                      () => DropdownButtonFormField<String>(
+                        value: controller.selectedAccountId.value.isEmpty
+                            ? null
+                            : controller.selectedAccountId.value,
+                        items: controller.accountController.accounts
+                            .map(
+                              (account) => DropdownMenuItem<String>(
+                                value: account['id'],
+                                child: Text(
+                                  '${account['name']} (${account['bank'] ?? 'No Bank'})',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          controller.selectedAccountId.value = val ?? '';
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Select Account",
+                          hintStyle: TextStyle(color: Colors.grey.shade500),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: Colors.green.shade300,
+                            ),
+                          ),
+                          prefixIcon: Icon(
+                            Icons.account_balance,
+                            color: Colors.green.shade600,
+                            size: 20,
+                          ),
                         ),
                         dropdownColor: Colors.white,
                       ),
@@ -698,7 +843,10 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                         hintText: "Enter note",
                         hintStyle: TextStyle(color: Colors.grey.shade500),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: Colors.green.shade300),
@@ -726,9 +874,17 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
               children: [
                 _buildSummaryRow("Subtotal", controller.subtotal, Colors.black),
                 const SizedBox(height: 10),
-                _buildSummaryRow("Total Discount", controller.totalDiscount, Colors.red),
+                _buildSummaryRow(
+                  "Total Discount",
+                  controller.totalDiscount,
+                  Colors.red,
+                ),
                 const SizedBox(height: 10),
-                _buildSummaryRow("Total Tax", controller.totalTax, Colors.black),
+                _buildSummaryRow(
+                  "Total Tax",
+                  controller.totalTax,
+                  Colors.black,
+                ),
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -753,12 +909,21 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                               hintText: "Enter other charges",
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.green.shade300),
+                                borderSide: BorderSide(
+                                  color: Colors.green.shade300,
+                                ),
                               ),
-                              prefixIcon: Icon(Icons.attach_money, color: Colors.green.shade600, size: 20),
+                              prefixIcon: Icon(
+                                Icons.attach_money,
+                                color: Colors.green.shade600,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ],
@@ -767,7 +932,12 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                _buildSummaryRow("Grand Total", controller.grandTotal, Colors.green.shade700, fontWeight: FontWeight.bold),
+                _buildSummaryRow(
+                  "Grand Total",
+                  controller.grandTotal,
+                  Colors.green.shade700,
+                  fontWeight: FontWeight.bold,
+                ),
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -792,12 +962,21 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                               hintText: "Enter paid amount",
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(color: Colors.green.shade300),
+                                borderSide: BorderSide(
+                                  color: Colors.green.shade300,
+                                ),
                               ),
-                              prefixIcon: Icon(Icons.payment, color: Colors.green.shade600, size: 20),
+                              prefixIcon: Icon(
+                                Icons.payment,
+                                color: Colors.green.shade600,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ],
@@ -806,7 +985,12 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                _buildSummaryRow("Balance Amount", controller.balanceAmount, Colors.red, fontWeight: FontWeight.bold),
+                _buildSummaryRow(
+                  "Balance Amount",
+                  controller.balanceAmount,
+                  Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
               ],
             ),
           ),
@@ -841,7 +1025,10 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
           hintText: hint,
           hintStyle: TextStyle(color: Colors.grey.shade500),
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
           border: InputBorder.none,
           prefixIcon: Icon(icon, color: Colors.green.shade600, size: 20),
         ),

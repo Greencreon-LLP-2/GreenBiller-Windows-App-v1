@@ -10,7 +10,6 @@ import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 
 class SessionService {
-
   Isolate? _isolate;
   ReceivePort? _receivePort;
   String? _currentToken;
@@ -18,7 +17,7 @@ class SessionService {
 
   Future<void> startSessionCheck(String token) async {
     if (_isRunning) return;
-    
+
     _isRunning = true;
     _currentToken = token;
     _receivePort = ReceivePort();
@@ -41,24 +40,49 @@ class SessionService {
   }
 
   void _handleStatusUpdate(AppStatusModel newStatus) {
-    // Maintenance or shutdown → go to maintenance screen
-    if (newStatus.shutdown == true || newStatus.settings?.appMaintenanceMode == true) {
-      Get.offAllNamed(AppRoutes.maintenance);
+    // 🔹 Case: Unauthorized/session timeout
+    if (newStatus.status == 401 || _shouldLogoutUser(newStatus)) {
+      _logoutUser();
+      if (Get.currentRoute != AppRoutes.maintenance) {
+        Get.offAllNamed(
+          AppRoutes.maintenance,
+          arguments: {
+            'body': 'Your session has timed out. Please login again.',
+            'showLogin': true, // 🔥 tell UI to show login button
+          },
+        );
+      }
       return;
     }
 
-    // Normal login flow
-    if (_shouldLogoutUser(newStatus)) {
-      _logoutUser();
+    // 🔹 Case: Server down / maintenance mode
+    if (newStatus.shutdown == true ||
+        newStatus.settings?.appMaintenanceMode == true) {
+      if (Get.currentRoute != AppRoutes.maintenance) {
+        Get.offAllNamed(
+          AppRoutes.maintenance,
+          arguments: {
+            'body': newStatus.message ?? 'Server is under maintenance',
+            'showLogin': false,
+          },
+        );
+      }
+      return;
+    }
+
+    if (newStatus.isLoggedIn == true && newStatus.userExists == true) {
+      if (Get.currentRoute == AppRoutes.maintenance) {
+        Get.offAllNamed(AppRoutes.adminDashboard);
+      }
       return;
     }
   }
 
   bool _shouldLogoutUser(AppStatusModel newStatus) {
     return newStatus.shutdown == true ||
-           newStatus.userBlocked == true ||
-           newStatus.isLoggedIn == false ||
-           newStatus.userExists == false;
+        newStatus.userBlocked == true ||
+        newStatus.isLoggedIn == false ||
+        newStatus.userExists == false;
   }
 
   Future<void> _logoutUser() async {
@@ -106,9 +130,31 @@ class SessionService {
         if (response.statusCode == 200) {
           final status = AppStatusModel.fromJson(response.data);
           sendPort.send(status);
+        } else if (response.statusCode == 401) {
+          // Explicit unauthorized case
+          final unauthorizedStatus = AppStatusModel(
+            shutdown: false,
+            success: false,
+            message: 'Unauthorized access. Please login again.',
+            isLoggedIn: false,
+            userExists: false,
+            userBlocked: false,
+            user: null,
+            settings: null,
+            status: 401,
+            maintenanceData: _mapErrorToMaintenance(401),
+          );
+          sendPort.send(unauthorizedStatus);
         } else {
-          final maintenanceModel = _mapErrorToMaintenance(response.statusCode ?? 500);
-          final isMaintenanceCode = [500, 501, 502, 503].contains(response.statusCode);
+          final maintenanceModel = _mapErrorToMaintenance(
+            response.statusCode ?? 500,
+          );
+          final isMaintenanceCode = [
+            500,
+            501,
+            502,
+            503,
+          ].contains(response.statusCode);
 
           final errorStatus = AppStatusModel(
             shutdown: !isMaintenanceCode,
@@ -132,7 +178,7 @@ class SessionService {
           icon: Icons.wifi_off,
           onTap: () {},
         );
-        
+
         final errorStatus = AppStatusModel(
           shutdown: true,
           success: false,
@@ -145,10 +191,10 @@ class SessionService {
           status: 0,
           maintenanceData: maintenanceModel,
         );
-        
+
         sendPort.send(errorStatus);
       }
-      
+
       await Future.delayed(const Duration(seconds: 30));
     }
   }

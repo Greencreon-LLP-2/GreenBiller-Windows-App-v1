@@ -211,17 +211,17 @@ class AdminSidebar extends StatelessWidget {
                     ),
                     childrenPadding: const EdgeInsets.only(left: 16),
                     initiallyExpanded:
-                        currentRoute == AppRoutes.accountSettings ||
+                        currentRoute == AppRoutes.bankAccountSettings ||
                         currentRoute == AppRoutes.businessProfile ||
                         currentRoute == AppRoutes.invoiceSettings ||
                         currentRoute == AppRoutes.usersSettings,
                     children: [
                       _buildNavTile(
-                        title: "General",
+                        title: "Bank Account",
                         icon: Icons.tune_outlined,
-                        route: AppRoutes.accountSettings,
+                        route: AppRoutes.bankAccountSettings,
                         currentRoute: currentRoute,
-                        onTap: () => Get.toNamed(AppRoutes.accountSettings),
+                        onTap: () => Get.toNamed(AppRoutes.bankAccountSettings),
                         indent: 16,
                       ),
                       _buildNavTile(

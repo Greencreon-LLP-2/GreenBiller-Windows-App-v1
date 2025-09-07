@@ -1,17 +1,18 @@
 class EmailValidator {
-  static String? validate(String? value){
-              if (value == null || value.isEmpty) {
-                return 'Email is required';
-              }
-              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                return 'Enter a valid email';
-              }
-              if (value.length > 254) {
-                return 'Email must be less than 254 characters'; 
-              }
-              return null;            
+  static String? validate(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Email is required';
+    }
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+      return 'Enter a valid email';
+    }
+    if (value.length > 254) {
+      return 'Email must be less than 254 characters';
+    }
+    return null;
   }
 }
+
 class PasswordValidator {
   static String? validate(String? value) {
     if (value == null || value.isEmpty) {
@@ -26,24 +27,16 @@ class PasswordValidator {
     if (value.contains(' ')) {
       return 'Password cannot contain spaces';
     }
-    
-    if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
-      return 'Password must contain at least one uppercase letter';
+
+    // Optional: light strength rule (at least one letter + one number)
+    if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d).+$').hasMatch(value)) {
+      return 'Password must contain at least one letter and one number';
     }
-    if (!RegExp(r'(?=.*\d)').hasMatch(value)) {
-      return 'Password must contain at least one number';
-    }
-    if (!RegExp(r'(?=.*[@$!%*?&])').hasMatch(value)) {
-      return 'Password must contain at least one special symbol (@\$!%*?&)';
-    }
-    final regex = RegExp(r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,30}$');
-    
-    if (!regex.hasMatch(value)) {
-      return 'Password must have uppercase, number, and special symbol (@\$!%*?&)';
-    }
+
     return null;
   }
 }
+
 class NameValidator {
   static String? validate(String? value) {
     if (value == null || value.trim().isEmpty) {
@@ -53,7 +46,7 @@ class NameValidator {
       return "Name must be at least 3 characters";
     }
     if (value.trim().length > 50) {
-                    return 'Customer name must not exceed 50 characters'; 
+      return 'Customer name must not exceed 50 characters';
     }
     if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value.trim())) {
       return "Name must contain only letters";
@@ -61,6 +54,7 @@ class NameValidator {
     return null;
   }
 }
+
 class PhoneValidator {
   static String? validate(String? value) {
     if (value == null || value.trim().isEmpty) {
@@ -79,6 +73,7 @@ class PhoneValidator {
     return null;
   }
 }
+
 class GSTINValidator {
   static String? validate(String? value) {
     if (value == null || value.trim().isEmpty) {
@@ -87,12 +82,13 @@ class GSTINValidator {
     return null;
   }
 }
+
 class AddressValidator {
   static String? validate(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Address is required';
     }
-    if ( value.trim().isNotEmpty) {
+    if (value.trim().isNotEmpty) {
       if (value.trim().length < 5) {
         return 'Address must be at least 5 characters';
       }
@@ -103,6 +99,7 @@ class AddressValidator {
     return null;
   }
 }
+
 class GSTValidator {
   static String? validate(String? value) {
     if (value == null || value.trim().isEmpty) {
@@ -116,13 +113,14 @@ class GSTValidator {
     if (gst == null) {
       return 'GST must be a valid number';
     }
-    if (gst < 0 ) {
+    if (gst < 0) {
       return 'GST must be between 0 and 100';
     }
-    
+
     return null;
   }
 }
+
 class TaxValidator {
   static String? validate(String? value) {
     if (value == null || value.trim().isEmpty) {
@@ -134,7 +132,7 @@ class TaxValidator {
     if (value.trim().length > 20) {
       return 'Tax number must not exceed 20 characters';
     }
-    
+
     return null;
   }
 }
