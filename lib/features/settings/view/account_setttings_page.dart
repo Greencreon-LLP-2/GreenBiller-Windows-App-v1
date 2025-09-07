@@ -100,68 +100,75 @@ class AccountSetttingsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: accentColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.account_balance,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          account['name'] ?? '',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF1F2937),
-                          ),
-                        ),
-                        Text(
-                          account['bank'] ?? '',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF6B7280),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                // Row(
+                // children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: accentColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.account_balance,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => _controller.editAccount(account),
-                      icon: const Icon(Icons.edit, size: 20),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.blue.shade50,
-                        foregroundColor: Colors.blue.shade600,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        account['name'] ?? '',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1F2937),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      onPressed: () {
-                        // Show QR code
-                      },
-                      icon: const Icon(Icons.qr_code, size: 20),
-                      style: IconButton.styleFrom(
-                        backgroundColor: accentColor.withOpacity(0.1),
-                        foregroundColor: accentColor,
+                      Text(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        account['bank'] ?? '',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF6B7280),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                // ],
+                // ),
+                // Row(
+                // children: [
+                const SizedBox(width: 12),
+                IconButton(
+                  onPressed: () => _controller.editAccount(account),
+                  icon: const Icon(Icons.edit, size: 20),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.blue.shade50,
+                    foregroundColor: Colors.blue.shade600,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () {
+                    // Show QR code
+                  },
+                  icon: const Icon(Icons.qr_code, size: 20),
+                  style: IconButton.styleFrom(
+                    backgroundColor: accentColor.withOpacity(0.1),
+                    foregroundColor: accentColor,
+                  ),
+                ),
+                // ],
+                // ),
               ],
             ),
             const SizedBox(height: 16),
@@ -198,16 +205,23 @@ class AccountSetttingsPage extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+        Flexible(
+          child: Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+          ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: valueColor ?? const Color(0xFF374151),
+        Flexible(
+          child: Text(
+            value,
+            overflow: TextOverflow.ellipsis,
+            // textAlign: TextAlign.end,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: valueColor ?? const Color(0xFF374151),
+            ),
           ),
         ),
       ],
@@ -408,7 +422,7 @@ class AccountSetttingsPage extends StatelessWidget {
                     if (_controller.accountNameController.text.isEmpty ||
                         _controller.bankNameController.text.isEmpty ||
                         _controller.accountNumberController.text.isEmpty ||
-                           _controller.upiIdController.text.isEmpty||
+                        _controller.upiIdController.text.isEmpty ||
                         _controller.ifscCodeController.text.isEmpty) {
                       Get.snackbar(
                         'Error',
