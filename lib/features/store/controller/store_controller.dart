@@ -467,8 +467,9 @@ class StoreController extends GetxController
           margin: const EdgeInsets.all(16),
           borderRadius: 12,
         );
-        await getStoreList();
-        Get.back();
+        Future.delayed(const Duration(seconds: 1), () {
+          Get.back();
+        });
       } else {
         _showError(response.data);
       }
