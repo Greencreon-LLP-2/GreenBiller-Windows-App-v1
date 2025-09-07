@@ -29,7 +29,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             title: const Text(
-              'New Purchase',
+              'Quick Purchase',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
