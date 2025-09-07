@@ -67,10 +67,8 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Purchase Information Card
               _buildPurchaseInfoCard(context, controller),
               const SizedBox(height: 16),
-              // Purchase Items Table
               Card(
                 elevation: 6,
                 shape: RoundedRectangleBorder(
@@ -110,10 +108,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green.shade700,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -130,7 +125,6 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Purchase Details and Summary
               _buildDetailsAndSummary(context, controller),
             ],
           ),
@@ -174,10 +168,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
     );
   }
 
-  Widget _buildPurchaseInfoCard(
-    BuildContext context,
-    NewPurchaseController controller,
-  ) {
+  Widget _buildPurchaseInfoCard(BuildContext context, NewPurchaseController controller) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -224,6 +215,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                           ? _buildLoadingDropdown("Loading stores...")
                           : _buildDropdown(
                               items: controller.storeMap.keys.toList(),
+                              value: controller.storeController.text.isEmpty ? null : controller.storeController.text,
                               onChanged: controller.onStoreSelected,
                               hint: "Select Store",
                               icon: Icons.store,
@@ -241,16 +233,13 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                     const Text("Warehouse"),
                     const SizedBox(height: 6),
                     Obx(
-                      () =>
-                          controller.isLoadingWarehouses.value ||
-                              controller.warehouseMap.isEmpty
+                      () => controller.isLoadingWarehouses.value || controller.warehouseMap.isEmpty
                           ? _buildLoadingDropdown(
-                              controller.warehouseMap.isEmpty
-                                  ? "Select store first"
-                                  : "Loading warehouses...",
+                              controller.warehouseMap.isEmpty ? "Select store first" : "Loading warehouses...",
                             )
                           : _buildDropdown(
                               items: controller.warehouseMap.keys.toList(),
+                              value: controller.warehouseController.text.isEmpty ? null : controller.warehouseController.text,
                               onChanged: controller.onWarehouseSelected,
                               hint: "Select Warehouse",
                               icon: Icons.warehouse,
@@ -277,15 +266,10 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                               hintText: "Enter bill no.",
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 14,
-                              ),
-                              border: InputBorder.none,
-                              prefixIcon: Icon(
-                                Icons.receipt,
-                                color: Colors.green.shade600,
-                                size: 20,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.green.shade300),
                               ),
                             ),
                           ),
@@ -298,9 +282,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
                             ),
                             child: const Text(
                               "Generate",
@@ -326,16 +308,13 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                     const Text("Suppliers"),
                     const SizedBox(height: 6),
                     Obx(
-                      () =>
-                          controller.isLoadingSuppliers.value ||
-                              controller.supplierMap.isEmpty
+                      () => controller.isLoadingSuppliers.value || controller.supplierMap.isEmpty
                           ? _buildLoadingDropdown(
-                              controller.supplierMap.isEmpty
-                                  ? "Select store first"
-                                  : "Loading suppliers...",
+                              controller.supplierMap.isEmpty ? "Select store first" : "Loading suppliers...",
                             )
                           : _buildDropdown(
                               items: controller.supplierMap.keys.toList(),
+                              value: controller.supplierController.text.isEmpty ? null : controller.supplierController.text,
                               onChanged: controller.onSupplierSelected,
                               hint: "Select Supplier",
                               icon: Icons.person,
@@ -358,12 +337,8 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                         DateTime? date = await showDatePicker(
                           context: context,
                           initialDate: DateTime.now(),
-                          firstDate: DateTime.now().subtract(
-                            const Duration(days: 365),
-                          ),
-                          lastDate: DateTime.now().add(
-                            const Duration(days: 365),
-                          ),
+                          firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
                         );
                         if (date != null) {
                           controller.setBillDate(date);
@@ -383,10 +358,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             hintText: "Select date",
                             hintStyle: TextStyle(color: Colors.grey.shade500),
                             isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             border: InputBorder.none,
                             prefixIcon: Icon(
                               Icons.calendar_today,
@@ -422,19 +394,19 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Obx(() {
-              final items = controller.items; // RxList<PurchaseItem>
-              final rowCount = items.length < 1 ? 1 : items.length;
+              final items = controller.items;
+              final rowCount = items.isEmpty ? 1 : items.length;
 
               return Column(
                 children: [
-                  // --- HEADER ---
+                  // Header
                   Container(
                     color: Colors.green.shade200,
                     child: Row(
                       children: [
                         _buildHeaderCell("Sl No", baseColumnWidth * 0.5),
                         _buildHeaderCell("Item", itemColumnWidth * 0.97),
-                        _buildHeaderCell("Serial No", baseColumnWidth * 0.55),
+                        _buildHeaderCell("Serial No", baseColumnWidth * 0.7),
                         _buildHeaderCell("Qty", baseColumnWidth * 0.5),
                         _buildHeaderCell("Unit", baseColumnWidth),
                         _buildHeaderCell("Price/Unit", baseColumnWidth),
@@ -449,11 +421,9 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                     ),
                   ),
 
-                  // --- ROWS ---
+                  // Rows
                   ...List.generate(rowCount, (index) {
-                    final item = index < items.length
-                        ? items[index]
-                        : PurchaseItem();
+                    final item = index < items.length ? items[index] : PurchaseItem();
 
                     return Container(
                       decoration: BoxDecoration(
@@ -466,69 +436,73 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                       ),
                       child: Row(
                         children: [
-                          _buildDataCell(
-                            Text("${index + 1}"),
-                            baseColumnWidth * 0.5,
-                          ),
-
-                          // --- ITEM AUTOCOMPLETE ---
+                          _buildDataCell(Text("${index + 1}"), baseColumnWidth * 0.5),
                           _buildDataCell(
                             controller.isLoadingItems.value
                                 ? const Text("Loading...")
                                 : Autocomplete<Map<String, dynamic>>(
-                                    optionsBuilder:
-                                        (TextEditingValue textEditingValue) {
-                                          if (textEditingValue.text.isEmpty) {
-                                            return const Iterable<
-                                              Map<String, dynamic>
-                                            >.empty();
-                                          }
-                                          final query = textEditingValue.text
-                                              .toLowerCase();
-                                          return controller.itemsList.where(
-                                            (i) =>
-                                                i['item_name']
-                                                    .toLowerCase()
-                                                    .contains(query) ||
-                                                (i['barcode'] ?? '')
-                                                    .toLowerCase()
-                                                    .contains(query),
+                                    optionsBuilder: (TextEditingValue textEditingValue) {
+                                      if (textEditingValue.text.isEmpty) {
+                                        return const Iterable<Map<String, dynamic>>.empty();
+                                      }
+                                      final query = textEditingValue.text.toLowerCase();
+                                      return controller.itemsList.where(
+                                        (i) =>
+                                            i['item_name'].toLowerCase().contains(query) ||
+                                            (i['Barcode'] ?? '').toLowerCase().contains(query) ||
+                                            (i['SKU'] ?? '').toLowerCase().contains(query),
+                                      );
+                                    },
+                                    displayStringForOption: (item) => item['item_name'],
+                                    onSelected: (selected) => controller.onItemSelected(index, selected),
+                                    fieldViewBuilder: (
+                                      context,
+                                      textEditingController,
+                                      focusNode,
+                                      onFieldSubmitted,
+                                    ) {
+                                      if (index < items.length) {
+                                        textEditingController.text = items[index].item.text;
+                                      }
+                                      return TextField(
+                                        controller: textEditingController,
+                                        focusNode: focusNode,
+                                        onSubmitted: (value) {
+                                          onFieldSubmitted();
+                                          final scannedItem = controller.itemsList.firstWhereOrNull(
+                                            (i) => i['Barcode'] == value || i['SKU'] == value,
                                           );
-                                        },
-                                    displayStringForOption: (item) =>
-                                        item['item_name'],
-                                    onSelected: (selected) => controller
-                                        .onItemSelected(index, selected),
-                                    fieldViewBuilder:
-                                        (
-                                          context,
-                                          textEditingController,
-                                          focusNode,
-                                          onFieldSubmitted,
-                                        ) {
-                                          if (index < items.length) {
-                                            textEditingController.text =
-                                                items[index].item.text;
+                                          if (scannedItem != null) {
+                                            controller.onItemSelected(index, scannedItem);
                                           }
-                                          return TextField(
-                                            controller: textEditingController,
-                                            focusNode: focusNode,
-                                            onSubmitted: (_) =>
-                                                onFieldSubmitted(),
-                                            decoration: const InputDecoration(
-                                              isDense: true,
-                                              border: InputBorder.none,
-                                            ),
-                                          );
                                         },
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          border: InputBorder.none,
+                                          hintText: 'Scan or type item',
+                                          prefixIcon: Icon(Icons.search, color: Colors.green.shade600),
+                                        ),
+                                      );
+                                    },
                                   ),
                             itemColumnWidth * 0.97,
                           ),
-
-                          // --- OTHER COLUMNS ---
                           _buildDataCell(
-                            _buildTextField(item.serialNo),
-                            baseColumnWidth * 0.55,
+                            Obx(() => TextButton(
+                                  onPressed: () {
+                                    Get.dialog(
+                                      SerialNumberModal(
+                                        item: item,
+                                        onSave: () => controller.calculateTotals(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    item.serials.isEmpty ? 'Add Serial' : '${item.serials.length} Serials',
+                                    style: TextStyle(color: Colors.green.shade700),
+                                  ),
+                                )),
+                            baseColumnWidth * 0.7,
                           ),
                           _buildDataCell(
                             _buildTextField(
@@ -538,7 +512,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             baseColumnWidth * 0.5,
                           ),
                           _buildDataCell(
-                            _buildTextField(item.unit),
+                            _buildTextField(item.unit, readOnly: true),
                             baseColumnWidth,
                           ),
                           _buildDataCell(
@@ -553,11 +527,9 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             baseColumnWidth,
                           ),
                           _buildDataCell(
-                            _buildTextField(item.sku),
+                            _buildTextField(item.sku, readOnly: true),
                             baseColumnWidth * 0.5,
                           ),
-
-                          // --- DISCOUNT ---
                           _buildDataCell(
                             Row(
                               children: [
@@ -571,14 +543,13 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                                   child: _buildTextField(
                                     item.discountAmount,
                                     keyboardType: TextInputType.number,
+                                    readOnly: true,
                                   ),
                                 ),
                               ],
                             ),
                             baseColumnWidth,
                           ),
-
-                          // --- TAX DROPDOWN ---
                           _buildDataCell(
                             controller.isLoadingTaxes.value
                                 ? const Text("Loading...")
@@ -596,23 +567,15 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                                       );
                                     }).toList(),
                                     onChanged: (value) {
-                                      final selectedTax = controller.taxList
-                                          .firstWhere(
-                                            (t) => t['tax_name'] == value,
-                                            orElse: () => {
-                                              'tax_name': '',
-                                              'tax_rate': '0',
-                                            },
-                                          );
-                                      controller.onTaxSelected(
-                                        index,
-                                        selectedTax,
+                                      final selectedTax = controller.taxList.firstWhere(
+                                        (t) => t['tax_name'] == value,
+                                        orElse: () => {'tax_name': '', 'tax_rate': '0'},
                                       );
+                                      controller.onTaxSelected(index, selectedTax);
                                     },
                                   ),
                             baseColumnWidth,
                           ),
-
                           _buildDataCell(
                             _buildTextField(item.taxAmount, readOnly: true),
                             baseColumnWidth,
@@ -621,17 +584,11 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             _buildTextField(item.totalAmount, readOnly: true),
                             baseColumnWidth,
                           ),
-
-                          // --- ACTION ---
                           _buildDataCell(
                             index < items.length
                                 ? IconButton(
-                                    icon: const Icon(
-                                      Icons.delete,
-                                      color: Colors.red,
-                                    ),
-                                    onPressed: () =>
-                                        controller.removeItem(index),
+                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () => controller.removeItem(index),
                                   )
                                 : const SizedBox(),
                             baseColumnWidth,
@@ -649,10 +606,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
     );
   }
 
-  Widget _buildDetailsAndSummary(
-    BuildContext context,
-    NewPurchaseController controller,
-  ) {
+  Widget _buildDetailsAndSummary(BuildContext context, NewPurchaseController controller) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -677,11 +631,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.shopping_cart,
-                      color: Colors.green.shade700,
-                      size: 24,
-                    ),
+                    Icon(Icons.shopping_cart, color: Colors.green.shade700, size: 24),
                     const SizedBox(width: 8),
                     Text(
                       "Purchase Details & Summary",
@@ -708,37 +658,24 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                     const SizedBox(height: 6),
                     Obx(
                       () => DropdownButtonFormField<String>(
-                        value: controller.paymentType.value.isEmpty
-                            ? null
-                            : controller.paymentType.value,
+                        value: controller.paymentType.value.isEmpty ? null : controller.paymentType.value,
                         items: const [
                           DropdownMenuItem(value: "Cash", child: Text('Cash')),
                           DropdownMenuItem(value: "Upi", child: Text('UPI')),
-                          DropdownMenuItem(
-                            value: "Cheque",
-                            child: Text('Cheque'),
-                          ),
-                          DropdownMenuItem(
-                            value: "Bank Transfer",
-                            child: Text('Bank Transfer'),
-                          ),
+                          DropdownMenuItem(value: "Cheque", child: Text('Cheque')),
+                          DropdownMenuItem(value: "Bank Transfer", child: Text('Bank Transfer')),
                         ],
-                        onChanged: (val) =>
-                            controller.paymentType.value = val ?? "",
+                        onChanged: (val) => controller.paymentType.value = val ?? "",
                         decoration: InputDecoration(
                           hintText: "Select Payment Type",
                           hintStyle: TextStyle(color: Colors.grey.shade500),
                           isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.green.shade300),
                           ),
-                          border: InputBorder.none,
-                          prefixIcon: Icon(
-                            Icons.payment,
-                            color: Colors.green.shade600,
-                            size: 20,
-                          ),
+                          prefixIcon: Icon(Icons.payment, color: Colors.green.shade600, size: 20),
                         ),
                         dropdownColor: Colors.white,
                       ),
@@ -761,10 +698,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                         hintText: "Enter note",
                         hintStyle: TextStyle(color: Colors.grey.shade500),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: Colors.green.shade300),
@@ -792,17 +726,9 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
               children: [
                 _buildSummaryRow("Subtotal", controller.subtotal, Colors.black),
                 const SizedBox(height: 10),
-                _buildSummaryRow(
-                  "Total Discount",
-                  controller.totalDiscount,
-                  Colors.red,
-                ),
+                _buildSummaryRow("Total Discount", controller.totalDiscount, Colors.red),
                 const SizedBox(height: 10),
-                _buildSummaryRow(
-                  "Total Tax",
-                  controller.totalTax,
-                  Colors.black,
-                ),
+                _buildSummaryRow("Total Tax", controller.totalTax, Colors.black),
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -827,16 +753,12 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                               hintText: "Enter other charges",
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 14,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.green.shade300),
                               ),
-                              border: InputBorder.none,
-                              prefixIcon: Icon(
-                                Icons.attach_money,
-                                color: Colors.green.shade600,
-                                size: 20,
-                              ),
+                              prefixIcon: Icon(Icons.attach_money, color: Colors.green.shade600, size: 20),
                             ),
                           ),
                         ],
@@ -845,12 +767,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                _buildSummaryRow(
-                  "Grand Total",
-                  controller.grandTotal,
-                  Colors.green.shade700,
-                  fontWeight: FontWeight.bold,
-                ),
+                _buildSummaryRow("Grand Total", controller.grandTotal, Colors.green.shade700, fontWeight: FontWeight.bold),
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -875,16 +792,12 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                               hintText: "Enter paid amount",
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 14,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.green.shade300),
                               ),
-                              border: InputBorder.none,
-                              prefixIcon: Icon(
-                                Icons.payment,
-                                color: Colors.green.shade600,
-                                size: 20,
-                              ),
+                              prefixIcon: Icon(Icons.payment, color: Colors.green.shade600, size: 20),
                             ),
                           ),
                         ],
@@ -893,12 +806,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                _buildSummaryRow(
-                  "Balance Amount",
-                  controller.balanceAmount,
-                  Colors.red,
-                  fontWeight: FontWeight.bold,
-                ),
+                _buildSummaryRow("Balance Amount", controller.balanceAmount, Colors.red, fontWeight: FontWeight.bold),
               ],
             ),
           ),
@@ -909,6 +817,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
 
   Widget _buildDropdown({
     required List<String> items,
+    String? value,
     required void Function(String?) onChanged,
     required String hint,
     required IconData icon,
@@ -920,7 +829,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
         color: Colors.green.shade50,
       ),
       child: DropdownButtonFormField<String>(
-        value: null,
+        value: value,
         items: items.map((item) {
           return DropdownMenuItem<String>(
             value: item,
@@ -932,10 +841,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
           hintText: hint,
           hintStyle: TextStyle(color: Colors.grey.shade500),
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           border: InputBorder.none,
           prefixIcon: Icon(icon, color: Colors.green.shade600, size: 20),
         ),

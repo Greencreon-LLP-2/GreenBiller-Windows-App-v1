@@ -1,18 +1,15 @@
-import 'package:dio/dio.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/hive_service.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
-import 'dart:developer';
-
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:logger/logger.dart';
 
 class PurchaseItem {
   final TextEditingController item = TextEditingController();
-  final TextEditingController serialNo = TextEditingController();
   final TextEditingController qty = TextEditingController();
   final TextEditingController unit = TextEditingController();
   final TextEditingController pricePerUnit = TextEditingController();
@@ -23,12 +20,66 @@ class PurchaseItem {
   final TextEditingController taxPercent = TextEditingController();
   final TextEditingController taxAmount = TextEditingController();
   final TextEditingController totalAmount = TextEditingController();
-  String? itemId; // Added to store item ID for API
-  String? taxName; // Added to store tax name for API
+  final RxList<String> serials = <String>[].obs; // List for serial numbers
+  String? itemId;
+  String? taxName;
+
+  PurchaseItem() {
+    qty.addListener(_calculateAmount);
+    pricePerUnit.addListener(_calculateAmount);
+    discountPercent.addListener(_calculateDiscount);
+    discountAmount.addListener(_calculateTax);
+    taxPercent.addListener(_calculateTax);
+    serials.listen((_) => _updateQuantityFromSerials());
+  }
+
+  void _calculateAmount() {
+    double quantity = double.tryParse(qty.text) ?? 0.0;
+    double price = double.tryParse(pricePerUnit.text) ?? 0.0;
+    double total = quantity * price;
+    purchasePrice.text = total.toStringAsFixed(2);
+    _calculateDiscount();
+  }
+
+  void _calculateDiscount() {
+    double quantity = double.tryParse(qty.text) ?? 0.0;
+    double price = double.tryParse(pricePerUnit.text) ?? 0.0;
+    double discountPerc = double.tryParse(discountPercent.text) ?? 0.0;
+    double subtotal = quantity * price;
+    double discountAmt = (subtotal * discountPerc) / 100;
+    discountAmount.text = discountAmt.toStringAsFixed(2);
+    _calculateTax();
+  }
+
+  void _calculateTax() {
+    double quantity = double.tryParse(qty.text) ?? 0.0;
+    double price = double.tryParse(pricePerUnit.text) ?? 0.0;
+    double discountAmt = double.tryParse(discountAmount.text) ?? 0.0;
+    double taxPerc = double.tryParse(taxPercent.text) ?? 0.0;
+    double subtotal = (quantity * price) - discountAmt;
+    double taxAmt = (subtotal * taxPerc) / 100;
+    taxAmount.text = taxAmt.toStringAsFixed(2);
+    _updateTotalAmount();
+  }
+
+  void _updateTotalAmount() {
+    double quantity = double.tryParse(qty.text) ?? 0.0;
+    double price = double.tryParse(pricePerUnit.text) ?? 0.0;
+    double discountAmt = double.tryParse(discountAmount.text) ?? 0.0;
+    double taxAmt = double.tryParse(taxAmount.text) ?? 0.0;
+    double total = (quantity * price) - discountAmt + taxAmt;
+    totalAmount.text = total.toStringAsFixed(2);
+  }
+
+  void _updateQuantityFromSerials() {
+    if (serials.isNotEmpty && serials.length > (double.tryParse(qty.text) ?? 0)) {
+      qty.text = serials.length.toString();
+      _calculateAmount();
+    }
+  }
 
   void dispose() {
     item.dispose();
-    serialNo.dispose();
     qty.dispose();
     unit.dispose();
     pricePerUnit.dispose();
@@ -39,60 +90,6 @@ class PurchaseItem {
     taxPercent.dispose();
     taxAmount.dispose();
     totalAmount.dispose();
-  }
-
-  PurchaseItem() {
-    qty.addListener(_calculateAmount);
-    pricePerUnit.addListener(_calculateAmount);
-    discountPercent.addListener(_calculateDiscount);
-    taxPercent.addListener(_calculateTax);
-  }
-
-  void _calculateAmount() {
-    double quantity = double.tryParse(qty.text) ?? 0.0;
-    double price = double.tryParse(pricePerUnit.text) ?? 0.0;
-    double total = quantity * price;
-
-    if (purchasePrice.text.isEmpty) {
-      purchasePrice.text = total.toStringAsFixed(2);
-    }
-
-    _updateTotalAmount();
-  }
-
-  void _calculateDiscount() {
-    double quantity = double.tryParse(qty.text) ?? 0.0;
-    double price = double.tryParse(pricePerUnit.text) ?? 0.0;
-    double discountPerc = double.tryParse(discountPercent.text) ?? 0.0;
-
-    double subtotal = quantity * price;
-    double discountAmt = (subtotal * discountPerc) / 100;
-
-    discountAmount.text = discountAmt.toStringAsFixed(2);
-    _updateTotalAmount();
-  }
-
-  void _calculateTax() {
-    double quantity = double.tryParse(qty.text) ?? 0.0;
-    double price = double.tryParse(pricePerUnit.text) ?? 0.0;
-    double discountAmt = double.tryParse(discountAmount.text) ?? 0.0;
-    double taxPerc = double.tryParse(taxPercent.text) ?? 0.0;
-
-    double subtotal = (quantity * price) - discountAmt;
-    double taxAmt = (subtotal * taxPerc) / 100;
-
-    taxAmount.text = taxAmt.toStringAsFixed(2);
-    _updateTotalAmount();
-  }
-
-  void _updateTotalAmount() {
-    double quantity = double.tryParse(qty.text) ?? 0.0;
-    double price = double.tryParse(pricePerUnit.text) ?? 0.0;
-    double discountAmt = double.tryParse(discountAmount.text) ?? 0.0;
-    double taxAmt = double.tryParse(taxAmount.text) ?? 0.0;
-
-    double total = (quantity * price) - discountAmt + taxAmt;
-    totalAmount.text = total.toStringAsFixed(2);
   }
 }
 
@@ -191,11 +188,9 @@ class NewPurchaseController extends GetxController {
     noteController.dispose();
     otherChargesController.dispose();
     paidAmountController.dispose();
-
     for (var item in items) {
       item.dispose();
     }
-
     super.onClose();
   }
 
@@ -218,13 +213,13 @@ class NewPurchaseController extends GetxController {
     double tax = 0.0;
 
     for (var item in items) {
-      double itemTotal = double.tryParse(item.totalAmount.text) ?? 0.0;
-      double itemDiscount = double.tryParse(item.discountAmount.text) ?? 0.0;
-      double itemTax = double.tryParse(item.taxAmount.text) ?? 0.0;
-
       double qty = double.tryParse(item.qty.text) ?? 0.0;
       double price = double.tryParse(item.pricePerUnit.text) ?? 0.0;
+      double itemDiscount = double.tryParse(item.discountAmount.text) ?? 0.0;
+      double itemTax = double.tryParse(item.taxAmount.text) ?? 0.0;
+      double itemTotal = (qty * price) - itemDiscount + itemTax;
 
+      item.totalAmount.text = itemTotal.toStringAsFixed(2);
       sub += qty * price;
       discount += itemDiscount;
       tax += itemTax;
@@ -233,12 +228,7 @@ class NewPurchaseController extends GetxController {
     subtotal.value = sub;
     totalDiscount.value = discount;
     totalTax.value = tax;
-
-    grandTotal.value =
-        subtotal.value -
-        totalDiscount.value +
-        totalTax.value +
-        otherCharges.value;
+    grandTotal.value = subtotal.value - totalDiscount.value + totalTax.value + otherCharges.value;
     calculateBalance();
   }
 
@@ -250,7 +240,6 @@ class NewPurchaseController extends GetxController {
     isLoadingStores.value = true;
     try {
       final List<dynamic> response = await commonApi.fetchStoreList();
-
       storeMap.value = {
         for (var store in response) store['store_name']: store['id'].toString(),
       };
@@ -264,12 +253,9 @@ class NewPurchaseController extends GetxController {
   Future<void> fetchWarehouses(String storeId) async {
     isLoadingWarehouses.value = true;
     try {
-      final List<dynamic> response = await commonApi.fetchWarehousesByStoreID(
-        int.parse(storeId),
-      );
+      final List<dynamic> response = await commonApi.fetchWarehousesByStoreID(int.parse(storeId));
       warehouseMap.value = {
-        for (var warehouse in response)
-          warehouse['warehouse_name']: warehouse['id'].toString(),
+        for (var warehouse in response) warehouse['warehouse_name']: warehouse['id'].toString(),
       };
     } catch (e) {
       Get.snackbar('Error', 'Failed to fetch warehouses: $e');
@@ -282,10 +268,8 @@ class NewPurchaseController extends GetxController {
     isLoadingSuppliers.value = true;
     try {
       final List<dynamic> response = await commonApi.fetchSuppliers(storeId);
-
       supplierMap.value = {
-        for (var supplier in response)
-          supplier['supplier_name']: supplier['id'].toString(),
+        for (var supplier in response) supplier['supplier_name']: supplier['id'].toString(),
       };
     } catch (e) {
       Get.snackbar('Error', 'Failed to fetch suppliers: $e');
@@ -297,19 +281,13 @@ class NewPurchaseController extends GetxController {
   Future<void> fetchItems(String storeId) async {
     isLoadingItems.value = true;
     try {
-      final response = await commonApi.fetchAllItems(storeId); // await here
+      final response = await commonApi.fetchAllItems(storeId);
       if (response.isEmpty) {
-        Get.snackbar('Error', 'Please add items first, emtpy store');
+        Get.snackbar('Error', 'Please add items first, empty store');
       }
-      itemsList.value = response
-          .map((e) => Map<String, dynamic>.from(e as Map))
-          .toList();
+      itemsList.value = response.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to fetch items: $e',
-        backgroundColor: Colors.redAccent,
-      );
+      Get.snackbar('Error', 'Failed to fetch items: $e', backgroundColor: Colors.redAccent);
     } finally {
       isLoadingItems.value = false;
     }
@@ -330,8 +308,8 @@ class NewPurchaseController extends GetxController {
   }
 
   void onStoreSelected(String? storeName) {
-    if (storeName != null && storeMap.value.containsKey(storeName)) {
-      selectedStoreId.value = storeMap.value[storeName]!;
+    if (storeName != null && storeMap.containsKey(storeName)) {
+      selectedStoreId.value = storeMap[storeName]!;
       storeController.text = storeName;
       selectedWarehouseId.value = '';
       selectedSupplierId.value = '';
@@ -345,16 +323,15 @@ class NewPurchaseController extends GetxController {
   }
 
   void onWarehouseSelected(String? warehouseName) {
-    if (warehouseName != null &&
-        warehouseMap.value.containsKey(warehouseName)) {
-      selectedWarehouseId.value = warehouseMap.value[warehouseName]!;
+    if (warehouseName != null && warehouseMap.containsKey(warehouseName)) {
+      selectedWarehouseId.value = warehouseMap[warehouseName]!;
       warehouseController.text = warehouseName;
     }
   }
 
   void onSupplierSelected(String? supplierName) {
-    if (supplierName != null && supplierMap.value.containsKey(supplierName)) {
-      selectedSupplierId.value = supplierMap.value[supplierName]!;
+    if (supplierName != null && supplierMap.containsKey(supplierName)) {
+      selectedSupplierId.value = supplierMap[supplierName]!;
       supplierController.text = supplierName;
     }
   }
@@ -364,13 +341,14 @@ class NewPurchaseController extends GetxController {
       final purchaseItem = items[index];
       purchaseItem.item.text = item['item_name'] ?? '';
       purchaseItem.itemId = item['id'].toString();
-      purchaseItem.sku.text = item['sku'] ?? '';
-      purchaseItem.unit.text = item['unit'] ?? '';
-      purchaseItem.pricePerUnit.text = item['purchase_price'] ?? '';
+      purchaseItem.sku.text = item['SKU'] ?? '';
+      purchaseItem.unit.text = item['unit_id'].toString();
+      purchaseItem.pricePerUnit.text = (item['Purchase_price'] ?? '0').toString();
       purchaseItem.qty.text = '1';
-      purchaseItem.discountPercent.text = item['discount'] ?? '0';
-      purchaseItem.taxPercent.text = item['tax_rate'] ?? '0';
-      purchaseItem.taxName = item['tax_type'] ?? '';
+      purchaseItem.discountPercent.text = (item['Discount'] ?? '0').toString();
+      purchaseItem.taxPercent.text = (item['Tax_rate'] ?? '0').toString();
+      purchaseItem.taxName = item['Tax_type'] ?? '';
+      purchaseItem.serials.clear();
       calculateTotals();
     }
   }
@@ -379,7 +357,7 @@ class NewPurchaseController extends GetxController {
     if (index < items.length) {
       final purchaseItem = items[index];
       purchaseItem.taxName = tax['tax_name'];
-      purchaseItem.taxPercent.text = tax['tax_rate'] ?? '0';
+      purchaseItem.taxPercent.text = tax['tax_rate']?.toString() ?? '0';
       calculateTotals();
     }
   }
@@ -410,14 +388,16 @@ class NewPurchaseController extends GetxController {
         Get.snackbar('Error', 'Please enter item name for row ${i + 1}');
         return false;
       }
-      if (items[i].qty.text.isEmpty ||
-          double.tryParse(items[i].qty.text) == 0) {
+      if (items[i].qty.text.isEmpty || double.tryParse(items[i].qty.text) == 0) {
         Get.snackbar('Error', 'Please enter valid quantity for row ${i + 1}');
         return false;
       }
-      if (items[i].pricePerUnit.text.isEmpty ||
-          double.tryParse(items[i].pricePerUnit.text) == 0) {
+      if (items[i].pricePerUnit.text.isEmpty || double.tryParse(items[i].pricePerUnit.text) == 0) {
         Get.snackbar('Error', 'Please enter valid price for row ${i + 1}');
+        return false;
+      }
+      if (items[i].serials.isNotEmpty && items[i].serials.length != double.tryParse(items[i].qty.text)) {
+        Get.snackbar('Error', 'Serial numbers count does not match quantity for row ${i + 1}');
         return false;
       }
     }
@@ -433,8 +413,7 @@ class NewPurchaseController extends GetxController {
 
     isLoading.value = true;
     try {
-      final purchaseCode =
-          'G_B_${selectedStoreId.value}_${DateTime.now().millisecondsSinceEpoch}_${userId.value}';
+      final purchaseCode = 'G_B_${selectedStoreId.value}_${DateTime.now().millisecondsSinceEpoch}_${userId.value}';
       Map<String, dynamic> purchaseData = {
         'user_id': userId.value,
         'store_id': selectedStoreId.value,
@@ -456,8 +435,7 @@ class NewPurchaseController extends GetxController {
         data: purchaseData,
       );
 
-      if (purchaseResponse.statusCode == 200 ||
-          purchaseResponse.statusCode == 201) {
+      if (purchaseResponse.statusCode == 200 || purchaseResponse.statusCode == 201) {
         final purchaseId = purchaseResponse.data['data']['id'].toString();
 
         for (var item in items) {
@@ -473,7 +451,7 @@ class NewPurchaseController extends GetxController {
             'discount_amount': item.discountAmount.text,
             'total_cost': item.totalAmount.text,
             'item_name': item.item.text,
-            'batch_no': item.serialNo.text,
+            'batch_no': item.serials.join(','),
             'barcode': item.sku.text,
             'unit': item.unit.text,
           };
@@ -504,28 +482,26 @@ class NewPurchaseController extends GetxController {
           await hiveService.savePurchase({
             ...purchaseData,
             'items': items
-                .map(
-                  (item) => {
-                    'item_id': item.itemId,
-                    'item_name': item.item.text,
-                    'serial_no': item.serialNo.text,
-                    'qty': item.qty.text,
-                    'unit': item.unit.text,
-                    'price_per_unit': item.pricePerUnit.text,
-                    'purchase_price': item.purchasePrice.text,
-                    'sku': item.sku.text,
-                    'discount_percent': item.discountPercent.text,
-                    'discount_amount': item.discountAmount.text,
-                    'tax_percent': item.taxPercent.text,
-                    'tax_amount': item.taxAmount.text,
-                    'total_amount': item.totalAmount.text,
-                    'tax_name': item.taxName,
-                  },
-                )
+                .map((item) => {
+                      'item_id': item.itemId,
+                      'item_name': item.item.text,
+                      'serial_no': item.serials.join(','),
+                      'qty': item.qty.text,
+                      'unit': item.unit.text,
+                      'price_per_unit': item.pricePerUnit.text,
+                      'purchase_price': item.purchasePrice.text,
+                      'sku': item.sku.text,
+                      'discount_percent': item.discountPercent.text,
+                      'discount_amount': item.discountAmount.text,
+                      'tax_percent': item.taxPercent.text,
+                      'tax_amount': item.taxAmount.text,
+                      'total_amount': item.totalAmount.text,
+                      'tax_name': item.taxName,
+                    })
                 .toList(),
           });
         } catch (e) {
-          log('Failed to save purchase locally: $e');
+          logger.e('Failed to save purchase locally: $e');
         }
 
         Get.snackbar(
@@ -538,9 +514,7 @@ class NewPurchaseController extends GetxController {
 
         clearForm();
       } else {
-        throw Exception(
-          'Failed to save purchase: ${purchaseResponse.data['message']}',
-        );
+        throw Exception('Failed to save purchase: ${purchaseResponse.data['message']}');
       }
     } catch (e) {
       Get.snackbar(
@@ -581,11 +555,117 @@ class NewPurchaseController extends GetxController {
 
   void generateBillNumber() {
     String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-    billNumberController.text =
-        'PUR${timestamp.substring(timestamp.length - 6)}';
+    billNumberController.text = 'PUR${timestamp.substring(timestamp.length - 6)}';
   }
 
   void setBillDate(DateTime date) {
     billDateController.text = date.toString().split(' ')[0];
+  }
+}
+
+class SerialNumberModal extends StatelessWidget {
+  final PurchaseItem item;
+  final VoidCallback onSave;
+
+  SerialNumberModal({required this.item, required this.onSave});
+
+  final TextEditingController serialController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        width: 400,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.qr_code, color: Colors.green.shade700, size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  'Add Serial Numbers',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green.shade700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: serialController,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: 'Scan or Enter Serial Number',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                prefixIcon: Icon(Icons.qr_code_scanner, color: Colors.green.shade600),
+              ),
+              onSubmitted: (value) {
+                if (value.isNotEmpty && !item.serials.contains(value)) {
+                  item.serials.add(value);
+                  serialController.clear();
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            Obx(() => Container(
+                  constraints: const BoxConstraints(maxHeight: 200),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: item.serials.isEmpty
+                          ? [const Text('No serial numbers added')]
+                          : item.serials.asMap().entries.map((entry) {
+                              int idx = entry.key;
+                              String serial = entry.value;
+                              return ListTile(
+                                title: Text(serial),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () {
+                                    item.serials.removeAt(idx);
+                                  },
+                                ),
+                              );
+                            }).toList(),
+                    ),
+                  ),
+                )),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Get.back(),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    onSave();
+                    Get.back();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade700,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Save'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
