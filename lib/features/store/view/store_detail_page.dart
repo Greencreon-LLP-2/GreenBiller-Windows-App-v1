@@ -9,6 +9,9 @@ class StoreDetailScreen extends GetView<StoreWarehouseDetailsController> {
 
   @override
   Widget build(BuildContext context) {
+    controller.storeId.value = int.parse(Get.parameters['storeId'] ?? '0');
+    controller.fetchStoreDetails();
+    controller.fetchWarehouseDetails();
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -30,7 +33,7 @@ class StoreDetailScreen extends GetView<StoreWarehouseDetailsController> {
             child: IconButton(
               icon: const Icon(Icons.refresh_rounded, size: 20),
               onPressed: () {
-                controller.fetchStoreDetails(controller.storeId);
+                controller.fetchStoreDetails();
               },
             ),
           ),
@@ -38,7 +41,7 @@ class StoreDetailScreen extends GetView<StoreWarehouseDetailsController> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          await controller.fetchStoreDetails(controller.storeId);
+          await controller.fetchStoreDetails();
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -390,75 +393,212 @@ class StoreDetailScreen extends GetView<StoreWarehouseDetailsController> {
                     itemCount: controller.warehouses.length,
                     itemBuilder: (context, index) {
                       final warehouse = controller.warehouses[index];
-                      return CardContainer(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        child: ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: accentColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.warehouse_rounded,
-                              color: accentColor,
-                            ),
-                          ),
-                          title: Text(
-                            warehouse.warehouseName ?? 'Unnamed Warehouse',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (warehouse.address != null &&
-                                  warehouse.address!.isNotEmpty)
-                                Text(
-                                  warehouse.address!,
-                                  style: const TextStyle(
-                                    color: textSecondaryColor,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Items: ${warehouse.itemsCount ?? 0}',
-                                style: const TextStyle(
-                                  color: textSecondaryColor,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                          trailing: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: warehouse.status == 'active'
-                                  ? Colors.green.withOpacity(0.1)
-                                  : Colors.red.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              warehouse.status.toUpperCase(),
-                              style: TextStyle(
-                                color: warehouse.status == 'active'
-                                    ? Colors.green[700]
-                                    : Colors.red[700],
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          vertical: 6,
+                          horizontal: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
                           onTap: () {
-                            // Get.to(() => WarehouseDetailScreen(
-                            //       accessToken: accessToken,
-                            //       storeId: warehouse.storeId!,
-                            //     ));
+                            // Navigate to detail screen if needed
+                            // Get.to(() => WarehouseDetailScreen(storeId: warehouse.storeId!));
                           },
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Icon avatar
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: accentColor.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.warehouse_rounded,
+                                    color: accentColor,
+                                    size: 28,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+
+                                // Warehouse info
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Title + status badge
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              warehouse.warehouseName ??
+                                                  'Unnamed Warehouse',
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  (warehouse.status == 'active'
+                                                          ? Colors.green
+                                                          : Colors.red)
+                                                      .withOpacity(0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              warehouse.status ?? 'unknown',
+                                              style: TextStyle(
+                                                color:
+                                                    warehouse.status == 'active'
+                                                    ? Colors.green[700]
+                                                    : Colors.red[700],
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      const SizedBox(height: 6),
+
+                                      // Address (if exists)
+                                      if ((warehouse.address ?? '').isNotEmpty)
+                                        Text(
+                                          warehouse.address!,
+                                          style: const TextStyle(
+                                            color: textSecondaryColor,
+                                            fontSize: 13,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+
+                                      const SizedBox(height: 6),
+
+                                      // Additional details
+                                      Wrap(
+                                        spacing: 16,
+                                        runSpacing: 4,
+                                        children: [
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.inventory_2_outlined,
+                                                size: 14,
+                                                color: textSecondaryColor,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                "Items: ${warehouse.itemsCount ?? 0}",
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: textSecondaryColor,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          if ((warehouse.warehouseType ?? '')
+                                              .isNotEmpty)
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.category_outlined,
+                                                  size: 14,
+                                                  color: textSecondaryColor,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  warehouse.warehouseType!,
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: textSecondaryColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          if ((warehouse.mobile ?? '')
+                                              .isNotEmpty)
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.phone_outlined,
+                                                  size: 14,
+                                                  color: textSecondaryColor,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  warehouse.mobile!,
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: textSecondaryColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          if ((warehouse.email ?? '')
+                                              .isNotEmpty)
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  Icons.email_outlined,
+                                                  size: 14,
+                                                  color: textSecondaryColor,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  warehouse.email!,
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: textSecondaryColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                        ],
+                                      ),
+
+                                      const SizedBox(height: 6),
+
+                                      // Created date
+                                      if (warehouse.createdAt != null)
+                                        Text(
+                                          "Created: ${warehouse.createdAt!.toLocal().toString().split(' ').first}",
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: textSecondaryColor,
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       );
                     },

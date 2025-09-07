@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
+import 'package:greenbiller/routes/app_routes.dart';
 
 class AdminWarehousesTab extends GetView<StoreController> {
   const AdminWarehousesTab({super.key});
@@ -202,7 +203,7 @@ class AdminWarehousesTab extends GetView<StoreController> {
                       )
                     : RefreshIndicator(
                         onRefresh: () async {
-                           controller.getWarehouseList();
+                          controller.getWarehouseList();
                         },
                         child: ListView.builder(
                           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -233,19 +234,24 @@ class AdminWarehousesTab extends GetView<StoreController> {
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(16),
                                   onTap: () {
-                                    // if (warehouse.storeId != null) {
-                                    //   Get.to(() => WarehouseDetailScreen(
-                                    //         accessToken: controller.user.value?.accessToken ?? '',
-                                    //         storeId: warehouse.storeId!,
-                                    //       ));
-                                    // } else {
-                                    //   Get.snackbar(
-                                    //     'Error',
-                                    //     'Please connect with support, something wrong with this warehouse',
-                                    //     backgroundColor: Colors.red,
-                                    //     colorText: Colors.white,
-                                    //   );
-                                    // }
+                                    if (warehouse.storeId != null) {
+                                      Get.toNamed(
+                                        AppRoutes.singleWarehouseView,
+                                        parameters: {
+                                          'warehouseId': warehouse.id
+                                              .toString(),
+                                          'storeId': warehouse.storeId
+                                              .toString(),
+                                        },
+                                      );
+                                    } else {
+                                      Get.snackbar(
+                                        'Error',
+                                        'Please connect with support, something wrong with this warehouse',
+                                        backgroundColor: Colors.red,
+                                        colorText: Colors.white,
+                                      );
+                                    }
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(20),

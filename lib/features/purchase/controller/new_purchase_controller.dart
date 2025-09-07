@@ -265,7 +265,7 @@ class NewPurchaseController extends GetxController {
     isLoadingWarehouses.value = true;
     try {
       final List<dynamic> response = await commonApi.fetchWarehousesByStoreID(
-        storeId,
+        int.parse(storeId),
       );
       warehouseMap.value = {
         for (var warehouse in response)

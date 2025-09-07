@@ -41,6 +41,7 @@ import 'package:greenbiller/features/store/controller/store_controller.dart';
 import 'package:greenbiller/features/store/controller/store_warehouse_details_controller.dart';
 import 'package:greenbiller/features/store/view/store_detail_page.dart';
 import 'package:greenbiller/features/store/view/store_page.dart';
+import 'package:greenbiller/features/store/view/warehouse_detail_page.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 import 'package:greenbiller/screens/dashboards.dart';
 import 'package:greenbiller/screens/store_admin/store_admin_entry_point.dart';
@@ -215,6 +216,13 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: AppRoutes.singleStoreView,
           page: () => const StoreDetailScreen(),
+          binding: BindingsBuilder(() {
+            Get.put(StoreWarehouseDetailsController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.singleWarehouseView,
+          page: () => const WarehouseDetailScreen(),
           binding: BindingsBuilder(() {
             Get.put(StoreWarehouseDetailsController());
           }),

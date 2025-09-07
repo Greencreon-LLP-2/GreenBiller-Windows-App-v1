@@ -151,7 +151,7 @@ class CommonApiFunctionsController extends GetxController {
     }
   }
 
-  Future<List<dynamic>> fetchWarehousesByStoreID(String? storeId) async {
+  Future<List<dynamic>> fetchWarehousesByStoreID(int? storeId) async {
     try {
       String url = storeId != null
           ? "$viewWarehouseUrl/$storeId"
@@ -159,6 +159,21 @@ class CommonApiFunctionsController extends GetxController {
       final response = await dioClient.dio.get(url);
       if (response.statusCode == 200) {
         return response.data['data'] as List;
+      } else {
+        throw response;
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to fetch warehouses: $e');
+      throw e;
+    }
+  }
+
+  Future<dynamic> fetchSingleWareHouseById(int storeId) async {
+    try {
+      String url = '$viewSingleWarehouseUrl?store_id=$storeId';
+      final response = await dioClient.dio.get(url);
+      if (response.statusCode == 200) {
+        return response.data;
       } else {
         throw response;
       }

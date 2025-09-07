@@ -1,37 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:greenbiller/core/api_constants.dart';
-import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
-import 'package:greenbiller/features/items/model/item_model.dart';
+
 import 'package:greenbiller/features/store/model/store_model.dart';
 import 'package:greenbiller/features/store/model/warehouse_model.dart';
-import 'package:logger/logger.dart';
 
 class StoreWarehouseDetailsController extends GetxController {
   late CommonApiFunctionsController commonApi;
   final store = Rxn<StoreData>();
-  final warehouses = <dynamic>[].obs;
+  final warehouses = <WarehouseData>[].obs;
   final isLoading = true.obs;
   final isWarehouseLoading = true.obs;
   final error = ''.obs;
   final warehouseError = ''.obs;
-  late final int storeId;
+  final storeId = 0.obs;
+  final warehouseId = 0.obs;
   @override
   void onInit() {
     super.onInit();
     commonApi = CommonApiFunctionsController();
-    storeId = int.parse(Get.parameters['storeId']!);
-    fetchStoreDetails(storeId);
   }
 
-  Future<void> fetchStoreDetails(int storeId) async {
+  Future<void> fetchStoreDetails() async {
+    if (storeId.value == 0) return; // don't run if storeId not set
     isLoading.value = true;
     error.value = '';
     try {
-      final storeModel = await commonApi.fetchStore(storeId: storeId);
-      store.value = storeModel.data?.firstWhereOrNull((s) => s.id == storeId);
-      if (store.value == null) {
+      final storeModel = await commonApi.fetchStore(storeId: storeId.value);
+
+      // pick the one store that matches the given ID
+      final matchedStore = storeModel.data?.firstWhereOrNull(
+        (s) => s.id == storeId.value,
+      );
+
+      if (matchedStore != null) {
+        store.value = matchedStore;
+      } else {
         error.value = 'Store not found';
       }
     } catch (e) {
@@ -44,6 +48,50 @@ class StoreWarehouseDetailsController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchWarehouseDetails() async {
+    if (storeId.value == 0) return;
+    isWarehouseLoading.value = true;
+    warehouseError.value = '';
+    try {
+      final response = await commonApi.fetchWarehousesByStoreID(storeId.value);
+      warehouses.value = response
+          .map((e) => WarehouseData.fromJson(e))
+          .toList();
+    } catch (e) {
+      warehouseError.value = 'Failed to fetch warehouse details: $e';
+      Get.snackbar(
+        'Error',
+        warehouseError.value,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isWarehouseLoading.value = false;
+    }
+  }
+
+  Future<void> fetchSingleWarehouse() async {
+    if (storeId.value == 0) return;
+    isWarehouseLoading.value = true;
+    warehouseError.value = '';
+    try {
+      final response = await commonApi.fetchSingleWareHouseById(storeId.value);
+      warehouses.value = response
+          .map((e) => WarehouseData.fromJson(e))
+          .toList();
+    } catch (e) {
+      warehouseError.value = 'Failed to fetch warehouse details: $e';
+      Get.snackbar(
+        'Error',
+        warehouseError.value,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isWarehouseLoading.value = false;
     }
   }
 }
