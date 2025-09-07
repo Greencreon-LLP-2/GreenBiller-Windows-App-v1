@@ -4,6 +4,7 @@ import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
 import 'package:greenbiller/features/store/view/store_detail_page.dart';
+import 'package:greenbiller/routes/app_routes.dart';
 
 class AdminStoresTab extends GetView<StoreController> {
   const AdminStoresTab({super.key});
@@ -326,7 +327,10 @@ class AdminStoresTab extends GetView<StoreController> {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            Get.to(() => StoreDetailScreen(storeId: int.parse(storeId)));
+            Get.toNamed(
+              AppRoutes.singleStoreView,
+              parameters: {'storeId': storeId.toString()},
+            );
           },
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -470,8 +474,9 @@ class AdminStoresTab extends GetView<StoreController> {
                       color: Colors.grey,
                       tooltip: 'View Details',
                       onTap: () {
-                        Get.to(
-                          () => StoreDetailScreen(storeId: int.parse(storeId)),
+                        Get.toNamed(
+                          AppRoutes.singleStoreView,
+                          parameters: {'storeId': storeId.toString()},
                         );
                       },
                     ),
