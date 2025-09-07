@@ -1,14 +1,15 @@
-import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
-import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
+
 import 'package:greenbiller/features/store/model/store_model.dart';
 import 'package:greenbiller/features/store/model/warehouse_model.dart';
-import 'package:image_picker/image_picker.dart';
 
 class StoreController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -27,6 +28,8 @@ class StoreController extends GetxController
   final isWarehouseLoading = false.obs;
 
   final RxInt userId = 0.obs;
+  final RxInt editStoreId = 0.obs;
+  final RxInt editwarehouseId = 0.obs;
 
   /// Add store form
   final storeNameController = TextEditingController();
@@ -60,6 +63,16 @@ class StoreController extends GetxController
   final warehouseSearchQuery = ''.obs;
   final warehouseSelectedFilter = 'all'.obs;
 
+  /// Edit store form controllers
+  final storeCodeController = TextEditingController();
+  final storeCityController = TextEditingController();
+  final storeStateController = TextEditingController();
+  final storePostcodeController = TextEditingController();
+  final storeCountryController = TextEditingController();
+  final storeTimezoneController = TextEditingController();
+  final storeCurrencyController = TextEditingController();
+  final storeLanguageController = TextEditingController();
+
   @override
   void onInit() {
     super.onInit();
@@ -84,18 +97,24 @@ class StoreController extends GetxController
   @override
   void onClose() {
     tabController.dispose();
-
     storeNameController.dispose();
     storeWebsiteController.dispose();
     storeAddressController.dispose();
     storePhoneController.dispose();
     storeEmailController.dispose();
-
     warehouseNameController.dispose();
     warehouseTypeController.dispose();
     warehouseAddressController.dispose();
     warehouseEmailController.dispose();
     warehousePhoneController.dispose();
+    storeCodeController.dispose();
+    storeCityController.dispose();
+    storeStateController.dispose();
+    storePostcodeController.dispose();
+    storeCountryController.dispose();
+    storeTimezoneController.dispose();
+    storeCurrencyController.dispose();
+    storeLanguageController.dispose();
     super.onClose();
   }
 
@@ -182,12 +201,11 @@ class StoreController extends GetxController
       final formData = dio.FormData.fromMap({
         "user_id": userId.value.toString(),
         "store_code": "store-${DateTime.now().millisecondsSinceEpoch}",
-        "slug": "store-${DateTime.now().millisecondsSinceEpoch}",
         "store_name": storeNameController.text,
-        "store_website": storeWebsiteController.text,
-        "email": storeEmailController.text,
-        "mobile": storePhoneController.text,
-        "address": storeAddressController.text,
+        "website": storeWebsiteController.text,
+        "store_email": storeEmailController.text,
+        "store_phone": storePhoneController.text,
+        "store_address": storeAddressController.text,
         if (storeImage.value != null)
           "store_logo": await dio.MultipartFile.fromFile(
             storeImage.value!,
@@ -342,5 +360,256 @@ class StoreController extends GetxController
         borderRadius: 12,
       );
     }
+  }
+
+  Future<void> editStore(int storeId) async {
+    try {
+      final store = stores.firstWhereOrNull((s) => s.id == storeId);
+      if (store == null) {
+        Get.snackbar(
+          'Error',
+          'Store not found',
+          backgroundColor: Colors.red.shade600,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+        return;
+      }
+
+      final Map<String, dynamic> payload = {'user_id': userId.value.toString()};
+
+      // Only attach changed values, using correct Laravel field names
+      if (storeCodeController.text != (store.storeCode ?? '')) {
+        payload['store_code'] = storeCodeController.text;
+      }
+      if (storeNameController.text != (store.storeName ?? '')) {
+        payload['store_name'] = storeNameController.text;
+      }
+      if (storeWebsiteController.text != (store.website ?? '')) {
+        payload['store_website'] = storeWebsiteController.text;
+      }
+      if (storeEmailController.text != (store.storeEmail ?? '')) {
+        payload['email'] = storeEmailController.text;
+      }
+      if (storePhoneController.text != (store.storePhone ?? '')) {
+        payload['phone'] = storePhoneController.text;
+      }
+      if (storeAddressController.text != (store.storeAddress ?? '')) {
+        payload['address'] = storeAddressController.text;
+      }
+      if (storeCityController.text != (store.storeCity ?? '')) {
+        payload['city'] = storeCityController.text;
+      }
+      if (storeStateController.text != (store.storeState ?? '')) {
+        payload['state'] = storeStateController.text;
+      }
+      if (storePostcodeController.text != (store.storePostalCode ?? '')) {
+        payload['postcode'] = storePostcodeController.text;
+      }
+      if (storeCountryController.text != (store.storeCountry ?? '')) {
+        payload['country'] = storeCountryController.text;
+      }
+      if (storeTimezoneController.text != (store.timezone ?? '')) {
+        payload['timezone'] = storeTimezoneController.text;
+      }
+      if (storeCurrencyController.text != (store.currency ?? '')) {
+        payload['currency_id'] = storeCurrencyController.text;
+      }
+      if (storeLanguageController.text != (store.language ?? '')) {
+        payload['language_id'] = storeLanguageController.text;
+      }
+
+      // For logo → check if a new file was picked
+      if (storeImage.value != null && storeImage.value != store.storeLogo) {
+        payload['store_logo'] = await dio.MultipartFile.fromFile(
+          storeImage.value!,
+          filename: "logo.png",
+        );
+      }
+
+      if (payload.length <= 1) {
+        // Only has user_id, no actual changes
+        Get.snackbar(
+          'No Changes',
+          'No fields were modified',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+        return;
+      }
+
+      final formData = dio.FormData.fromMap(payload);
+
+      final response = await dioClient.dio.put(
+        "$editStoreUrl/$storeId",
+        data: formData,
+        options: dio.Options(
+          headers: {
+            'Authorization':
+                'Bearer ${authController.user.value?.accessToken ?? ''}',
+            'Content-Type': 'multipart/form-data',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar(
+          'Success',
+          'Store updated successfully',
+          backgroundColor: Colors.green.shade600,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+        await getStoreList();
+        Get.back();
+      } else {
+        _showError(response.data);
+      }
+    } on dio.DioException catch (e) {
+      _showError(e.response?.data);
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Unexpected error: $e',
+        backgroundColor: Colors.red.shade600,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+    }
+  }
+
+  Future<void> editWarehouse(
+    int warehouseId, {
+    String? oldName,
+    String? oldAddress,
+    String? oldType,
+    String? oldEmail,
+    String? oldPhone,
+  }) async {
+    try {
+      final payload = <String, dynamic>{};
+
+      final newName = warehouseNameController.text.trim();
+      final newAddress = warehouseAddressController.text.trim();
+      final newType = warehouseTypeController.text.trim();
+      final newEmail = warehouseEmailController.text.trim();
+      final newPhone = warehousePhoneController.text.trim();
+
+      if (newName.isNotEmpty && newName != oldName) {
+        payload['warehouse_name'] = newName;
+      }
+      if (newAddress.isNotEmpty && newAddress != oldAddress) {
+        payload['address'] = newAddress;
+      }
+      if (newType.isNotEmpty && newType != oldType) {
+        payload['warehouse_type'] = newType;
+      }
+      if (newEmail.isNotEmpty && newEmail != oldEmail) {
+        payload['email'] = newEmail;
+      }
+      if (newPhone.isNotEmpty && newPhone != oldPhone) {
+        payload['mobile'] = newPhone;
+      }
+
+      if (payload.isEmpty) {
+        Get.snackbar(
+          'No Changes',
+          'No changes to update',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+        return;
+      }
+
+      final response = await dioClient.dio.put(
+        "$editWarehouseUrl/$warehouseId",
+        data: payload,
+        options: dio.Options(
+          headers: {
+            'Authorization':
+                'Bearer ${authController.user.value?.accessToken ?? ''}',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar(
+          'Success',
+          'Warehouse updated successfully',
+          backgroundColor: Colors.green.shade600,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+        await getWarehouseList();
+        Get.back();
+      } else {
+        _showError(response.data);
+      }
+    } on dio.DioException catch (e) {
+      if (e.response != null && e.response?.statusCode == 422) {
+        _showError(e.response?.data);
+      } else {
+        Get.snackbar(
+          'Error',
+          'Failed to update warehouse: ${e.message}',
+          backgroundColor: Colors.red.shade600,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Unexpected error: $e',
+        backgroundColor: Colors.red.shade600,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+    }
+  }
+
+  /// Helper to show validation errors clearly
+  void _showError(dynamic data) {
+    String message = 'Failed to update warehouse';
+
+    if (data is Map && data.containsKey('errors')) {
+      final errors = data['errors'] as Map<String, dynamic>;
+      final errorMessages = errors.entries
+          .map((e) => "${e.key}: ${(e.value as List).join(', ')}")
+          .join("\n");
+
+      message = errorMessages;
+    } else if (data is Map && data.containsKey('message')) {
+      message = data['message'];
+    }
+
+    Get.snackbar(
+      'Error',
+      message,
+      backgroundColor: Colors.red.shade600,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(16),
+      borderRadius: 12,
+    );
   }
 }

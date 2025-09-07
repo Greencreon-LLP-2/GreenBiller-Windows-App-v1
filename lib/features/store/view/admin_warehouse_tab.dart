@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
+import 'package:greenbiller/features/store/model/warehouse_model.dart';
+import 'package:greenbiller/features/store/view/edit_warehouse_page.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 
 class AdminWarehousesTab extends GetView<StoreController> {
@@ -23,7 +25,10 @@ class AdminWarehousesTab extends GetView<StoreController> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          CircularProgressIndicator(),
+                          CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: accentColor,
+                          ),
                           SizedBox(height: 16),
                           Text('Processing...'),
                         ],
@@ -154,7 +159,10 @@ class AdminWarehousesTab extends GetView<StoreController> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            CircularProgressIndicator(),
+                            CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: accentColor,
+                            ),
                             SizedBox(height: 16),
                             Text('Loading warehouses...'),
                           ],
@@ -209,7 +217,7 @@ class AdminWarehousesTab extends GetView<StoreController> {
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           itemCount: controller.filteredWarehouses.length,
                           itemBuilder: (context, index) {
-                            final warehouse =
+                            final WarehouseData warehouse =
                                 controller.filteredWarehouses[index];
                             final isActive = warehouse.status == 'active';
                             return Container(
@@ -467,18 +475,29 @@ class AdminWarehousesTab extends GetView<StoreController> {
                                                       color: Colors.blue,
                                                     ),
                                                     onPressed: () {
-                                                      // Get.dialog(
-                                                      //   EditWarehouseWidget(
-                                                      //     accessToken: controller.user.value?.accessToken ?? '',
-                                                      //     warehouseId: warehouse.id.toString(),
-                                                      //     currentName: warehouse.warehouseName ?? '',
-                                                      //     warehouseEmail: warehouse.email,
-                                                      //     warehousephone: warehouse.mobile,
-                                                      //     currentLocation: warehouse.address ?? '',
-                                                      //     warehouseType: warehouse.warehouseType ?? "",
-                                                      //     ref: null, // Not needed with GetX
-                                                      //   ),
-                                                      // );
+                                                      Get.dialog(
+                                                        EditWarehousePage(
+                                                          warehouseId: warehouse
+                                                              .id
+                                                              .toString(),
+                                                          currentName:
+                                                              warehouse
+                                                                  .warehouseName ??
+                                                              '',
+                                                          warehouseEmail:
+                                                              warehouse.email,
+                                                          warehousePhone:
+                                                              warehouse.mobile,
+                                                          currentLocation:
+                                                              warehouse
+                                                                  .address ??
+                                                              '',
+                                                          warehouseType:
+                                                              warehouse
+                                                                  .warehouseType ??
+                                                              "",
+                                                        ),
+                                                      );
                                                     },
                                                   ),
                                                 ),
@@ -500,10 +519,30 @@ class AdminWarehousesTab extends GetView<StoreController> {
                                                       color: Colors.grey,
                                                     ),
                                                     onPressed: () {
-                                                      // Get.to(() => WarehouseDetailScreen(
-                                                      //       accessToken: controller.user.value?.accessToken ?? '',
-                                                      //       storeId: warehouse.storeId!,
-                                                      //     ));
+                                                      if (warehouse.storeId !=
+                                                          null) {
+                                                        Get.toNamed(
+                                                          AppRoutes
+                                                              .singleWarehouseView,
+                                                          parameters: {
+                                                            'warehouseId':
+                                                                warehouse.id
+                                                                    .toString(),
+                                                            'storeId': warehouse
+                                                                .storeId
+                                                                .toString(),
+                                                          },
+                                                        );
+                                                      } else {
+                                                        Get.snackbar(
+                                                          'Error',
+                                                          'Please connect with support, something wrong with this warehouse',
+                                                          backgroundColor:
+                                                              Colors.red,
+                                                          colorText:
+                                                              Colors.white,
+                                                        );
+                                                      }
                                                     },
                                                   ),
                                                 ),
@@ -525,12 +564,13 @@ class AdminWarehousesTab extends GetView<StoreController> {
                                                       color: Colors.red,
                                                     ),
                                                     onPressed: () {
-                                                      controller
-                                                          .deleteWarehouse(
-                                                            int.parse(
-                                                              warehouse.id,
-                                                            ),
-                                                          );
+                                                      if (warehouse.id !=
+                                                          null) {
+                                                        controller
+                                                            .deleteWarehouse(
+                                                              warehouse.id!,
+                                                            );
+                                                      }
                                                     },
                                                   ),
                                                 ),

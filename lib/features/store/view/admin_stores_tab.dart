@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
-import 'package:greenbiller/features/store/view/store_detail_page.dart';
+
 import 'package:greenbiller/routes/app_routes.dart';
 
 class AdminStoresTab extends GetView<StoreController> {
@@ -227,7 +227,10 @@ class AdminStoresTab extends GetView<StoreController> {
                           SizedBox(
                             width: 40,
                             height: 40,
-                            child: CircularProgressIndicator(strokeWidth: 3),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: accentColor,
+                            ),
                           ),
                           SizedBox(height: 20),
                           Text(
@@ -459,13 +462,10 @@ class AdminStoresTab extends GetView<StoreController> {
                       color: Colors.blue,
                       tooltip: 'Edit Store',
                       onTap: () {
-                        // Get.to(
-                        //   () => EditStorePage(
-                        //     accessToken:
-                        //         controller.user.value?.accessToken ?? '',
-                        //     storeId: storeId,
-                        //   ),
-                        // );
+                        Get.toNamed(
+                          AppRoutes.editStoreView,
+                          parameters: {'storeEditId': storeId.toString()},
+                        );
                       },
                     ),
                     const SizedBox(height: 8),
@@ -485,7 +485,7 @@ class AdminStoresTab extends GetView<StoreController> {
                       icon: Icons.delete_outline_rounded,
                       color: Colors.red,
                       tooltip: 'Delete Store',
-                      onTap: () => controller.deleteStore(int.parse(store.id)),
+                      onTap: () => controller.deleteStore(store.id),
                     ),
                   ],
                 ),
@@ -584,7 +584,10 @@ class AdminStoresTab extends GetView<StoreController> {
           SizedBox(
             width: 40,
             height: 40,
-            child: CircularProgressIndicator(strokeWidth: 3),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: accentColor,
+            ),
           ),
           SizedBox(height: 20),
           Text(

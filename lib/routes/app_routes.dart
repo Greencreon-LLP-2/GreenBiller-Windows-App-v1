@@ -29,4 +29,6 @@ class AppRoutes {
   static const String viewStore = '/view-store-page';
   static const String singleStoreView = '/view-single-store-page';
   static const String singleWarehouseView = '/view-single-warehouse-page';
+  static const String editStoreView = '/edit-single-store-page';
+  
 }

@@ -1,34 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:greenbiller/core/api_constants.dart';
+import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
+import 'package:greenbiller/features/items/model/item_model.dart';
 
 import 'package:greenbiller/features/store/model/store_model.dart';
 import 'package:greenbiller/features/store/model/warehouse_model.dart';
 
 class StoreWarehouseDetailsController extends GetxController {
   late CommonApiFunctionsController commonApi;
+  late DioClient dioClient;
+
+  // Store
   final store = Rxn<StoreData>();
+  final storeId = 0.obs;
+
+  // Warehouses
   final warehouses = <WarehouseData>[].obs;
-  final isLoading = true.obs;
-  final isWarehouseLoading = true.obs;
+  final singleWarehouse = Rxn<WarehouseData>();
+  final warehouseId = 0.obs;
+
+  // Items
+  final items = <Item>[].obs;
+  final searchQuery = ''.obs;
+
+  // Loading states
+  final isLoading = false.obs;
+  final isWarehouseLoading = false.obs;
+  final isLoadingItems = false.obs;
+
+  // Error messages
   final error = ''.obs;
   final warehouseError = ''.obs;
-  final storeId = 0.obs;
-  final warehouseId = 0.obs;
+  final errorItems = ''.obs;
+
   @override
   void onInit() {
     super.onInit();
+    dioClient = DioClient();
     commonApi = CommonApiFunctionsController();
   }
 
+  /// Fetch store details
   Future<void> fetchStoreDetails() async {
-    if (storeId.value == 0) return; // don't run if storeId not set
+    if (storeId.value == 0) return;
     isLoading.value = true;
     error.value = '';
     try {
       final storeModel = await commonApi.fetchStore(storeId: storeId.value);
 
-      // pick the one store that matches the given ID
       final matchedStore = storeModel.data?.firstWhereOrNull(
         (s) => s.id == storeId.value,
       );
@@ -51,6 +72,7 @@ class StoreWarehouseDetailsController extends GetxController {
     }
   }
 
+  /// Fetch all warehouses for store
   Future<void> fetchWarehouseDetails() async {
     if (storeId.value == 0) return;
     isWarehouseLoading.value = true;
@@ -73,17 +95,38 @@ class StoreWarehouseDetailsController extends GetxController {
     }
   }
 
+  /// Fetch single warehouse by warehouseId
   Future<void> fetchSingleWarehouse() async {
-    if (storeId.value == 0) return;
+    if (storeId.value == 0 || warehouseId.value == 0) return;
+
     isWarehouseLoading.value = true;
     warehouseError.value = '';
+
     try {
       final response = await commonApi.fetchSingleWareHouseById(storeId.value);
-      warehouses.value = response
-          .map((e) => WarehouseData.fromJson(e))
-          .toList();
+
+      if (response is Map<String, dynamic> && response['data'] is List) {
+        final warehouseList = (response['data'] as List)
+            .map((e) => WarehouseData.fromJson(e as Map<String, dynamic>))
+            .toList();
+
+        final matchedWarehouse = warehouseList.firstWhereOrNull(
+          (w) => w.id == warehouseId.value,
+        );
+
+        if (matchedWarehouse != null) {
+          singleWarehouse.value = matchedWarehouse;
+          warehouses.value = [matchedWarehouse];
+        } else {
+          warehouseError.value =
+              'Warehouse with id ${warehouseId.value} not found';
+        }
+      } else {
+        warehouseError.value = 'Invalid response format';
+      }
     } catch (e) {
       warehouseError.value = 'Failed to fetch warehouse details: $e';
+      print(warehouseError.value);
       Get.snackbar(
         'Error',
         warehouseError.value,
@@ -94,92 +137,81 @@ class StoreWarehouseDetailsController extends GetxController {
       isWarehouseLoading.value = false;
     }
   }
+
+  /// Fetch items of warehouse
+  Future<void> fetchWarehouseItems() async {
+    if (storeId.value == 0) return;
+    isLoadingItems.value = true;
+    errorItems.value = '';
+    try {
+      final response = await dioClient.dio.get(
+        '$viewAllItemUrl/${storeId.value}',
+      );
+
+      if (response.statusCode == 200) {
+        final itemModel = ItemModel.fromJson(response.data);
+        items.assignAll(itemModel.data ?? []);
+      } else {
+        errorItems.value = response.data['message'] ?? 'Failed to fetch items';
+
+        Get.snackbar(
+          'Error',
+          errorItems.value,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      errorItems.value = 'Failed to fetch items: $e';
+      print(errorItems.value);
+      Get.snackbar(
+        'Error',
+        errorItems.value,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingItems.value = false;
+    }
+  }
+
+  /// Search + Stats
+  List<Item> get filteredItems {
+    if (searchQuery.value.isEmpty) return items;
+
+    final query = searchQuery.value.toLowerCase();
+    return items.where((item) {
+      final name = item.itemName.toLowerCase();
+      final sku = item.sku.toLowerCase();
+      final category = item.categoryName.toLowerCase();
+      final brand = item.brandName.toLowerCase();
+
+      return [name, sku, category, brand].join(' ').contains(query);
+    }).toList();
+  }
+
+  int get totalItems => filteredItems.length;
+
+  int get activeItems => filteredItems.where((item) => item.status == 1).length;
+
+  int get inactiveItems =>
+      filteredItems.where((item) => item.status != 1).length;
+
+  int get totalQuantity => filteredItems.fold<int>(0, (prev, item) {
+    if (item.quantity == null) return prev;
+    return prev + (int.tryParse(item.quantity!) ?? 0);
+  });
+
+  double get totalStockValue => filteredItems.fold<double>(0.0, (prev, item) {
+    final qty = int.tryParse(item.quantity ?? '0') ?? 0;
+    final price = double.tryParse(item.purchasePrice) ?? 0.0;
+    return prev + (qty * price);
+  });
+
+  double get potentialSalesValue =>
+      filteredItems.fold<double>(0.0, (prev, item) {
+        final qty = int.tryParse(item.quantity ?? '0') ?? 0;
+        final price = double.tryParse(item.salesPrice) ?? 0.0;
+        return prev + (qty * price);
+      });
 }
-
-// class WarehouseDetailController extends GetxController {
-//   final DioClient dioClient = DioClient();
-//   final Logger _logger = Logger();
-
-//   // Reactive state
-//   final Rxn<WarehouseModel> warehouseModel = Rxn<WarehouseModel>();
-//   final RxList<Item> items = <Item>[].obs;
-
-//   @override
-//   void onInit() {
-//     super.onInit();
-//     // Initialize with arguments or AuthController
-//     fetchWarehouseDetails();
-//     fetchWarehouseItems();
-//   }
-
-//   Future<void> fetchWarehouseDetails() async {
-//     isLoadingWarehouse.value = true;
-//     errorWarehouse.value = '';
-//     try {
-//       final response = await dioClient.dio.get(
-//         '$viewWarehouseUrl/$storeId',
-//         options: dio.Options(headers: {'Authorization': 'Bearer ${accessToken.value}'}),
-//       );
-
-//       if (response.statusCode == 200) {
-//         warehouseModel.value = WarehouseModel.fromJson(response.data);
-//       } else {
-//         errorWarehouse.value = response.data['message'] ?? 'Failed to fetch warehouse details';
-//         Get.snackbar('Error', errorWarehouse.value, backgroundColor: Colors.red, colorText: Colors.white);
-//       }
-//     } catch (e) {
-//       _logger.e('Error fetching warehouse details: $e');
-//       errorWarehouse.value = 'Failed to fetch warehouse details: $e';
-//       Get.snackbar('Error', errorWarehouse.value, backgroundColor: Colors.red, colorText: Colors.white);
-//     } finally {
-//       isLoadingWarehouse.value = false;
-//     }
-//   }
-
-//   Future<void> fetchWarehouseItems() async {
-//     isLoadingItems.value = true;
-//     errorItems.value = '';
-//     try {
-//       final response = await dioClient.dio.get(
-//         '$viewAllItemUrl/$storeId',
-//         options: dio.Options(headers: {'Authorization': 'Bearer ${accessToken.value}'}),
-//       );
-
-//       if (response.statusCode == 200) {
-//         final itemModel = ItemModel.fromJson(response.data);
-//         items.assignAll(itemModel.data);
-//       } else {
-//         errorItems.value = response.data['message'] ?? 'Failed to fetch items';
-//         Get.snackbar('Error', errorItems.value, backgroundColor: Colors.red, colorText: Colors.white);
-//       }
-//     } catch (e) {
-//       _logger.e('Error fetching warehouse items: $e');
-//       errorItems.value = 'Failed to fetch items: $e';
-//       Get.snackbar('Error', errorItems.value, backgroundColor: Colors.red, colorText: Colors.white);
-//     } finally {
-//       isLoadingItems.value = false;
-//     }
-//   }
-
-//   List<Item> get filteredItems {
-//     if (searchQuery.value.isEmpty) return items;
-//     return items.where((item) {
-//       final name = (item.itemName ?? '').toLowerCase();
-//       final sku = (item.sku ?? '').toLowerCase();
-//       return [name, sku].join(' ').contains(searchQuery.value);
-//     }).toList();
-//   }
-
-//   int get totalItems => filteredItems.length;
-
-//   int get activeItems => filteredItems.where((item) => (item.status ?? '').toLowerCase() == 'active').length;
-
-//   int get inactiveItems => totalItems - activeItems;
-
-//   int get totalQuantity => filteredItems.fold<int>(0, (prev, item) {
-//         final qty = item.quantity;
-//         if (qty is int) return prev + qty;
-//         if (qty is String) return prev + (int.tryParse(qty) ?? 0);
-//         return prev;
-//       });
-// }
