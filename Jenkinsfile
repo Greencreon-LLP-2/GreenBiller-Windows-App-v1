@@ -7,23 +7,36 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Code') {
+
+        stage('Checkout SCM') {
             steps {
-                // Checkout using SSH and Jenkins credential
-                git branch: 'flutter_cicd_shilpi_branch',
-                    url: 'git@github.com:Greencreon-LLP-2/GreenBiller-Windows-App-v1.git',
-                    credentialsId: 'github-ssh-key'
+                echo "Checking out code from GitHub..."
+                checkout([$class: 'GitSCM',
+                    branches: [[name: 'flutter_cicd_shilpi_branch']],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [],
+                    userRemoteConfigs: [[
+                        url: 'git@github.com:Greencreon-LLP-2/GreenBiller-Windows-App-v1.git',
+                        credentialsId: 'github-ssh-key'
+                    ]]
+                ])
+            }
+        }
+
+        stage('Safe Directory Config') {
+            steps {
+                sh '''
+                # Mark Jenkins workspace and Flutter directory as safe for Git
+                git config --global --add safe.directory $WORKSPACE
+                git config --global --add safe.directory $FLUTTER_HOME
+                '''
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 sh '''
-                # Add current workspace as safe directory
-                git config --global --add safe.directory $WORKSPACE
-                # Add flutter installation directory as safe directory
-                git config --global --add safe.directory $FLUTTER_HOME
-                # Install dependencies
+                echo "Getting Flutter dependencies..."
                 flutter pub get
                 '''
             }
@@ -31,30 +44,27 @@ pipeline {
 
         stage('Build Web') {
             steps {
-                sh 'flutter build web'
+                sh '''
+                echo "Building Flutter Web..."
+                flutter build web --release --no-tree-shake-icons
+                '''
             }
         }
 
         stage('Deploy Web') {
             steps {
-                sh '''
-                # Clean previous build
-                rm -rf /var/www/html/*
-                # Copy new build to Nginx directory
-                cp -r build/web/* /var/www/html/
-                # Restart Nginx
-                systemctl restart nginx
-                '''
+                echo "Deploy your web build here (example: copy to server or S3)..."
+                // sh 'rsync -avz build/web/ user@server:/var/www/html/'
             }
         }
     }
 
     post {
         success {
-            echo 'Build & Deployment successful!'
+            echo "Build and deploy completed successfully!"
         }
         failure {
-            echo 'Build failed!'
+            echo "Build failed!"
         }
     }
 }
