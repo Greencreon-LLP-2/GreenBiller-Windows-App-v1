@@ -1,39 +1,31 @@
-name: Flutter Web CI/CD
+name: Deploy Flutter Web to GitHub Pages
 
 on:
   push:
     branches:
-      - flutter_cicd_shilpi_branch
-  pull_request:
-    branches:
-      - flutter_cicd_shilpi_branch
+      - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Setup Flutter
-      - name: Setup Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.3'
+          flutter-version: '3.7.0'
 
-      # Step 3: Install dependencies
-      - name: Get Flutter dependencies
+      - name: Install dependencies
         run: flutter pub get
 
-      # Step 4: Build web
-      - name: Build Flutter Web
+      - name: Build Flutter web
         run: flutter build web --release --no-tree-shake-icons
 
-      # Step 5: Deploy (example: GitHub Pages)
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v6
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: build/web
+          publish_dir: ./build/web
