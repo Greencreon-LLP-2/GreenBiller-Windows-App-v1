@@ -7,6 +7,9 @@ on:
       - flutter_cicd_shilpi_branch   # CI/CD runs only for this branch
   workflow_dispatch:                 # Allows manual trigger
 
+permissions:
+  contents: write   # ✅ allows GITHUB_TOKEN to push to gh-pages
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,11 +37,12 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # ✅ fixed permissions issue
           publish_dir: ./build/web
+          publish_branch: gh-pages                  # ✅ ensure branch is created
           user_name: "Shilpi Goyal"
           user_email: "shilpi@example.com"
 
       # 6. Confirm deployment
       - name: Deployment complete
-        run: echo "Flutter Web deployed to GitHub Pages successfully."
+        run: echo "✅ Flutter Web deployed to GitHub Pages successfully."
