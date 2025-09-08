@@ -5,13 +5,10 @@ import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/store/controller/store_warehouse_details_controller.dart';
 
 class StoreDetailScreen extends GetView<StoreWarehouseDetailsController> {
-  final int storeId;
-
-  const StoreDetailScreen({super.key, required this.storeId});
+  const StoreDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    controller.fetchStoreDetails(storeId);
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -33,7 +30,7 @@ class StoreDetailScreen extends GetView<StoreWarehouseDetailsController> {
             child: IconButton(
               icon: const Icon(Icons.refresh_rounded, size: 20),
               onPressed: () {
-                controller.fetchStoreDetails(storeId);
+                controller.fetchStoreDetails(controller.storeId);
               },
             ),
           ),
@@ -41,7 +38,7 @@ class StoreDetailScreen extends GetView<StoreWarehouseDetailsController> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          await controller.fetchStoreDetails(storeId);
+          await controller.fetchStoreDetails(controller.storeId);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
