@@ -15,11 +15,11 @@ class UnitDropdownWithValue extends StatelessWidget {
       final selectedSubUnit = controller.selectedSubUnit.value;
 
       return Card(
-        elevation: 1,
+        elevation: 2,
         color: Colors.white,
         // shadowColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(8),
+        margin: const EdgeInsets.only(top: 8, bottom: 8),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -75,6 +75,7 @@ class UnitDropdownWithValue extends StatelessWidget {
                       ),
                     ),
                     Switch(
+                      activeColor: Colors.green,
                       value: controller.isShowSubUnit.value,
                       onChanged: (val) {
                         controller.isShowSubUnit.value = val;

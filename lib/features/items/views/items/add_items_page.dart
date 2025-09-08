@@ -546,6 +546,7 @@ class AddItemsPage extends GetView<AddItemController> {
               Expanded(child: UnitDropdownWithValue(controller: controller)),
             ],
           ),
+          const SizedBox(height: 12),
           _buildInputField(
             label: "Description",
             hint: "Enter item description",
