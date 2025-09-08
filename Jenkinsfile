@@ -9,30 +9,41 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                checkout([$class: 'GitSCM', 
-                    branches: [[name: '*/flutter_cicd_shilpi_branch']], 
-                    userRemoteConfigs: [[url: 'git@github.com:Greencreon-LLP-2/GreenBiller-Windows-App-v1.git']]
+                // Using SSH key credentials configured in Jenkins
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/flutter_cicd_shilpi_branch']],
+                    doGenerateSubmoduleConfigurations: false,
+                    userRemoteConfigs: [[
+                        url: 'git@github.com:Greencreon-LLP-2/GreenBiller-Windows-App-v1.git',
+                        credentialsId: 'github-ssh-root'
+                    ]]
                 ])
             }
         }
 
         stage('Install Dependencies') {
             steps {
+                echo 'Installing Flutter dependencies...'
                 sh 'flutter pub get'
             }
         }
 
         stage('Build Web') {
             steps {
-                sh 'flutter build web'
+                echo 'Building Flutter Web...'
+                sh 'flutter build web --release'
             }
         }
 
         stage('Deploy Web') {
             steps {
-                // Copy built web files to Nginx
+                echo 'Deploying Web App to Nginx...'
+                // Clean previous build
                 sh 'rm -rf /var/www/html/*'
+                // Copy new build
                 sh 'cp -r build/web/* /var/www/html/'
+                // Restart Nginx
                 sh 'systemctl restart nginx'
             }
         }
