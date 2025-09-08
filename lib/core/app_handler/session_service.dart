@@ -14,7 +14,7 @@ class SessionService {
   ReceivePort? _receivePort;
   String? _currentToken;
   bool _isRunning = false;
-
+  final dioClient = DioClient();
   Future<void> startSessionCheck(String token) async {
     if (_isRunning) return;
 
@@ -109,24 +109,12 @@ class SessionService {
     _receivePort = null;
   }
 
-  static void _sessionCheckIsolate(Map<String, dynamic> params) async {
+  void _sessionCheckIsolate(Map<String, dynamic> params) async {
     final sendPort = params['sendPort'] as SendPort;
-    final token = params['token'] as String;
-    final dio = DioClient();
 
     while (true) {
       try {
-        final response = await dio.dio.post(
-          userSessionCheckUrl,
-          options: Options(
-            headers: {
-              'Authorization': 'Bearer $token',
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-          ),
-        );
-
+        final response = await dioClient.dio.post(userSessionCheckUrl);
         if (response.statusCode == 200) {
           final status = AppStatusModel.fromJson(response.data);
           sendPort.send(status);

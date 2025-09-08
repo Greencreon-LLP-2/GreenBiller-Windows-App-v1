@@ -24,11 +24,18 @@ import 'package:greenbiller/features/items/views/category/categories_page.dart';
 import 'package:greenbiller/features/items/views/items/add_items_page.dart';
 import 'package:greenbiller/features/items/views/items/all_items_page.dart';
 import 'package:greenbiller/features/items/views/units/units_page.dart';
+import 'package:greenbiller/features/notifications/view/notification_settings_page.dart';
 import 'package:greenbiller/features/parties/controller/parties_controller.dart';
 import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/features/parties/view/parties_page.dart';
 import 'package:greenbiller/features/purchase/controller/new_purchase_controller.dart';
+
+import 'package:greenbiller/features/purchase/controller/purchase_manage_controller.dart';
+
 import 'package:greenbiller/features/purchase/view/new_purchase_page.dart';
+import 'package:greenbiller/features/purchase/view/purchase_bills.dart';
+import 'package:greenbiller/features/purchase/view/purchase_return_page.dart';
+import 'package:greenbiller/features/purchase/view/purchase_return_view_page.dart';
 import 'package:greenbiller/features/settings/controller/bussiness_profile_controller.dart';
 import 'package:greenbiller/features/settings/controller/invoice_settings_controller.dart';
 import 'package:greenbiller/features/settings/view/account_setttings_page.dart';
@@ -40,7 +47,6 @@ import 'package:greenbiller/features/settings/view/store_users.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
 import 'package:greenbiller/features/store/controller/store_warehouse_details_controller.dart';
 import 'package:greenbiller/features/store/view/edit_store_page.dart';
-import 'package:greenbiller/features/store/view/edit_warehouse_page.dart';
 import 'package:greenbiller/features/store/view/store_detail_page.dart';
 import 'package:greenbiller/features/store/view/store_page.dart';
 import 'package:greenbiller/features/store/view/warehouse_detail_page.dart';
@@ -55,7 +61,7 @@ final logger = Logger();
 void main() {
   runZonedGuarded(
     () async {
-      WidgetsFlutterBinding.ensureInitialized(); // ✅ Now in same zone
+      WidgetsFlutterBinding.ensureInitialized();
 
       try {
         logger.i('Initializing Hive');
@@ -82,7 +88,7 @@ void main() {
         // Continue running the app even if initialization fails
       }
 
-      runApp(const MyApp()); // ✅ Same zone as ensureInitialized
+      runApp(const MyApp());
     },
     (error, stackTrace) {
       logger.e('Uncaught error: $error', error, stackTrace);
@@ -99,12 +105,13 @@ class MyApp extends StatelessWidget {
       title: 'GreenBiller',
       debugShowCheckedModeBanner: false,
       initialRoute: AppRoutes.login,
-      // initialRoute: AppRoutes.accountSettings,
-      // initialRoute: AppRoutes.addItems,
       getPages: [
+        // Authentication Routes
         GetPage(name: AppRoutes.login, page: () => const LoginPage()),
         GetPage(name: AppRoutes.otpVerify, page: () => const OtpVerifyPage()),
         GetPage(name: AppRoutes.signUp, page: () => const SignUpPage()),
+
+        // Dashboard Routes
         GetPage(
           name: AppRoutes.adminDashboard,
           page: () => const StoreAdminEntryPoint(),
@@ -125,23 +132,13 @@ class MyApp extends StatelessWidget {
           name: AppRoutes.homepage,
           page: () => const CustomerDashboard(),
         ),
-        GetPage(name: AppRoutes.maintenance, page: () => const Maintenance()),
-        GetPage(
-          name: AppRoutes.oneSignalNotificationPage,
-          page: () => const NotificationDetailsPage(),
-        ),
+
+        // Settings Routes
         GetPage(
           name: AppRoutes.bankAccountSettings,
           page: () => AccountSetttingsPage(),
           binding: BindingsBuilder(() {
             Get.put(AccountController());
-          }),
-        ),
-        GetPage(
-          name: AppRoutes.usersSettings,
-          page: () => const StoreUsers(),
-          binding: BindingsBuilder(() {
-            Get.put(UserCreationController());
           }),
         ),
         GetPage(
@@ -159,41 +156,24 @@ class MyApp extends StatelessWidget {
           }),
         ),
         GetPage(
-          name: AppRoutes.newPurchase,
-          page: () => NewPurchasePage(),
+          name: AppRoutes.usersSettings,
+          page: () => const StoreUsers(),
           binding: BindingsBuilder(() {
-            Get.put(NewPurchaseController());
+            Get.put(UserCreationController());
           }),
         ),
         GetPage(
-          name: AppRoutes.parties,
-          page: () => PartiesPage(),
-          binding: BindingsBuilder(() {
-            Get.put(PartiesController());
-          }),
+          name: AppRoutes.notificationSettings,
+          page: () => const NotificationSettingsPage(),
         ),
+
+        // Notification Routes
         GetPage(
-          name: AppRoutes.categoryView,
-          page: () => CategoriesPage(),
-          binding: BindingsBuilder(() {
-            Get.put(CategoryController());
-            Get.put(CategoryItemsController());
-          }),
+          name: AppRoutes.notificationDetails,
+          page: () => const NotificationDetailsPage(),
         ),
-        GetPage(
-          name: AppRoutes.brands,
-          page: () => BrandPage(),
-          binding: BindingsBuilder(() {
-            Get.put(BrandController());
-          }),
-        ),
-        GetPage(
-          name: AppRoutes.units,
-          page: () => UnitsPage(),
-          binding: BindingsBuilder(() {
-            Get.put(UnitController());
-          }),
-        ),
+
+        // Inventory Management Routes
         GetPage(
           name: AppRoutes.addItems,
           page: () => AddItemsPage(),
@@ -211,6 +191,64 @@ class MyApp extends StatelessWidget {
           }),
         ),
         GetPage(
+          name: AppRoutes.brands,
+          page: () => BrandPage(),
+          binding: BindingsBuilder(() {
+            Get.put(BrandController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.categories,
+          page: () => CategoriesPage(),
+          binding: BindingsBuilder(() {
+            Get.put(CategoryController());
+            Get.put(CategoryItemsController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.units,
+          page: () => UnitsPage(),
+          binding: BindingsBuilder(() {
+            Get.put(UnitController());
+          }),
+        ),
+
+        // Purchase Routes
+        GetPage(
+          name: AppRoutes.newPurchase,
+          page: () => NewPurchasePage(),
+          binding: BindingsBuilder(() {
+            Get.put(NewPurchaseController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.viewPurchaseBills,
+          page: () => PurchaseBills(),
+          binding: BindingsBuilder(() {
+            Get.put(PurchaseManageController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.purchaseReturnView,
+          page: () => PurchaseReturnViewPage(),
+          binding: BindingsBuilder(() {
+            Get.put(PurchaseManageController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.purchaseReturnCreate,
+          page: () {
+            final purchaseId = Get.parameters['purchaseId'] ?? '';
+            return PurchaseReturnPage(purchaseId: purchaseId);
+          },
+          binding: BindingsBuilder(() {
+            final purchaseId = Get.parameters['purchaseId'] ?? '';
+            Get.put(PurchaseManageController(purchaseId: purchaseId));
+          }),
+        ),
+
+        // Store and Warehouse Routes
+        GetPage(
           name: AppRoutes.viewStore,
           page: () => StorePage(),
           binding: BindingsBuilder(() {
@@ -225,27 +263,35 @@ class MyApp extends StatelessWidget {
           }),
         ),
         GetPage(
-          name: AppRoutes.singleWarehouseView,
-          page: () => const WarehouseDetailScreen(),
-          binding: BindingsBuilder(() {
-            Get.put(StoreWarehouseDetailsController());
-          }),
-        ),
-        GetPage(
           name: AppRoutes.editStoreView,
           page: () => EditStorePage(),
           binding: BindingsBuilder(() {
             Get.put(StoreController());
           }),
         ),
-       
+        GetPage(
+          name: AppRoutes.singleWarehouseView,
+          page: () => const WarehouseDetailScreen(),
+          binding: BindingsBuilder(() {
+            Get.put(StoreWarehouseDetailsController());
+          }),
+        ),
+
+        // Other Routes
+        GetPage(name: AppRoutes.maintenance, page: () => const Maintenance()),
+        GetPage(
+          name: AppRoutes.parties,
+          page: () => PartiesPage(),
+          binding: BindingsBuilder(() {
+            Get.put(PartiesController());
+          }),
+        ),
       ],
       builder: (context, child) {
-        // ✅ Always-available global controllers
+        // Global controllers
         Get.put(AuthController(), permanent: true);
         Get.put(CommonApiFunctionsController(), permanent: true);
         Get.put(DropdownController(), permanent: true);
-
         return child!;
       },
     );

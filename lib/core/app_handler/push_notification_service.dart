@@ -61,7 +61,7 @@ class PushNotificationService {
             colorText: Colors.white,
           );
           // Navigate to notification details
-          Get.toNamed( AppRoutes.oneSignalNotificationPage, arguments: message);
+          Get.toNamed(AppRoutes.notificationDetails, arguments: message);
         } else if (message is String) {
           logger.e('Push notification error: $message');
         }
@@ -78,8 +78,10 @@ class PushNotificationService {
   void _setupObservers() {
     // Push Subscription Observer
     OneSignal.User.pushSubscription.addObserver((state) {
-      logger.i('Push subscription changed: optedIn=${state.current.optedIn}, '
-          'id=${state.current.id}, token=${state.current.token}');
+      logger.i(
+        'Push subscription changed: optedIn=${state.current.optedIn}, '
+        'id=${state.current.id}, token=${state.current.token}',
+      );
     });
 
     // User State Observer
@@ -94,17 +96,24 @@ class PushNotificationService {
 
     // Notification Click Listener
     OneSignal.Notifications.addClickListener((event) {
-      logger.i('Notification clicked: ${event.notification.jsonRepresentation()}');
-      Get.toNamed( AppRoutes.oneSignalNotificationPage, arguments: {
-        'title': event.notification.title,
-        'body': event.notification.body,
-        'payload': event.notification.rawPayload,
-      });
+      logger.i(
+        'Notification clicked: ${event.notification.jsonRepresentation()}',
+      );
+      Get.toNamed(
+        AppRoutes.notificationDetails,
+        arguments: {
+          'title': event.notification.title,
+          'body': event.notification.body,
+          'payload': event.notification.rawPayload,
+        },
+      );
     });
 
     // Foreground Notification Listener
     OneSignal.Notifications.addForegroundWillDisplayListener((event) {
-      logger.i('Foreground notification: ${event.notification.jsonRepresentation()}');
+      logger.i(
+        'Foreground notification: ${event.notification.jsonRepresentation()}',
+      );
       event.notification.display(); // Always display notification
       Get.snackbar(
         event.notification.title ?? 'Notification',
@@ -237,14 +246,16 @@ class PushNotificationService {
   }) async {
     _liveActivityId = activityId;
     try {
-      OneSignal.LiveActivities.startDefault(_liveActivityId!, {
-        'title': title ?? 'Welcome!',
-      }, {
-        'message': {'en': message ?? 'Hello World!'},
-        if (intValue != null) 'intValue': intValue,
-        if (doubleValue != null) 'doubleValue': doubleValue,
-        if (boolValue != null) 'boolValue': boolValue,
-      });
+      OneSignal.LiveActivities.startDefault(
+        _liveActivityId!,
+        {'title': title ?? 'Welcome!'},
+        {
+          'message': {'en': message ?? 'Hello World!'},
+          if (intValue != null) 'intValue': intValue,
+          if (doubleValue != null) 'doubleValue': doubleValue,
+          if (boolValue != null) 'boolValue': boolValue,
+        },
+      );
       logger.i('Started live activity: $_liveActivityId');
     } catch (e, stackTrace) {
       logger.e('Failed to start live activity: $e', e, stackTrace);
@@ -296,7 +307,9 @@ class PushNotificationService {
           'payload': notification.rawPayload,
         });
         event.notification.display();
-        logger.i('Foreground notification in Isolate: ${notification.jsonRepresentation()}');
+        logger.i(
+          'Foreground notification in Isolate: ${notification.jsonRepresentation()}',
+        );
       });
     } catch (e, stackTrace) {
       logger.e('Isolate error: $e', e, stackTrace);

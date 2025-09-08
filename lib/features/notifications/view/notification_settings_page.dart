@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/gloabl_widgets/sidebar/admin_sidebar_wrapper.dart';
 
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+class NotificationSettingsPage extends StatelessWidget {
+  const NotificationSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

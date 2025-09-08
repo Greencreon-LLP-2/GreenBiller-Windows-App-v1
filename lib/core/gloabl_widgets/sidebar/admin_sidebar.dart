@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
+
 import 'package:greenbiller/routes/app_routes.dart';
 import 'package:logger/logger.dart';
 
@@ -78,7 +79,7 @@ class AdminSidebar extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            // --- HEADER ---
+            // Header
             Obx(
               () => UserAccountsDrawerHeader(
                 decoration: const BoxDecoration(color: Colors.green),
@@ -103,7 +104,7 @@ class AdminSidebar extends StatelessWidget {
               ),
             ),
 
-            // --- NAVIGATION ---
+            // Navigation
             Expanded(
               child: ListView(
                 children: [
@@ -116,13 +117,19 @@ class AdminSidebar extends StatelessWidget {
                     onTap: () => Get.toNamed(AppRoutes.overview),
                   ),
                   _buildNavTile(
-                    title: "Quick Purchase",
-                    icon: Icons.bar_chart_outlined,
+                    title: "Create Purchase",
+                    icon: Icons.add_shopping_cart,
                     route: AppRoutes.newPurchase,
                     currentRoute: currentRoute,
                     onTap: () => Get.toNamed(AppRoutes.newPurchase),
                   ),
-
+                  _buildNavTile(
+                    title: "Create Sales",
+                    icon: Icons.sell,
+                    route: AppRoutes.newSales,
+                    currentRoute: currentRoute,
+                    onTap: () => Get.toNamed(AppRoutes.newSales),
+                  ),
                   _buildSectionHeader("Dashboard"),
                   _buildNavTile(
                     title: "Parties",
@@ -131,34 +138,38 @@ class AdminSidebar extends StatelessWidget {
                     currentRoute: currentRoute,
                     onTap: () => Get.toNamed(AppRoutes.parties),
                   ),
-                   _buildSectionHeader("Store & warehouse"),
+
+                  _buildSectionHeader("Stores & Warehouses"),
                   _buildNavTile(
-                    title: "View All",
-                    icon: Icons.person_outline,
+                    title: "View Stores",
+                    icon: Icons.store_outlined,
                     route: AppRoutes.viewStore,
                     currentRoute: currentRoute,
                     onTap: () => Get.toNamed(AppRoutes.viewStore),
                   ),
-                  _buildSectionHeader("items"),
+
+                  _buildSectionHeader("Items"),
                   ExpansionTile(
                     leading: const Icon(
-                      Icons.settings_outlined,
+                      Icons.inventory_outlined,
                       color: Colors.grey,
                     ),
                     title: const Text(
-                      "Items Service",
+                      "Item Management",
                       style: TextStyle(fontSize: 15),
                     ),
                     childrenPadding: const EdgeInsets.only(left: 16),
-                    initiallyExpanded:
-                        currentRoute == AppRoutes.addItems ||
-                        currentRoute == AppRoutes.categoryView ||
-                        currentRoute == AppRoutes.brands ||
-                        currentRoute == AppRoutes.units,
+                    initiallyExpanded: [
+                      AppRoutes.addItems,
+                      AppRoutes.viewItems,
+                      AppRoutes.categories,
+                      AppRoutes.brands,
+                      AppRoutes.units,
+                    ].contains(currentRoute),
                     children: [
                       _buildNavTile(
                         title: "Add Item",
-                        icon: Icons.tune_outlined,
+                        icon: Icons.add_circle_outline,
                         route: AppRoutes.addItems,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.addItems),
@@ -166,23 +177,23 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       _buildNavTile(
                         title: "View Items",
-                        icon: Icons.tune_outlined,
-                        route: AppRoutes.addItems,
+                        icon: Icons.list_alt,
+                        route: AppRoutes.viewItems,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.viewItems),
                         indent: 16,
                       ),
                       _buildNavTile(
-                        title: "Category",
-                        icon: Icons.store_outlined,
-                        route: AppRoutes.categoryView,
+                        title: "Item Categories",
+                        icon: Icons.category_outlined,
+                        route: AppRoutes.categories,
                         currentRoute: currentRoute,
-                        onTap: () => Get.toNamed(AppRoutes.categoryView),
+                        onTap: () => Get.toNamed(AppRoutes.categories),
                         indent: 16,
                       ),
                       _buildNavTile(
                         title: "Brands",
-                        icon: Icons.receipt_long_outlined,
+                        icon: Icons.branding_watermark_outlined,
                         route: AppRoutes.brands,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.brands),
@@ -190,12 +201,49 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       _buildNavTile(
                         title: "Units",
-                        icon: Icons.group_outlined,
+                        icon: Icons.straighten_outlined,
                         route: AppRoutes.units,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.units),
                         indent: 16,
                       ),
+                    ],
+                  ),
+
+                  _buildSectionHeader("Sales & Purchases"),
+                  ExpansionTile(
+                    leading: const Icon(
+                      Icons.receipt_long_outlined,
+                      color: Colors.grey,
+                    ),
+                    title: const Text(
+                      "Purchases",
+                      style: TextStyle(fontSize: 15),
+                    ),
+                    childrenPadding: const EdgeInsets.only(left: 16),
+                    initiallyExpanded: [
+                      AppRoutes.viewPurchaseBills,
+                      AppRoutes.purchaseReturnView,
+                    ].contains(currentRoute),
+                    children: [
+                      _buildNavTile(
+                        title: "Purchase History",
+                        icon: Icons.history,
+                        route: AppRoutes.viewPurchaseBills,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.viewPurchaseBills),
+                        indent: 16,
+                      ),
+                      _buildNavTile(
+                        title: "View Purchase Returns",
+                        icon: Icons.arrow_back,
+                        route: AppRoutes.purchaseReturnView,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
+                        indent: 16,
+                      ),
+                      // Note: /purchase/return-create/:purchaseId is not included here
+                      // as it requires a purchaseId and is accessed contextually
                     ],
                   ),
 
@@ -210,15 +258,16 @@ class AdminSidebar extends StatelessWidget {
                       style: TextStyle(fontSize: 15),
                     ),
                     childrenPadding: const EdgeInsets.only(left: 16),
-                    initiallyExpanded:
-                        currentRoute == AppRoutes.bankAccountSettings ||
-                        currentRoute == AppRoutes.businessProfile ||
-                        currentRoute == AppRoutes.invoiceSettings ||
-                        currentRoute == AppRoutes.usersSettings,
+                    initiallyExpanded: [
+                      AppRoutes.bankAccountSettings,
+                      AppRoutes.businessProfile,
+                      AppRoutes.invoiceSettings,
+                      AppRoutes.usersSettings,
+                    ].contains(currentRoute),
                     children: [
                       _buildNavTile(
-                        title: "Bank Account",
-                        icon: Icons.tune_outlined,
+                        title: "Bank Accounts",
+                        icon: Icons.account_balance_wallet_outlined,
                         route: AppRoutes.bankAccountSettings,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.bankAccountSettings),
@@ -226,7 +275,7 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       _buildNavTile(
                         title: "Business Profile",
-                        icon: Icons.store_outlined,
+                        icon: Icons.business_outlined,
                         route: AppRoutes.businessProfile,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.businessProfile),
@@ -234,7 +283,7 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       _buildNavTile(
                         title: "Invoice Settings",
-                        icon: Icons.receipt_long_outlined,
+                        icon: Icons.receipt_outlined,
                         route: AppRoutes.invoiceSettings,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.invoiceSettings),
@@ -254,7 +303,7 @@ class AdminSidebar extends StatelessWidget {
               ),
             ),
 
-            // --- LOGOUT AT BOTTOM ---
+            // Logout
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: _buildNavTile(
