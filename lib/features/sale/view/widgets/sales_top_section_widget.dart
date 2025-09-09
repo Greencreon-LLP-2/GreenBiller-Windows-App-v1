@@ -13,6 +13,7 @@ class SalesPageTopSectionWidget extends StatelessWidget {
     required this.controller,
     required this.onCustomerAddSuccess,
   });
+  
   Widget _buildLoadingDropdown(String text) {
     return Container(
       decoration: BoxDecoration(

@@ -28,6 +28,9 @@ import 'package:greenbiller/features/notifications/view/notification_settings_pa
 import 'package:greenbiller/features/parties/controller/parties_controller.dart';
 import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/features/parties/view/parties_page.dart';
+import 'package:greenbiller/features/payment/controller/payment_controller.dart';
+import 'package:greenbiller/features/payment/view/all_payment_in_page.dart';
+import 'package:greenbiller/features/payment/view/all_payment_out_page.dart';
 import 'package:greenbiller/features/purchase/controller/new_purchase_controller.dart';
 
 import 'package:greenbiller/features/purchase/controller/purchase_manage_controller.dart';
@@ -37,7 +40,14 @@ import 'package:greenbiller/features/purchase/view/purchase_bills.dart';
 import 'package:greenbiller/features/purchase/view/purchase_return_page.dart';
 import 'package:greenbiller/features/purchase/view/purchase_return_view_page.dart';
 import 'package:greenbiller/features/sale/controller/sales_create_controller.dart';
+import 'package:greenbiller/features/sale/controller/sales_manage_controller.dart';
+import 'package:greenbiller/features/sale/controller/sales_order_controller.dart';
+import 'package:greenbiller/features/sale/view/add_sales_order_page.dart';
+import 'package:greenbiller/features/sale/view/credit_note_page.dart';
 import 'package:greenbiller/features/sale/view/new_sale_page.dart';
+import 'package:greenbiller/features/sale/view/sales_order_page.dart';
+import 'package:greenbiller/features/sale/view/sales_returns_view_page.dart';
+import 'package:greenbiller/features/sale/view/sales_view_page.dart';
 import 'package:greenbiller/features/settings/controller/bussiness_profile_controller.dart';
 import 'package:greenbiller/features/settings/controller/invoice_settings_controller.dart';
 import 'package:greenbiller/features/settings/view/account_setttings_page.dart';
@@ -298,9 +308,51 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: AppRoutes.viewAllsales,
-          page: () => EditStorePage(),
+          page: () => SalesViewPage(),
           binding: BindingsBuilder(() {
-            Get.put(StoreController());
+            Get.put(SalesManageController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.creditNote,
+          page: () => CreditNotePage(),
+          binding: BindingsBuilder(() {
+            Get.put(SalesManageController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.viewAllsalesReturns,
+          page: () => SalesReturnPage(),
+          binding: BindingsBuilder(() {
+            Get.put(SalesManageController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.viewAllsalesOrders,
+          page: () => const SalesOrderPage(),
+          binding: BindingsBuilder(() {
+            Get.put(SalesManageController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.createsaleOrder,
+          page: () => AddSalesOrderPage(),
+          binding: BindingsBuilder(() {
+            Get.put(SalesOrderController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.allPaymentInView,
+          page: () => AllPaymentInPage(),
+          binding: BindingsBuilder(() {
+            Get.put(PaymentController());
+          }),
+        ),
+          GetPage(
+          name: AppRoutes.allPaymentOutView,
+          page: () => AllPaymentOutPage(),
+          binding: BindingsBuilder(() {
+            Get.put(PaymentController());
           }),
         ),
       ],

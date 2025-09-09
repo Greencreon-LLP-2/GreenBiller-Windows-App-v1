@@ -41,9 +41,15 @@ class AppRoutes {
   static const String newSales = '/sales/create';
   static const String viewAllsales = '/sales/view';
   static const String viewAllsalesOrders = '/sales/orders/view';
+  static const String createsaleOrder = '/sales/create/orders';
   static const String viewAllsalesReturns = '/sales/reutrns/view';
   static const String stockAdjustment = '/stock/adjustment';
   static const String stockTransfer = '/stock/transfer';
+  static const String creditNote = '/sales/creditnote';
+
+  // payment Routes
+  static const String allPaymentInView = '/payment/all-in';
+  static const String allPaymentOutView = '/payment/all-out';
 
   // Store and Warehouse Routes
   static const String viewStore = '/stores/view';

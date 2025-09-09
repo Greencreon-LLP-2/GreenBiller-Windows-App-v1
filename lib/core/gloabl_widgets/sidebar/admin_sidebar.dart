@@ -249,6 +249,14 @@ class AdminSidebar extends StatelessWidget {
                         onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
                         indent: 16,
                       ),
+                        _buildNavTile(
+                        title: "Payment Out",
+                        icon: Icons.history,
+                        route: AppRoutes.allPaymentOutView,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.allPaymentOutView),
+                        indent: 16,
+                      ),
                       // Note: /purchase/return-create/:purchaseId is not included here
                       // as it requires a purchaseId and is accessed contextually
                     ],
@@ -261,33 +269,41 @@ class AdminSidebar extends StatelessWidget {
                     title: const Text("Sales", style: TextStyle(fontSize: 15)),
                     childrenPadding: const EdgeInsets.only(left: 16),
                     initiallyExpanded: [
-                      AppRoutes.viewPurchaseBills,
-                      AppRoutes.purchaseReturnView,
+                      AppRoutes.viewAllsales,
+                      AppRoutes.viewAllsalesOrders,
                     ].contains(currentRoute),
                     children: [
                       _buildNavTile(
                         title: "Sales History",
                         icon: Icons.history,
-                        route: AppRoutes.viewPurchaseBills,
+                        route: AppRoutes.viewAllsales,
                         currentRoute: currentRoute,
-                        onTap: () => Get.toNamed(AppRoutes.viewPurchaseBills),
+                        onTap: () => Get.toNamed(AppRoutes.viewAllsales),
                         indent: 16,
                       ),
                       _buildNavTile(
                         title: "Sale Orders",
                         icon: Icons.arrow_back,
-                        route: AppRoutes.purchaseReturnView,
+                        route: AppRoutes.viewAllsalesOrders,
                         currentRoute: currentRoute,
-                        onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
+                        onTap: () => Get.toNamed(AppRoutes.viewAllsalesOrders),
                         indent: 16,
                       ),
 
                       _buildNavTile(
                         title: "Sale Returns",
                         icon: Icons.arrow_back,
-                        route: AppRoutes.purchaseReturnView,
+                        route: AppRoutes.viewAllsalesReturns,
                         currentRoute: currentRoute,
-                        onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
+                        onTap: () => Get.toNamed(AppRoutes.viewAllsalesReturns),
+                        indent: 16,
+                      ),
+                       _buildNavTile(
+                        title: "Payment In",
+                        icon: Icons.arrow_back,
+                        route: AppRoutes.allPaymentInView,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.allPaymentInView),
                         indent: 16,
                       ),
                       _buildNavTile(
