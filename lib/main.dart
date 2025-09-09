@@ -104,7 +104,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'GreenBiller',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.login,
+      initialRoute: AppRoutes.adminDashboard,
       getPages: [
         // Authentication Routes
         GetPage(name: AppRoutes.login, page: () => const LoginPage()),

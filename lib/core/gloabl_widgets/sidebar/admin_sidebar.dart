@@ -108,6 +108,13 @@ class AdminSidebar extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
+                  _buildNavTile(
+                    title: "Dashboard",
+                    icon: Icons.home,
+                    route: AppRoutes.adminDashboard,
+                    currentRoute: currentRoute,
+                    onTap: () => Get.toNamed(AppRoutes.adminDashboard),
+                  ),
                   _buildSectionHeader("Quick Actions"),
                   _buildNavTile(
                     title: "Overview",
