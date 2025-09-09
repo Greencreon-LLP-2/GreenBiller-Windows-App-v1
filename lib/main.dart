@@ -40,6 +40,19 @@ import 'package:greenbiller/features/purchase/view/new_purchase_page.dart';
 import 'package:greenbiller/features/purchase/view/purchase_bills.dart';
 import 'package:greenbiller/features/purchase/view/purchase_return_page.dart';
 import 'package:greenbiller/features/purchase/view/purchase_return_view_page.dart';
+import 'package:greenbiller/features/reports/controller/purchase_item_report_controller.dart';
+import 'package:greenbiller/features/reports/controller/purchase_summary_controller.dart';
+import 'package:greenbiller/features/reports/controller/purchase_supplier_summary_controller.dart';
+import 'package:greenbiller/features/reports/controller/sale_by_item_report_controller.dart';
+import 'package:greenbiller/features/reports/controller/sales_by_customer_controller.dart';
+import 'package:greenbiller/features/reports/controller/sales_summary_controller.dart';
+import 'package:greenbiller/features/reports/view/purchase_item_report_page.dart';
+import 'package:greenbiller/features/reports/view/purchase_summary_page.dart';
+import 'package:greenbiller/features/reports/view/purchase_supplier_based_summary.dart';
+import 'package:greenbiller/features/reports/view/report_page.dart';
+import 'package:greenbiller/features/reports/view/sale_by_item_report_page.dart';
+import 'package:greenbiller/features/reports/view/sales_by_customer_page.dart';
+import 'package:greenbiller/features/reports/view/sales_summary_page.dart';
 import 'package:greenbiller/features/sale/controller/sales_create_controller.dart';
 import 'package:greenbiller/features/sale/controller/sales_manage_controller.dart';
 import 'package:greenbiller/features/sale/controller/sales_order_controller.dart';
@@ -368,6 +381,49 @@ class MyApp extends StatelessWidget {
           page: () => AddPaymentOutPage(),
           binding: BindingsBuilder(() {
             Get.put(AddPaymentController());
+          }),
+        ),
+        GetPage(name: AppRoutes.reports, page: () => ReportsPage()),
+        GetPage(
+          name: AppRoutes.salesSummary,
+          page: () => SalesSummaryPage(),
+          binding: BindingsBuilder(() {
+            Get.put(SalesSummaryController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.salesSummaryByCustomer,
+          page: () => SalesByCustomerPage(),
+          binding: BindingsBuilder(() {
+            Get.put(SalesByCustomerController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.salesSummaryByItem,
+          page: () => SaleByItemReportPage(),
+          binding: BindingsBuilder(() {
+            Get.put(SaleByItemReportController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.purcahseSummary,
+          page: () => PurchaseSummaryPage(),
+          binding: BindingsBuilder(() {
+            Get.put(PurchaseSummaryController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.purcahseSummaryByItem,
+          page: () => PurchaseItemReportPage(),
+          binding: BindingsBuilder(() {
+            Get.put(PurchaseItemReportController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.purcahseSummaryByCustomer,
+          page: () => PurchaseSupplierBasedSummary(),
+          binding: BindingsBuilder(() {
+            Get.put(PurchaseSupplierSummaryController());
           }),
         ),
       ],

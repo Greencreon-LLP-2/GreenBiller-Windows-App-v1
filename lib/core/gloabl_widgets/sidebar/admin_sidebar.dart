@@ -146,7 +146,6 @@ class AdminSidebar extends StatelessWidget {
                     onTap: () => Get.toNamed(AppRoutes.parties),
                   ),
 
-                  _buildSectionHeader("Stores & Warehouses"),
                   _buildNavTile(
                     title: "View Stores",
                     icon: Icons.store_outlined,
@@ -154,7 +153,13 @@ class AdminSidebar extends StatelessWidget {
                     currentRoute: currentRoute,
                     onTap: () => Get.toNamed(AppRoutes.viewStore),
                   ),
-
+                  _buildNavTile(
+                    title: "Reports",
+                    icon: Icons.book,
+                    route: AppRoutes.reports,
+                    currentRoute: currentRoute,
+                    onTap: () => Get.toNamed(AppRoutes.reports),
+                  ),
                   _buildSectionHeader("Items"),
                   ExpansionTile(
                     leading: const Icon(
@@ -249,7 +254,7 @@ class AdminSidebar extends StatelessWidget {
                         onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
                         indent: 16,
                       ),
-                        _buildNavTile(
+                      _buildNavTile(
                         title: "Payment Out",
                         icon: Icons.history,
                         route: AppRoutes.allPaymentOutView,
@@ -298,7 +303,7 @@ class AdminSidebar extends StatelessWidget {
                         onTap: () => Get.toNamed(AppRoutes.viewAllsalesReturns),
                         indent: 16,
                       ),
-                       _buildNavTile(
+                      _buildNavTile(
                         title: "Payment In",
                         icon: Icons.arrow_back,
                         route: AppRoutes.allPaymentInView,

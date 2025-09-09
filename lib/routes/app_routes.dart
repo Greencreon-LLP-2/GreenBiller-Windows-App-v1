@@ -58,9 +58,19 @@ class AppRoutes {
   static const String editStoreView = '/stores/edit/:storeId';
   static const String singleWarehouseView = '/warehouses/view/:warehouseId';
 
+  //reptorts
+  static const String reports = '/reports';
+  static const String salesSummary = '/reports/sales-summary';
+  static const String salesSummaryByItem = '/reports/sale-by-item-report';
+  static const String salesSummaryByCustomer = '/reports/sales-by-customer';
+
+  static const String purcahseSummary = '/reports/purchase-summary';
+  static const String purcahseSummaryByItem = '/reports/purchase-item-report';
+  static const String purcahseSummaryByCustomer =
+      '/reports/purchase-supplier-base-summary';
+
   // Other Routes
   static const String maintenance = '/maintenance';
   static const String overview = '/overview';
   static const String parties = '/parties';
-  static const String reports = '/reports';
 }
