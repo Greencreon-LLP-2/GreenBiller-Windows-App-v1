@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 
 import 'package:greenbiller/routes/app_routes.dart';
+import 'package:greenbiller/core/gloabl_widgets/sidebar/trial_card.dart';
+import 'package:greenbiller/core/gloabl_widgets/sidebar/sidebar_upgrade_button.dart';
 import 'package:logger/logger.dart';
 
 class AdminSidebar extends StatelessWidget {
@@ -79,7 +81,7 @@ class AdminSidebar extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            // Header
+           
             Obx(
               () => UserAccountsDrawerHeader(
                 decoration: const BoxDecoration(color: Colors.green),
@@ -104,7 +106,13 @@ class AdminSidebar extends StatelessWidget {
               ),
             ),
 
-            // Navigation
+            const SizedBox(height: 2),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2.0),
+              child: TrialCard(trialEnds: DateTime(2025, 10, 2)),
+            ),
+
+            
             Expanded(
               child: ListView(
                 children: [
@@ -254,6 +262,7 @@ class AdminSidebar extends StatelessWidget {
                         onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
                         indent: 16,
                       ),
+
                       _buildNavTile(
                         title: "Payment Out",
                         icon: Icons.history,
@@ -265,6 +274,7 @@ class AdminSidebar extends StatelessWidget {
                       // Note: /purchase/return-create/:purchaseId is not included here
                       // as it requires a purchaseId and is accessed contextually
                     ],
+
                   ),
                   ExpansionTile(
                     leading: const Icon(
@@ -386,7 +396,10 @@ class AdminSidebar extends StatelessWidget {
               ),
             ),
 
-            // Logout
+          
+            const SidebarUpgradeButton(),
+
+
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: _buildNavTile(

@@ -28,12 +28,14 @@ import 'package:greenbiller/features/notifications/view/notification_settings_pa
 import 'package:greenbiller/features/parties/controller/parties_controller.dart';
 import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/features/parties/view/parties_page.dart';
+
 import 'package:greenbiller/features/payment/controller/add_payment_controller.dart';
 import 'package:greenbiller/features/payment/controller/payment_controller.dart';
 import 'package:greenbiller/features/payment/view/add_payment_in_page.dart';
 import 'package:greenbiller/features/payment/view/add_payment_out_page.dart';
 import 'package:greenbiller/features/payment/view/all_payment_in_page.dart';
 import 'package:greenbiller/features/payment/view/all_payment_out_page.dart';
+
 import 'package:greenbiller/features/purchase/controller/new_purchase_controller.dart';
 import 'package:greenbiller/features/purchase/controller/purchase_manage_controller.dart';
 import 'package:greenbiller/features/purchase/view/new_purchase_page.dart';
@@ -130,7 +132,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'GreenBiller',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.login,
+      initialRoute: AppRoutes.adminDashboard,
       getPages: [
         // Authentication Routes
         GetPage(name: AppRoutes.login, page: () => const LoginPage()),
@@ -320,6 +322,7 @@ class MyApp extends StatelessWidget {
             Get.put(PartiesController());
           }),
         ),
+
         GetPage(
           name: AppRoutes.viewAllsales,
           page: () => SalesViewPage(),
@@ -424,6 +427,7 @@ class MyApp extends StatelessWidget {
           page: () => PurchaseSupplierBasedSummary(),
           binding: BindingsBuilder(() {
             Get.put(PurchaseSupplierSummaryController());
+
           }),
         ),
       ],
