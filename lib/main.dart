@@ -36,6 +36,8 @@ import 'package:greenbiller/features/purchase/view/new_purchase_page.dart';
 import 'package:greenbiller/features/purchase/view/purchase_bills.dart';
 import 'package:greenbiller/features/purchase/view/purchase_return_page.dart';
 import 'package:greenbiller/features/purchase/view/purchase_return_view_page.dart';
+import 'package:greenbiller/features/sale/controller/sales_create_controller.dart';
+import 'package:greenbiller/features/sale/view/new_sale_page.dart';
 import 'package:greenbiller/features/settings/controller/bussiness_profile_controller.dart';
 import 'package:greenbiller/features/settings/controller/invoice_settings_controller.dart';
 import 'package:greenbiller/features/settings/view/account_setttings_page.dart';
@@ -284,6 +286,13 @@ class MyApp extends StatelessWidget {
           page: () => PartiesPage(),
           binding: BindingsBuilder(() {
             Get.put(PartiesController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.newSales,
+          page: () => NewSalePage(),
+          binding: BindingsBuilder(() {
+            Get.put(SalesController());
           }),
         ),
       ],
