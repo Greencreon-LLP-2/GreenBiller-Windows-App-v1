@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/app_handler/push_notification_service.dart';
 import 'package:greenbiller/core/app_handler/hive_service.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
+import 'package:greenbiller/entry_point/controller/store_admin_controller.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/auth/view/login_page.dart';
 import 'package:greenbiller/features/auth/view/maintenance.dart';
@@ -35,6 +36,8 @@ import 'package:greenbiller/features/payment/view/add_payment_in_page.dart';
 import 'package:greenbiller/features/payment/view/add_payment_out_page.dart';
 import 'package:greenbiller/features/payment/view/all_payment_in_page.dart';
 import 'package:greenbiller/features/payment/view/all_payment_out_page.dart';
+import 'package:greenbiller/features/plans/controller/plan_controller.dart';
+import 'package:greenbiller/features/plans/view/plan_page.dart';
 
 import 'package:greenbiller/features/purchase/controller/new_purchase_controller.dart';
 import 'package:greenbiller/features/purchase/controller/purchase_manage_controller.dart';
@@ -79,8 +82,8 @@ import 'package:greenbiller/features/store/view/store_detail_page.dart';
 import 'package:greenbiller/features/store/view/store_page.dart';
 import 'package:greenbiller/features/store/view/warehouse_detail_page.dart';
 import 'package:greenbiller/routes/app_routes.dart';
-import 'package:greenbiller/screens/dashboards.dart';
-import 'package:greenbiller/screens/store_admin/store_admin_entry_point.dart';
+import 'package:greenbiller/entry_point/dashboards.dart';
+import 'package:greenbiller/entry_point/store_admin/store_admin_entry_point.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -132,7 +135,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'GreenBiller',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.adminDashboard,
+      initialRoute: AppRoutes.login,
       getPages: [
         // Authentication Routes
         GetPage(name: AppRoutes.login, page: () => const LoginPage()),
@@ -143,6 +146,9 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: AppRoutes.adminDashboard,
           page: () => const StoreAdminEntryPoint(),
+          binding: BindingsBuilder((){
+            Get.put(StoreAdminController());
+          })
         ),
         GetPage(
           name: AppRoutes.managerDashboard,
@@ -427,7 +433,13 @@ class MyApp extends StatelessWidget {
           page: () => PurchaseSupplierBasedSummary(),
           binding: BindingsBuilder(() {
             Get.put(PurchaseSupplierSummaryController());
-
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.plans,
+          page: () => PlanPage(),
+          binding: BindingsBuilder(() {
+            Get.put(PlanController());
           }),
         ),
       ],

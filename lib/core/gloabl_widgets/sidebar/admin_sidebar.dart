@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 
 import 'package:greenbiller/routes/app_routes.dart';
-import 'package:greenbiller/core/gloabl_widgets/sidebar/trial_card.dart';
-import 'package:greenbiller/core/gloabl_widgets/sidebar/sidebar_upgrade_button.dart';
+import 'package:greenbiller/core/gloabl_widgets/cards/trial_card.dart';
+import 'package:greenbiller/core/gloabl_widgets/buttons/sidebar_upgrade_button.dart';
 import 'package:logger/logger.dart';
 
 class AdminSidebar extends StatelessWidget {

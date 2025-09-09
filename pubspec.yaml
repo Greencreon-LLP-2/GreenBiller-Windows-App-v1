@@ -29,7 +29,7 @@ dependencies:
   barcode: ^2.2.9
   printing: ^5.14.2
   intl: ^0.20.2
-
+  url_launcher: ^6.3.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

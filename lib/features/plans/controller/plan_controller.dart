@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PlanController extends GetxController {
   // Observable variables
@@ -28,7 +29,8 @@ class PlanController extends GetxController {
         ifAndroid: '1',
         ifIos: '0',
         ifMultistore: '0',
-        description: 'Perfect for small businesses getting started with digital billing',
+        description:
+            'Perfect for small businesses getting started with digital billing',
       ),
       Package(
         id: '2',
@@ -39,7 +41,8 @@ class PlanController extends GetxController {
         ifIos: '1',
         ifMultistore: '1',
         pricePerStore: '500',
-        description: 'Comprehensive solution for growing businesses with multiple platforms',
+        description:
+            'Comprehensive solution for growing businesses with multiple platforms',
       ),
       Package(
         id: '3',
@@ -50,7 +53,8 @@ class PlanController extends GetxController {
         ifIos: '1',
         ifMultistore: '1',
         pricePerStore: '300',
-        description: 'Full-featured package for large enterprises with advanced multi-store management',
+        description:
+            'Full-featured package for large enterprises with advanced multi-store management',
       ),
       Package(
         id: '4',
@@ -60,7 +64,8 @@ class PlanController extends GetxController {
         ifAndroid: '0',
         ifIos: '0',
         ifMultistore: '0',
-        description: 'Web-only solution for businesses starting their digital journey',
+        description:
+            'Web-only solution for businesses starting their digital journey',
       ),
       Package(
         id: '5',
@@ -71,10 +76,11 @@ class PlanController extends GetxController {
         ifIos: '1',
         ifMultistore: '1',
         pricePerStore: '250',
-        description: 'Premium package with advanced features and cost-effective multi-store pricing',
+        description:
+            'Premium package with advanced features and cost-effective multi-store pricing',
       ),
     ];
-    
+
     isLoading.value = false;
   }
 
@@ -96,10 +102,11 @@ class PlanController extends GetxController {
 
   List<Package> get filteredPackages {
     var filtered = packages.where((package) {
-      final matchesSearch = searchQuery.value.isEmpty ||
-          (package.packageName
-                  ?.toLowerCase()
-                  .contains(searchQuery.value.toLowerCase()) ??
+      final matchesSearch =
+          searchQuery.value.isEmpty ||
+          (package.packageName?.toLowerCase().contains(
+                searchQuery.value.toLowerCase(),
+              ) ??
               false);
 
       bool matchesFilter = true;
@@ -126,14 +133,14 @@ class PlanController extends GetxController {
   Future<void> purchasePackage(Package package) async {
     try {
       isLoading.value = true;
-      
+
       final authController = Get.find<AuthController>();
       final mobile = authController.user.value?.phone ?? '';
 
       if (mobile.isEmpty) {
         Get.snackbar(
-          'Error', 
-          'Mobile number not found',
+          'Error',
+          'Please update your mobile number first',
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
@@ -141,19 +148,24 @@ class PlanController extends GetxController {
       }
 
       final url = 'https://greenbiller.in/paynow/$mobile/${package.id}';
-      
-      // For now, show success message with URL info
-      Get.snackbar(
-        'Package Selected',
-        'Payment URL: $url\n\nPackage: ${package.packageName}\nPrice: ${package.displayPrice}',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 5),
-      );
-      
+      final uri = Uri.parse(url);
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication, // opens in external browser
+        );
+      } else {
+        Get.snackbar(
+          'Error',
+          'Could not open payment URL',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
     } catch (e) {
       Get.snackbar(
-        'Error', 
+        'Error',
         'Something went wrong: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -193,20 +205,20 @@ class Package {
   bool get hasIos => ifIos == '1';
   bool get hasMultistore => ifMultistore == '1';
   bool get hasMobileApps => hasAndroid || hasIos;
-  
+
   String get displayPrice => price != null ? '₹$price' : 'Contact for price';
-  
-  String get pricePerStoreDisplay => 
+
+  String get pricePerStoreDisplay =>
       pricePerStore != null ? '₹$pricePerStore per store' : '';
 
   List<String> get features {
     List<String> featureList = [];
-    
+
     if (hasWebPanel) featureList.add('Web Panel Access');
     if (hasAndroid) featureList.add('Android Application');
     if (hasIos) featureList.add('iOS Application');
     if (hasMultistore) featureList.add('Multi-Store Support');
-    
+
     // Add common features
     featureList.addAll([
       'Inventory Management',
@@ -216,7 +228,7 @@ class Package {
       'Reports & Analytics',
       '24/7 Support',
     ]);
-    
+
     return featureList;
   }
 }

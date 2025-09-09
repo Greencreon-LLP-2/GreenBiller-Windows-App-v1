@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 
 class SidebarUpgradeButton extends StatelessWidget {
-  const SidebarUpgradeButton({Key? key}) : super(key: key);
+  const SidebarUpgradeButton({super.key});
 
   @override
   Widget build(BuildContext context) {

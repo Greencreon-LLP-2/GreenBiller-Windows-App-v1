@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class TrialCard extends StatelessWidget {
   final DateTime trialEnds;
-  const TrialCard({Key? key, required this.trialEnds}) : super(key: key);
+  const TrialCard({super.key, required this.trialEnds});
 
   int getDaysLeft() {
     final days = trialEnds.difference(DateTime.now()).inDays;

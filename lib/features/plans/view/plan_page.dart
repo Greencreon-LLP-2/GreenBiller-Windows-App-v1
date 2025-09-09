@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/features/plans/controller/plan_controller.dart';
 
-class PlanPage extends StatelessWidget {
+class PlanPage extends GetView<PlanController> {
   const PlanPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(PlanController());
-
     return Scaffold(
       backgroundColor: Colors.green.shade50,
       appBar: AppBar(
@@ -19,14 +17,8 @@ class PlanPage extends StatelessWidget {
           onPressed: () => Get.back(),
           icon: Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-             
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-              size: 25),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+            child: const Icon(Icons.arrow_back, color: Colors.white, size: 25),
           ),
         ),
         title: Row(
@@ -38,9 +30,10 @@ class PlanPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
-                Icons.inventory_2, 
-              color:Colors.white,
-               size: 20),
+                Icons.inventory_2,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 12),
             const Column(
@@ -54,12 +47,10 @@ class PlanPage extends StatelessWidget {
                     fontSize: 18,
                   ),
                 ),
-                
               ],
             ),
           ],
         ),
-     
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -122,13 +113,15 @@ class PlanPage extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Obx(() => Text(
-                              '${controller.filteredPackages.length} package${controller.filteredPackages.length != 1 ? 's' : ''} available',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
+                            Obx(
+                              () => Text(
+                                '${controller.filteredPackages.length} package${controller.filteredPackages.length != 1 ? 's' : ''} available',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
                               ),
-                            )),
+                            ),
                             const SizedBox(height: 16),
                             // Search Bar
                             Container(
@@ -143,24 +136,39 @@ class PlanPage extends StatelessWidget {
                                 ],
                               ),
                               child: TextField(
-                                onChanged: (value) => controller.updateSearchQuery(value),
+                                onChanged: (value) =>
+                                    controller.updateSearchQuery(value),
                                 decoration: InputDecoration(
                                   hintText: 'Search packages...',
-                                  hintStyle: TextStyle(color: Colors.grey.withOpacity(0.7)),
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey.withOpacity(0.7),
+                                  ),
                                   prefixIcon: Container(
                                     margin: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF4CAF50).withOpacity(0.1),
+                                      color: const Color(
+                                        0xFF4CAF50,
+                                      ).withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: const Icon(Icons.search, color: Color(0xFF4CAF50)),
+                                    child: const Icon(
+                                      Icons.search,
+                                      color: Color(0xFF4CAF50),
+                                    ),
                                   ),
-                                  suffixIcon: Obx(() => controller.searchQuery.value.isNotEmpty
-                                      ? IconButton(
-                                          icon: const Icon(Icons.clear, color: Colors.grey),
-                                          onPressed: () => controller.updateSearchQuery(''),
-                                        )
-                                      : const SizedBox.shrink()),
+                                  suffixIcon: Obx(
+                                    () =>
+                                        controller.searchQuery.value.isNotEmpty
+                                        ? IconButton(
+                                            icon: const Icon(
+                                              Icons.clear,
+                                              color: Colors.grey,
+                                            ),
+                                            onPressed: () => controller
+                                                .updateSearchQuery(''),
+                                          )
+                                        : const SizedBox.shrink(),
+                                  ),
                                   filled: true,
                                   fillColor: Colors.white,
                                   border: OutlineInputBorder(
@@ -169,11 +177,16 @@ class PlanPage extends StatelessWidget {
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: Colors.grey.shade200),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey.shade200,
+                                    ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF4CAF50),
+                                      width: 2,
+                                    ),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -201,13 +214,29 @@ class PlanPage extends StatelessWidget {
                                     child: ListView(
                                       scrollDirection: Axis.horizontal,
                                       children: [
-                                        _buildFilterChip('all', 'All', controller),
+                                        _buildFilterChip(
+                                          'all',
+                                          'All',
+                                          controller,
+                                        ),
                                         const SizedBox(width: 8),
-                                        _buildFilterChip('web', 'Web', controller),
+                                        _buildFilterChip(
+                                          'web',
+                                          'Web',
+                                          controller,
+                                        ),
                                         const SizedBox(width: 8),
-                                        _buildFilterChip('mobile', 'Mobile', controller),
+                                        _buildFilterChip(
+                                          'mobile',
+                                          'Mobile',
+                                          controller,
+                                        ),
                                         const SizedBox(width: 8),
-                                        _buildFilterChip('multistore', 'Multi-Store', controller),
+                                        _buildFilterChip(
+                                          'multistore',
+                                          'Multi-Store',
+                                          controller,
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -232,9 +261,14 @@ class PlanPage extends StatelessWidget {
               // Right Panel - Package Details
               Expanded(
                 flex: 2,
-                child: Obx(() => controller.selectedPackage.value != null
-                    ? _buildPackageDetailsView(controller.selectedPackage.value!, controller)
-                    : _buildEmptySelection()),
+                child: Obx(
+                  () => controller.selectedPackage.value != null
+                      ? _buildPackageDetailsView(
+                          controller.selectedPackage.value!,
+                          controller,
+                        )
+                      : _buildEmptySelection(),
+                ),
               ),
             ],
           ),
@@ -243,7 +277,11 @@ class PlanPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFilterChip(String value, String label, PlanController controller) {
+  Widget _buildFilterChip(
+    String value,
+    String label,
+    PlanController controller,
+  ) {
     return Obx(() {
       final isSelected = controller.selectedFilter.value == value;
       return AnimatedContainer(
@@ -265,7 +303,9 @@ class PlanPage extends StatelessWidget {
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
           side: BorderSide(
-            color: isSelected ? const Color(0xFF4CAF50) : Colors.grey.withOpacity(0.5),
+            color: isSelected
+                ? const Color(0xFF4CAF50)
+                : Colors.grey.withOpacity(0.5),
             width: isSelected ? 2 : 1,
           ),
           elevation: isSelected ? 2 : 0,
@@ -286,18 +326,11 @@ class PlanPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.search_off,
-              size: 48,
-              color: Colors.grey,
-            ),
+            Icon(Icons.search_off, size: 48, color: Colors.grey),
             SizedBox(height: 16),
             Text(
               'No packages match your criteria',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
           ],
         ),
@@ -324,7 +357,11 @@ class PlanPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPackageCard(Package package, bool isSelected, VoidCallback onSelect) {
+  Widget _buildPackageCard(
+    Package package,
+    bool isSelected,
+    VoidCallback onSelect,
+  ) {
     return Card(
       elevation: isSelected ? 12 : 3,
       shadowColor: isSelected
@@ -466,7 +503,8 @@ class PlanPage extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    if (package.ifMultistore == '1' && package.pricePerStore != null)
+                    if (package.ifMultistore == '1' &&
+                        package.pricePerStore != null)
                       Text(
                         '₹${package.pricePerStore} per store',
                         style: const TextStyle(
@@ -482,7 +520,11 @@ class PlanPage extends StatelessWidget {
                           if (package.ifWebpanel == '1')
                             const Row(
                               children: [
-                                Icon(Icons.web, size: 12, color: Color(0xFF4CAF50)),
+                                Icon(
+                                  Icons.web,
+                                  size: 12,
+                                  color: Color(0xFF4CAF50),
+                                ),
                                 SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
@@ -501,7 +543,11 @@ class PlanPage extends StatelessWidget {
                           if (package.ifAndroid == '1' || package.ifIos == '1')
                             const Row(
                               children: [
-                                Icon(Icons.phone_android, size: 12, color: Color(0xFF4CAF50)),
+                                Icon(
+                                  Icons.phone_android,
+                                  size: 12,
+                                  color: Color(0xFF4CAF50),
+                                ),
                                 SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
@@ -520,11 +566,13 @@ class PlanPage extends StatelessWidget {
                           if (package.ifMultistore == '1')
                             Row(
                               children: [
-                                Icon(Icons.store,
-                                    size: 12,
-                                    color: package.pricePerStore != null
-                                        ? Colors.blue
-                                        : const Color(0xFF4CAF50)),
+                                Icon(
+                                  Icons.store,
+                                  size: 12,
+                                  color: package.pricePerStore != null
+                                      ? Colors.blue
+                                      : const Color(0xFF4CAF50),
+                                ),
                                 const SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
@@ -558,9 +606,7 @@ class PlanPage extends StatelessWidget {
   Widget _buildPackageDetailsView(Package package, PlanController controller) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -579,10 +625,16 @@ class PlanPage extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [const Color(0xFF4CAF50), const Color(0xFF4CAF50).withOpacity(0.8)],
+                      colors: [
+                        const Color(0xFF4CAF50),
+                        const Color(0xFF4CAF50).withOpacity(0.8),
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -683,11 +735,13 @@ class PlanPage extends StatelessWidget {
                       title: 'Customer Support',
                       description: '24/7 technical support',
                     ),
-                    if (package.ifMultistore == '1' && package.pricePerStore != null)
+                    if (package.ifMultistore == '1' &&
+                        package.pricePerStore != null)
                       _buildFeatureItem(
                         icon: Icons.attach_money,
                         title: 'Price Per Store',
-                        description: '₹${package.pricePerStore} per additional store',
+                        description:
+                            '₹${package.pricePerStore} per additional store',
                       ),
                   ],
                 ),
@@ -710,7 +764,10 @@ class PlanPage extends StatelessWidget {
                     label: const Text('More Info'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: Color(0xFF4CAF50), width: 1.5),
+                      side: const BorderSide(
+                        color: Color(0xFF4CAF50),
+                        width: 1.5,
+                      ),
                       foregroundColor: const Color(0xFF4CAF50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -721,35 +778,39 @@ class PlanPage extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   flex: 2,
-                  child: Obx(() => ElevatedButton.icon(
-                    onPressed: controller.isLoading.value
-                        ? null
-                        : () => controller.purchasePackage(package),
-                    icon: controller.isLoading.value
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.shopping_cart, size: 18),
-                    label: Text(
-                      controller.isLoading.value ? 'Processing...' : 'Select Package',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: const Color(0xFF4CAF50),
-                      foregroundColor: Colors.white,
-                      elevation: 3,
-                      shadowColor: const Color(0xFF4CAF50).withOpacity(0.3),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  child: Obx(
+                    () => ElevatedButton.icon(
+                      onPressed: controller.isLoading.value
+                          ? null
+                          : () => controller.purchasePackage(package),
+                      icon: controller.isLoading.value
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.shopping_cart, size: 18),
+                      label: Text(
+                        controller.isLoading.value
+                            ? 'Processing...'
+                            : 'Select Package',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: const Color(0xFF4CAF50),
+                        foregroundColor: Colors.white,
+                        elevation: 3,
+                        shadowColor: const Color(0xFF4CAF50).withOpacity(0.3),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
-                  )),
+                  ),
                 ),
               ],
             ),
@@ -770,7 +831,10 @@ class PlanPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF4CAF50).withOpacity(0.2), width: 1),
+        border: Border.all(
+          color: const Color(0xFF4CAF50).withOpacity(0.2),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -787,11 +851,7 @@ class PlanPage extends StatelessWidget {
               color: const Color(0xFF4CAF50).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              color: const Color(0xFF4CAF50),
-              size: 20,
-            ),
+            child: Icon(icon, color: const Color(0xFF4CAF50), size: 20),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -826,9 +886,7 @@ class PlanPage extends StatelessWidget {
   Widget _buildEmptySelection() {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -860,11 +918,7 @@ class PlanPage extends StatelessWidget {
               const Text(
                 'Choose from our available packages to view detailed information',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                  height: 1.5,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey, height: 1.5),
               ),
             ],
           ),
