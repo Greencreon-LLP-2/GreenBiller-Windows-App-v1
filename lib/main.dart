@@ -296,6 +296,13 @@ class MyApp extends StatelessWidget {
             Get.put(PartiesController());
           }),
         ),
+        GetPage(
+          name: AppRoutes.viewAllsales,
+          page: () => EditStorePage(),
+          binding: BindingsBuilder(() {
+            Get.put(StoreController());
+          }),
+        ),
       ],
       builder: (context, child) {
         // Global controllers

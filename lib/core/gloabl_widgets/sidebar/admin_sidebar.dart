@@ -253,6 +253,61 @@ class AdminSidebar extends StatelessWidget {
                       // as it requires a purchaseId and is accessed contextually
                     ],
                   ),
+                  ExpansionTile(
+                    leading: const Icon(
+                      Icons.receipt_long_outlined,
+                      color: Colors.grey,
+                    ),
+                    title: const Text("Sales", style: TextStyle(fontSize: 15)),
+                    childrenPadding: const EdgeInsets.only(left: 16),
+                    initiallyExpanded: [
+                      AppRoutes.viewPurchaseBills,
+                      AppRoutes.purchaseReturnView,
+                    ].contains(currentRoute),
+                    children: [
+                      _buildNavTile(
+                        title: "Sales History",
+                        icon: Icons.history,
+                        route: AppRoutes.viewPurchaseBills,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.viewPurchaseBills),
+                        indent: 16,
+                      ),
+                      _buildNavTile(
+                        title: "Sale Orders",
+                        icon: Icons.arrow_back,
+                        route: AppRoutes.purchaseReturnView,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
+                        indent: 16,
+                      ),
+
+                      _buildNavTile(
+                        title: "Sale Returns",
+                        icon: Icons.arrow_back,
+                        route: AppRoutes.purchaseReturnView,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
+                        indent: 16,
+                      ),
+                      _buildNavTile(
+                        title: "Stock Adjustment",
+                        icon: Icons.arrow_back,
+                        route: AppRoutes.purchaseReturnView,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
+                        indent: 16,
+                      ),
+                      _buildNavTile(
+                        title: "Stock Transfer",
+                        icon: Icons.arrow_back,
+                        route: AppRoutes.purchaseReturnView,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
+                        indent: 16,
+                      ),
+                    ],
+                  ),
 
                   _buildSectionHeader("Settings"),
                   ExpansionTile(
