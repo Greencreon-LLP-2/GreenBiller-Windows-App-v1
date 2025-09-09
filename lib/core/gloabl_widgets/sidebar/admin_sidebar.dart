@@ -257,9 +257,7 @@ class AdminSidebar extends StatelessWidget {
                         onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
                         indent: 16,
                       ),
-                      // Note: /purchase/return-create/:purchaseId is not included here
-                      // as it requires a purchaseId and is accessed contextually
-                    ],
+                   ],
                   ),
 
                   _buildSectionHeader("Settings"),
@@ -318,10 +316,10 @@ class AdminSidebar extends StatelessWidget {
               ),
             ),
 
-            // Upgrade button above logout
+          
             const SidebarUpgradeButton(),
 
-            // Logout
+
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: _buildNavTile(

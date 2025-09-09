@@ -28,6 +28,8 @@ import 'package:greenbiller/features/notifications/view/notification_settings_pa
 import 'package:greenbiller/features/parties/controller/parties_controller.dart';
 import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/features/parties/view/parties_page.dart';
+import 'package:greenbiller/features/plans/controller/plan_controller.dart';
+import 'package:greenbiller/features/plans/view/plan_page.dart';
 import 'package:greenbiller/features/purchase/controller/new_purchase_controller.dart';
 
 import 'package:greenbiller/features/purchase/controller/purchase_manage_controller.dart';
@@ -294,6 +296,15 @@ class MyApp extends StatelessWidget {
           binding: BindingsBuilder(() {
             Get.put(SalesController());
             Get.put(PartiesController());
+          }),
+        ),
+
+        // Plans Route
+        GetPage(
+          name: AppRoutes.plans,
+          page: () => const PlanPage(),
+          binding: BindingsBuilder(() {
+            Get.put(PlanController());
           }),
         ),
       ],

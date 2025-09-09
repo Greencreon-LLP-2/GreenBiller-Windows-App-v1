@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:greenbiller/routes/app_routes.dart';
+
 
 class TrialCard extends StatelessWidget {
   final DateTime trialEnds;
@@ -16,7 +15,7 @@ class TrialCard extends StatelessWidget {
     final days = getDaysLeft();
 
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.plans),
+
       child: Container(
         margin: const EdgeInsets.fromLTRB(12, 8, 12, 12),
         padding: const EdgeInsets.all(8),
@@ -38,8 +37,8 @@ class TrialCard extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 54,
-              height: 24,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.25),
                 shape: BoxShape.circle,
@@ -64,7 +63,7 @@ class TrialCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
+               
                   Text(
                     'Ends on ${trialEnds.day} ${_monthName(trialEnds.month)} ${trialEnds.year}',
                     style: TextStyle(
@@ -72,7 +71,6 @@ class TrialCard extends StatelessWidget {
                       fontSize: 12,
                     ),
                   ),
-
                   Text(
                     '$days days left',
                     style: TextStyle(
