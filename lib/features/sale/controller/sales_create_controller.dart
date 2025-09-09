@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
@@ -13,7 +11,6 @@ import 'package:greenbiller/features/sale/model/temp_purchase_item.dart';
 import 'package:hive/hive.dart';
 
 class SalesController extends GetxController {
-  // Authentication and dependencies
   // Authentication and dependencies
   late final DioClient _dioClient;
   late final CommonApiFunctionsController _commonApi;
@@ -40,6 +37,8 @@ class SalesController extends GetxController {
   final tempSubTotal = 0.0.obs;
   final tempTotalDiscount = 0.0.obs;
   final tempTotalTax = 0.0.obs;
+  final grandTotal = 0.0.obs;
+  final balance = 0.0.obs;
   final rowCount = 1.obs;
   final taxModel = Rxn<TaxModel>();
 
@@ -82,6 +81,7 @@ class SalesController extends GetxController {
   final serialNumbersControllers = <int, TextEditingController>{}.obs;
   final taxAmountControllers = <int, TextEditingController>{}.obs;
   final amountControllers = <int, TextEditingController>{}.obs;
+
   // Hive storage
   Box? _settingsBox;
 
@@ -91,13 +91,22 @@ class SalesController extends GetxController {
     _initializeDependencies();
     await _initializeHive();
     await fetchInitialData();
+    // Add listener for paidAmountController to update balance
+    paidAmountController.addListener(updateBalance);
   }
 
   @override
   void onClose() {
     _disposeControllers();
+    paidAmountController.removeListener(updateBalance);
     _settingsBox?.close();
     super.onClose();
+  }
+
+  void updateBalance() {
+    final grandTotal = this.grandTotal.value;
+    final paidAmount = double.tryParse(paidAmountController.text) ?? 0.0;
+    balance.value = grandTotal - paidAmount;
   }
 
   void generateBillNumber() {
@@ -127,20 +136,6 @@ class SalesController extends GetxController {
 
   // Dispose all controllers and focus nodes
   void _disposeControllers() {
-    quantityControllers.forEach((_, controller) => controller.dispose());
-    priceControllers.forEach((_, controller) => controller.dispose());
-    salesPriceControllers.forEach((_, controller) => controller.dispose());
-    discountPercentControllers.forEach((_, controller) => controller.dispose());
-    discountAmountControllers.forEach((_, controller) => controller.dispose());
-    batchNoControllers.forEach((_, controller) => controller.dispose());
-    itemInputControllers.forEach((_, controller) => controller.dispose());
-    taxAmountControllers.forEach((_, controller) => controller.dispose());
-    amountControllers.forEach((_, controller) => controller.dispose());
-    for (var controller in unitControllers) {
-      controller.dispose();
-    }
-    priceFocusNodes.forEach((_, node) => node.dispose());
-    itemInputFocusNodes.forEach((_, node) => node.dispose());
     otherChargesController.dispose();
     paidAmountController.dispose();
     salesNoteController.dispose();
@@ -452,7 +447,10 @@ class SalesController extends GetxController {
 
     for (int i = 0; i < rowCount.value; i++) {
       final fields = rowFields[i];
-      if (fields == null) continue;
+      if (fields == null ||
+          fields['itemId'] == null ||
+          fields['itemId']!.isEmpty)
+        continue;
 
       final salesPrice = double.tryParse(fields['salesPrice'] ?? '0') ?? 0;
       final taxAmount = double.tryParse(fields['taxAmount'] ?? '0') ?? 0;
@@ -467,7 +465,9 @@ class SalesController extends GetxController {
     final otherCharges = double.tryParse(otherChargesController.text) ?? 0;
     final totalDiscount = tempTotalDiscount.value;
 
-    return subTotalSum + taxSum + otherCharges - totalDiscount;
+    grandTotal.value = subTotalSum + taxSum + otherCharges - totalDiscount;
+    updateBalance();
+    return grandTotal.value;
   }
 
   // Recalculate total discount
@@ -476,7 +476,10 @@ class SalesController extends GetxController {
 
     for (int i = 0; i < rowCount.value; i++) {
       final fields = rowFields[i];
-      if (fields == null) continue;
+      if (fields == null ||
+          fields['itemId'] == null ||
+          fields['itemId']!.isEmpty)
+        continue;
 
       final discountAmount =
           double.tryParse(fields['discountAmount'] ?? '0') ?? 0;
@@ -555,21 +558,7 @@ class SalesController extends GetxController {
       taxAmountControllers[rowIndex]?.text = taxAmount.toStringAsFixed(2);
       amountControllers[rowIndex]?.text = amount.toStringAsFixed(2);
 
-      recalculateGrandTotal();
-      recalculateTotalDiscount();
-
-      // Add new row reactively
-      if (rowIndex < 9 && rowIndex == rowCount.value - 1) {
-        rowCount.value++; // This will trigger the Obx to rebuild with new row
-        initControllers(rowIndex + 1);
-
-        // Focus the next input field
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          itemInputFocusNodes[rowIndex + 1]?.requestFocus();
-        });
-      }
-
-      // Update tempPurchaseItems
+      // Update tempPurchaseItems for the current row only
       ensureTempPurchaseItemsSize(rowIndex);
       tempPurchaseItems[rowIndex] = TempPurchaseItem(
         customerId: customerId.value ?? '',
@@ -590,24 +579,38 @@ class SalesController extends GetxController {
         barcode: item.barcode,
         serialNumbers: '',
       );
+
+      recalculateGrandTotal();
+      recalculateTotalDiscount();
+
+      // Add new row reactively only if the current row has valid data
+      if (rowIndex < 9 &&
+          rowIndex == rowCount.value - 1 &&
+          rowHasData(rowIndex)) {
+        rowCount.value++;
+        initControllers(rowIndex + 1);
+
+        // Focus the next input field
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          itemInputFocusNodes[rowIndex + 1]?.requestFocus();
+        });
+      }
     } catch (e, stack) {
       print('Error in onItemSelected: $e');
       print(stack);
     }
   }
 
-  // In SalesController, add this method to ensure tempPurchaseItems is properly sized
+  // Ensure tempPurchaseItems size only for valid rows
   void ensureTempPurchaseItemsSize(int index) {
     while (tempPurchaseItems.length <= index) {
       tempPurchaseItems.add(
         TempPurchaseItem(
-          customerId: customerId.value != null
-              ? customerMap[customerId.value]!
-              : '',
+          customerId: customerId.value ?? '',
           purchaseId: '',
           itemId: '',
           itemName: '',
-          purchaseQty: '1',
+          purchaseQty: '0',
           pricePerUnit: '0',
           taxName: '',
           taxId: '',
@@ -625,7 +628,24 @@ class SalesController extends GetxController {
     }
   }
 
-  // Call this method before accessing tempPurchaseItems[index]
+  // Filter valid tempPurchaseItems for singleItemSales
+  List<TempPurchaseItem> getValidPurchaseItems() {
+    return tempPurchaseItems
+        .asMap()
+        .entries
+        .where((entry) {
+          final index = entry.key;
+          final item = entry.value;
+          final row = rowFields[index];
+          return row != null &&
+              row['itemId'] != null &&
+              row['itemId']!.isNotEmpty &&
+              item.itemId.isNotEmpty;
+        })
+        .map((entry) => entry.value)
+        .toList();
+  }
+
   // Update row controllers with item data
   void _updateRowControllers(
     int index,
@@ -649,7 +669,7 @@ class SalesController extends GetxController {
   // Check if a row has data
   bool rowHasData(int index) {
     final row = rowFields[index] ?? {};
-    return row.values.any((v) => v.trim().isNotEmpty);
+    return row['itemId']?.isNotEmpty ?? false;
   }
 
   void updateRowCount() {
@@ -660,6 +680,63 @@ class SalesController extends GetxController {
         break;
       }
     }
+  }
+
+  // Clear fields after a successful save, preserving store, warehouse, and customer
+  void clearFieldsAfterSave() {
+    // Clear row-related data
+    tempPurchaseItems.clear();
+    rowFields.clear();
+    showDropdownRows.clear();
+    newSalesPrices.clear();
+    priceOldValues.clear();
+    selectedItem.value = null;
+    rowCount.value = 1;
+
+    // Dispose and clear row-specific controllers
+    quantityControllers.forEach((_, controller) => controller.dispose());
+    quantityControllers.clear();
+    priceControllers.forEach((_, controller) => controller.dispose());
+    priceControllers.clear();
+    salesPriceControllers.forEach((_, controller) => controller.dispose());
+    salesPriceControllers.clear();
+    discountPercentControllers.forEach((_, controller) => controller.dispose());
+    discountPercentControllers.clear();
+    discountAmountControllers.forEach((_, controller) => controller.dispose());
+    discountAmountControllers.clear();
+    batchNoControllers.forEach((_, controller) => controller.dispose());
+    batchNoControllers.clear();
+    itemInputControllers.forEach((_, controller) => controller.dispose());
+    itemInputControllers.clear();
+    taxAmountControllers.forEach((_, controller) => controller.dispose());
+    taxAmountControllers.clear();
+    amountControllers.forEach((_, controller) => controller.dispose());
+    amountControllers.clear();
+    serialNumbersControllers.forEach((_, controller) => controller.dispose());
+    serialNumbersControllers.clear();
+    priceFocusNodes.forEach((_, node) => node.dispose());
+    priceFocusNodes.clear();
+    itemInputFocusNodes.forEach((_, node) => node.dispose());
+    itemInputFocusNodes.clear();
+    for (var controller in unitControllers) {
+      controller.dispose();
+    }
+    unitControllers.value = List.generate(10, (_) => TextEditingController());
+
+    // Clear totals and other fields
+    tempSubTotal.value = 0.0;
+    tempTotalDiscount.value = 0.0;
+    tempTotalTax.value = 0.0;
+    grandTotal.value = 0.0;
+    balance.value = 0.0;
+    salesType.value = 'Cash';
+    otherChargesController.clear();
+    paidAmountController.clear();
+    salesNoteController.clear();
+    taxModel.value = null;
+
+    // Initialize controllers for the first row
+    initControllers(0);
   }
 
   // Create a new sale
@@ -774,15 +851,15 @@ class SalesController extends GetxController {
           "store_id": storeId,
           "sales_id": salesId,
           "customer_id": customerId,
-          "payment_method": paymentMethod,
-          "payment_amount": paymentAmount,
+          "payment_type": paymentMethod,
+          "payment": paymentAmount,
           "payment_date": paymentDate,
           "payment_note": paymentNote,
           "account_id": accountId,
           "status": "1",
         },
       );
-      return response.statusCode == 201;
+      return response.statusCode == 200;
     } catch (e) {
       return false;
     }
@@ -806,9 +883,21 @@ class SalesController extends GetxController {
     final isLoadingFlag = print ? isLoadingSavePrint : isLoadingSave;
     isLoadingFlag.value = true;
 
+    String? saleId;
     try {
       await _buildTempPurchaseItems();
-      final saleId = await _createSaleRecord();
+      final validItems = getValidPurchaseItems();
+      if (validItems.isEmpty) {
+        Get.snackbar(
+          'Error',
+          'No valid items selected for sale.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      saleId = await _createSaleRecord();
       if (saleId == "sales failed") {
         Get.snackbar(
           'Error',
@@ -823,6 +912,7 @@ class SalesController extends GetxController {
       await _processPayment(saleId);
       await saveCurrentState();
 
+      // Show success message before clearing fields
       Get.snackbar(
         'Success',
         print
@@ -838,48 +928,66 @@ class SalesController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+      return;
     } finally {
       isLoadingFlag.value = false;
+    }
+
+    // Clear fields and generate new bill number in a separate try-catch
+    try {
+      clearFieldsAfterSave();
+      generateBillNumber();
+      await saveCurrentState();
+    } catch (e) {
+      debugPrint('Error during field clearing: $e');
+      // Do not show error snackbar to avoid overriding success message
     }
   }
 
   // Validate required fields
   bool _validateRequiredFields() {
-    return storeId.value != null &&
-        selectedWarehouse.value != null &&
+    final isValid =
+        selectedStoreId.value.isNotEmpty &&
+        selectedWarehouseId.value.isNotEmpty &&
         saleBillConrtoller.text.isNotEmpty &&
-        salesType.value != null &&
+        salesType.value.isNotEmpty &&
         customerId.value != null &&
         tempSubTotal.value > 0;
+
+    return isValid;
   }
 
   // Build temporary purchase items
   Future<void> _buildTempPurchaseItems() async {
     tempPurchaseItems.clear();
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < rowCount.value; i++) {
       final fields = rowFields[i];
       if (fields == null ||
-          (fields['price'] == null && fields['quantity'] == null))
-        continue;
+          fields['itemId'] == null ||
+          fields['itemId']!.isEmpty) {
+        continue; // Skip rows without a valid itemId
+      }
       tempPurchaseItems.add(
         TempPurchaseItem(
-          customerId: customerMap[customerId.value]!,
+          customerId: customerId.value == 'Walk-in Customer'
+              ? 'Walk-in Customer'
+              : customerMap[customerId.value] ?? '',
           purchaseId: '',
-          itemName: fields['itemId'] ?? '',
+          itemName: fields['itemName'] ?? '',
           itemId: fields['itemId'] ?? '',
-          purchaseQty: fields['quantity'] ?? '',
-          pricePerUnit: fields['price'] ?? '',
+          purchaseQty: fields['quantity'] ?? '0',
+          pricePerUnit: fields['price'] ?? '0',
           taxName: fields['taxName'] ?? '',
           taxId: fields['taxId'] ?? '',
-          taxAmount: fields['taxAmount'] ?? '',
+          taxAmount: fields['taxAmount'] ?? '0',
           discountType: fields['discount'] ?? '',
-          discountAmount: fields['discountAmount'] ?? '',
-          totalCost: fields['salesPrice'] ?? '',
+          discountAmount: fields['discountAmount'] ?? '0',
+          totalCost: fields['salesPrice'] ?? '0',
           unit: fields['unit'] ?? '',
           taxRate: fields['taxRate'] ?? '0',
           batchNo: fields['batchNo'] ?? '',
           barcode: fields['barcode'] ?? '',
-          serialNumbers: '',
+          serialNumbers: fields['serialNumbers'] ?? '',
         ),
       );
     }
@@ -913,7 +1021,8 @@ class SalesController extends GetxController {
 
   // Process individual item sales
   Future<void> _processItemSales(String saleId) async {
-    for (var item in tempPurchaseItems) {
+    final validItems = getValidPurchaseItems();
+    for (var item in validItems) {
       final success = await singleItemSales(
         storeId: storeMap[storeId.value]!,
         salesId: saleId,

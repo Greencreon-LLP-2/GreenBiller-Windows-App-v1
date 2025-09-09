@@ -120,7 +120,7 @@ class SalesPageTopSectionWidget extends StatelessWidget {
                                 ? null
                                 : controller.warehouseController.text,
                             onChanged: (value) {
-                              // controller.onWarehouseSelected
+                              controller.onWarehouseSelected(value);
                             },
                             hint: "Select Warehouse",
                             icon: Icons.warehouse,
@@ -210,7 +210,7 @@ class SalesPageTopSectionWidget extends StatelessWidget {
                                 ? null
                                 : controller.customerController.text,
                             onChanged: (value) {
-                              // controller.onWarehouseSelected
+                              controller.onCustomerSelected(value);
                             },
                             hint: "Select Customers",
                             icon: Icons.supervised_user_circle_rounded,
