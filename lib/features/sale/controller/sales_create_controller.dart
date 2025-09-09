@@ -463,92 +463,70 @@ class SalesController extends GetxController {
     return '${now.month.toString().padLeft(2, '0')}/${now.day.toString().padLeft(2, '0')}/${now.year}';
   }
 
-  // Handle item selection
-  // In SalesController, update the onItemSelected method:
-  void onItemSelected(Item item, int index) {
-    try{
-      initControllers(index);
-    const quantity = 1.0;
-    final price = double.tryParse(item.salesPrice) ?? 0;
-    final salesPrice = quantity * price;
-    final taxRate = double.tryParse(item.taxRate) ?? 0;
-    final taxAmount = salesPrice * taxRate / 100;
-    final discountPercent = double.tryParse(item.discount) ?? 0;
-    final double discountAmount = discountPercent > 0
-        ? (salesPrice * discountPercent) / 100
-        : 0;
+  void onItemSelected(Item item, int rowIndex) {
+    try {
+      initControllers(rowIndex);
+      const quantity = 1.0;
+      final price = double.tryParse(item.salesPrice) ?? 0;
+      final salesPrice = quantity * price;
+      final taxRate = double.tryParse(item.taxRate) ?? 0;
+      final taxAmount = salesPrice * taxRate / 100;
+      final discountPercent = double.tryParse(item.discount) ?? 0;
+      final double discountAmount = discountPercent > 0
+          ? (salesPrice * discountPercent) / 100
+          : 0;
 
-    rowFields[index] = {
-      'itemName': item.itemName,
-      'barcode': item.barcode,
-      'unit': item.unitId ?? '',
-      'price': item.salesPrice,
-      'taxRate': item.taxRate,
-      'taxName': item.taxType,
-      'discount': item.discount,
-      'discountPercent': item.discount,
-      'discountAmount': discountAmount.toStringAsFixed(2),
-      'quantity': quantity.toString(),
-      'salesPrice': salesPrice.toStringAsFixed(2),
-      'itemId': item.id.toString(),
-      'taxAmount': taxAmount.toStringAsFixed(2),
-      'batchNo': item.sku,
-      'serialNumbers': '',
-      'taxId': '',
-    };
+      // Update rowFields reactively
+      rowFields[rowIndex] = {
+        'itemName': item.itemName,
+        'barcode': item.barcode,
+        'unit': item.unitId ?? '',
+        'price': item.salesPrice,
+        'taxRate': item.taxRate,
+        'taxName': item.taxType,
+        'discount': item.discount,
+        'discountPercent': item.discount,
+        'discountAmount': discountAmount.toStringAsFixed(2),
+        'quantity': quantity.toString(),
+        'salesPrice': salesPrice.toStringAsFixed(2),
+        'itemId': item.id.toString(),
+        'taxAmount': taxAmount.toStringAsFixed(2),
+        'batchNo': item.sku,
+        'serialNumbers': '',
+        'taxId': '',
+      };
 
-    _updateRowControllers(index, item, salesPrice, discountAmount);
-    priceOldValues[index] = item.salesPrice;
-    newSalesPrices[index] = item.salesPrice;
+      // Force UI update
+      rowFields.refresh();
 
-    // Force update the controllers
-    quantityControllers[index]?.text = quantity.toString();
-    salesPriceControllers[index]?.text = salesPrice.toStringAsFixed(2);
-    discountAmountControllers[index]?.text = discountAmount.toStringAsFixed(2);
+      _updateRowControllers(rowIndex, item, salesPrice, discountAmount);
+      priceOldValues[rowIndex] = item.salesPrice;
+      newSalesPrices[rowIndex] = item.salesPrice;
 
-    recalculateGrandTotal();
-    recalculateTotalDiscount();
+      // Update controllers
+      quantityControllers[rowIndex]?.text = quantity.toString();
+      salesPriceControllers[rowIndex]?.text = salesPrice.toStringAsFixed(2);
+      discountAmountControllers[rowIndex]?.text = discountAmount
+          .toStringAsFixed(2);
 
-    // Add row automatically
-    if (index < 9) {
-      // Use a small delay to ensure the UI updates properly
-      Future.delayed(const Duration(milliseconds: 100), () {
-        rowCount.value = (index + 2).clamp(1, 10);
-        initControllers(index + 1);
+      recalculateGrandTotal();
+      recalculateTotalDiscount();
 
-        // Clear the current input field and focus the next one
-        itemInputControllers[index]?.clear();
-        Future.delayed(const Duration(milliseconds: 50), () {
-          itemInputFocusNodes[index + 1]?.requestFocus();
+      // Add new row reactively
+      if (rowIndex < 9 && rowIndex == rowCount.value - 1) {
+        rowCount.value++; // This will trigger the Obx to rebuild with new row
+        initControllers(rowIndex + 1);
+
+        // Focus the next input field
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          itemInputFocusNodes[rowIndex + 1]?.requestFocus();
         });
-      });
-    }
-    // Add to tempPurchaseItems
-    if (tempPurchaseItems.length <= index) {
-      tempPurchaseItems.add(
-        TempPurchaseItem(
-          customerId: customerId.value ?? '',
-          purchaseId: '',
-          itemId: item.id.toString(),
-          itemName: item.itemName,
-          purchaseQty: quantity.toString(),
-          pricePerUnit: item.salesPrice,
-          taxName: item.taxType,
-          taxId: '',
-          taxAmount: taxAmount.toStringAsFixed(2),
-          discountType: item.discount,
-          discountAmount: discountAmount.toStringAsFixed(2),
-          totalCost: salesPrice.toStringAsFixed(2),
-          unit: item.unitId ?? '',
-          taxRate: item.taxRate,
-          batchNo: item.sku,
-          barcode: item.barcode,
-          serialNumbers: '',
-        ),
-      );
-    } else {
-      tempPurchaseItems[index] = TempPurchaseItem(
-        customerId: customerMap[customerId.value] ?? '',
+      }
+
+      // Update tempPurchaseItems
+      ensureTempPurchaseItemsSize(rowIndex);
+      tempPurchaseItems[rowIndex] = TempPurchaseItem(
+        customerId: customerId.value ?? '',
         purchaseId: '',
         itemId: item.id.toString(),
         itemName: item.itemName,
@@ -566,8 +544,8 @@ class SalesController extends GetxController {
         barcode: item.barcode,
         serialNumbers: '',
       );
-    }
-    }catch(e,stack){
+    } catch (e, stack) {
+      print('Error in onItemSelected: $e');
       print(stack);
     }
   }
@@ -577,7 +555,9 @@ class SalesController extends GetxController {
     while (tempPurchaseItems.length <= index) {
       tempPurchaseItems.add(
         TempPurchaseItem(
-          customerId: customerMap[customerId.value] ?? '',
+          customerId: customerId.value != null
+              ? customerMap[customerId.value]!
+              : '',
           purchaseId: '',
           itemId: '',
           itemName: '',
