@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/core/gloabl_widgets/cards/card_container.dart';
 import 'package:greenbiller/features/payment/controller/payment_controller.dart';
+import 'package:greenbiller/features/payment/view/add_payment_in_page.dart';
+import 'package:greenbiller/routes/app_routes.dart';
 
 class AllPaymentInPage extends GetView<PaymentController> {
   const AllPaymentInPage({super.key});
@@ -50,6 +52,7 @@ class AllPaymentInPage extends GetView<PaymentController> {
                 icon: const Icon(Icons.add, color: Colors.white),
                 onPressed: () {
                   // Navigate to AddPaymentInPage
+                  Get.toNamed(AppRoutes.addPaymentIn);
                 },
                 tooltip: 'Add New Payment-In',
               ),

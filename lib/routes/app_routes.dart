@@ -50,7 +50,8 @@ class AppRoutes {
   // payment Routes
   static const String allPaymentInView = '/payment/all-in';
   static const String allPaymentOutView = '/payment/all-out';
-
+  static const String addPaymentIn = '/payment/add-in';
+  static const String addPaymentOut = '/payment/add-out';
   // Store and Warehouse Routes
   static const String viewStore = '/stores/view';
   static const String singleStoreView = '/stores/view/:storeId';
