@@ -293,6 +293,7 @@ class MyApp extends StatelessWidget {
           page: () => NewSalePage(),
           binding: BindingsBuilder(() {
             Get.put(SalesController());
+            Get.put(PartiesController());
           }),
         ),
       ],

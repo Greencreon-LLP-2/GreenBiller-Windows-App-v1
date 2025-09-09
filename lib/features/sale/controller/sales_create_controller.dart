@@ -14,6 +14,7 @@ import 'package:hive/hive.dart';
 
 class SalesController extends GetxController {
   // Authentication and dependencies
+  // Authentication and dependencies
   late final DioClient _dioClient;
   late final CommonApiFunctionsController _commonApi;
   late final AuthController _authController;
@@ -58,13 +59,13 @@ class SalesController extends GetxController {
   final RxList<Map<String, dynamic>> taxList = <Map<String, dynamic>>[].obs;
   final RxString selectedStoreId = ''.obs;
   final RxString selectedWarehouseId = ''.obs;
-  final RxString selectedSupplierId = ''.obs;
+  final RxString selectedCustomerId = ''.obs;
   late TextEditingController warehouseController = TextEditingController();
   late TextEditingController customerController = TextEditingController();
   late TextEditingController saleBillConrtoller = TextEditingController();
   late TextEditingController storeController = TextEditingController();
-  // Input controllers
 
+  // Input controllers
   final quantityControllers = <int, TextEditingController>{}.obs;
   final priceControllers = <int, TextEditingController>{}.obs;
   final salesPriceControllers = <int, TextEditingController>{}.obs;
@@ -79,6 +80,8 @@ class SalesController extends GetxController {
   final paidAmountController = TextEditingController();
   final salesNoteController = TextEditingController();
   final serialNumbersControllers = <int, TextEditingController>{}.obs;
+  final taxAmountControllers = <int, TextEditingController>{}.obs;
+  final amountControllers = <int, TextEditingController>{}.obs;
   // Hive storage
   Box? _settingsBox;
 
@@ -131,6 +134,8 @@ class SalesController extends GetxController {
     discountAmountControllers.forEach((_, controller) => controller.dispose());
     batchNoControllers.forEach((_, controller) => controller.dispose());
     itemInputControllers.forEach((_, controller) => controller.dispose());
+    taxAmountControllers.forEach((_, controller) => controller.dispose());
+    amountControllers.forEach((_, controller) => controller.dispose());
     for (var controller in unitControllers) {
       controller.dispose();
     }
@@ -138,7 +143,6 @@ class SalesController extends GetxController {
     itemInputFocusNodes.forEach((_, node) => node.dispose());
     otherChargesController.dispose();
     paidAmountController.dispose();
-
     salesNoteController.dispose();
   }
 
@@ -277,13 +281,33 @@ class SalesController extends GetxController {
       selectedStoreId.value = storeMap[storeName]!;
       storeController.text = storeName;
       selectedWarehouseId.value = '';
-      selectedSupplierId.value = '';
+      selectedCustomerId.value = '';
       warehouseMap.clear();
       customerMap.clear();
       itemsList.clear();
       await fetchWarehouses(selectedStoreId.value);
       await fetchCustomers(selectedStoreId.value);
       await fetchItems(selectedStoreId.value);
+    }
+  }
+
+  void onWarehouseSelected(String? warehouseName) async {
+    if (warehouseName != null && warehouseMap.containsKey(warehouseName)) {
+      selectedWarehouseId.value = warehouseMap[warehouseName]!;
+      selectedWarehouse.value = warehouseName;
+      warehouseController.text = warehouseName;
+    }
+  }
+
+  void onCustomerSelected(String? customerName) async {
+    if (customerName != null && customerMap.containsKey(customerName)) {
+      selectedCustomerId.value = customerMap[customerName]!;
+      customerId.value = customerName;
+      customerController.text = customerName;
+    } else if (customerName == 'Walk-in Customer') {
+      selectedCustomerId.value = 'Walk-in Customer';
+      customerId.value = customerName;
+      customerController.text = customerName ?? '';
     }
   }
 
@@ -314,11 +338,13 @@ class SalesController extends GetxController {
               orElse: () => MapEntry('', ''),
             )
             .key;
+        selectedWarehouseId.value = savedWarehouseId;
       }
 
       if (savedCustomerId != null) {
         if (savedCustomerId == "Walk-in Customer") {
           customerId.value = "Walk-in Customer";
+          selectedCustomerId.value = "Walk-in Customer";
         } else if (customerMap.containsValue(savedCustomerId)) {
           customerId.value = customerMap.entries
               .firstWhere(
@@ -326,6 +352,7 @@ class SalesController extends GetxController {
                 orElse: () => MapEntry('', ''),
               )
               .key;
+          selectedCustomerId.value = savedCustomerId;
         }
       }
     } catch (e) {
@@ -373,6 +400,7 @@ class SalesController extends GetxController {
     final discountAmount = (salesPrice * discountPercent) / 100;
     final taxRate = double.tryParse(rowFields[index]?['taxRate'] ?? '0') ?? 0;
     final taxAmount = salesPrice * taxRate / 100;
+    final amount = salesPrice + taxAmount - discountAmount;
 
     quantityControllers[index] = TextEditingController(
       text: quantity.toString(),
@@ -388,6 +416,12 @@ class SalesController extends GetxController {
     );
     discountAmountControllers[index] = TextEditingController(
       text: discountAmount.toStringAsFixed(2),
+    );
+    taxAmountControllers[index] = TextEditingController(
+      text: taxAmount.toStringAsFixed(2),
+    );
+    amountControllers[index] = TextEditingController(
+      text: amount.toStringAsFixed(2),
     );
     batchNoControllers[index] = TextEditingController(
       text: rowFields[index]?['batchNo'] ?? '',
@@ -407,6 +441,7 @@ class SalesController extends GetxController {
       'salesPrice': salesPrice.toStringAsFixed(2),
       'discountAmount': discountAmount.toStringAsFixed(2),
       'taxAmount': taxAmount.toStringAsFixed(2),
+      'amount': amount.toStringAsFixed(2),
     };
   }
 
@@ -475,6 +510,7 @@ class SalesController extends GetxController {
       final double discountAmount = discountPercent > 0
           ? (salesPrice * discountPercent) / 100
           : 0;
+      final amount = salesPrice + taxAmount - discountAmount;
 
       // Update rowFields reactively
       rowFields[rowIndex] = {
@@ -491,6 +527,7 @@ class SalesController extends GetxController {
         'salesPrice': salesPrice.toStringAsFixed(2),
         'itemId': item.id.toString(),
         'taxAmount': taxAmount.toStringAsFixed(2),
+        'amount': amount.toStringAsFixed(2),
         'batchNo': item.sku,
         'serialNumbers': '',
         'taxId': '',
@@ -499,7 +536,14 @@ class SalesController extends GetxController {
       // Force UI update
       rowFields.refresh();
 
-      _updateRowControllers(rowIndex, item, salesPrice, discountAmount);
+      _updateRowControllers(
+        rowIndex,
+        item,
+        salesPrice,
+        discountAmount,
+        taxAmount,
+        amount,
+      );
       priceOldValues[rowIndex] = item.salesPrice;
       newSalesPrices[rowIndex] = item.salesPrice;
 
@@ -508,6 +552,8 @@ class SalesController extends GetxController {
       salesPriceControllers[rowIndex]?.text = salesPrice.toStringAsFixed(2);
       discountAmountControllers[rowIndex]?.text = discountAmount
           .toStringAsFixed(2);
+      taxAmountControllers[rowIndex]?.text = taxAmount.toStringAsFixed(2);
+      amountControllers[rowIndex]?.text = amount.toStringAsFixed(2);
 
       recalculateGrandTotal();
       recalculateTotalDiscount();
@@ -586,12 +632,16 @@ class SalesController extends GetxController {
     Item item,
     double salesPrice,
     double discountAmount,
+    double taxAmount,
+    double amount,
   ) {
     quantityControllers[index]?.text = '1';
     priceControllers[index]?.text = item.salesPrice ?? '0';
     salesPriceControllers[index]?.text = salesPrice.toStringAsFixed(2);
     discountPercentControllers[index]?.text = item.discount ?? '0';
     discountAmountControllers[index]?.text = discountAmount.toStringAsFixed(2);
+    taxAmountControllers[index]?.text = taxAmount.toStringAsFixed(2);
+    amountControllers[index]?.text = amount.toStringAsFixed(2);
     batchNoControllers[index]?.text = item.sku ?? '';
     unitControllers[index].text = item.unitId ?? '';
   }
@@ -848,7 +898,9 @@ class SalesController extends GetxController {
       warehouseId: warehouseMap[selectedWarehouse.value]!,
       referenceNo: saleBillConrtoller.text.trim(),
       salesDate: getCurrentDateFormatted(),
-      customerId: customerMap[customerId.value]!,
+      customerId: customerId.value == 'Walk-in Customer'
+          ? 'Walk-in Customer'
+          : customerMap[customerId.value]!,
       otherChargesAmt: otherChargesValue.toString(),
       discountAmt: tempTotalDiscount.value.toString(),
       subTotal: tempSubTotal.value.toString(),
@@ -865,7 +917,9 @@ class SalesController extends GetxController {
       final success = await singleItemSales(
         storeId: storeMap[storeId.value]!,
         salesId: saleId,
-        customerId: customerMap[customerId.value]!,
+        customerId: customerId.value == 'Walk-in Customer'
+            ? 'Walk-in Customer'
+            : customerMap[customerId.value]!,
         itemName: item.itemName,
         description: '',
         itemId: item.itemId,
@@ -894,7 +948,9 @@ class SalesController extends GetxController {
     final success = await salesPaymentCreate(
       storeId: storeMap[storeId.value]!,
       salesId: saleId,
-      customerId: customerMap[customerId.value]!,
+      customerId: customerId.value == 'Walk-in Customer'
+          ? 'Walk-in Customer'
+          : customerMap[customerId.value]!,
       paymentMethod: salesType.value,
       paymentAmount: paidAmountController.text,
       paymentDate: getCurrentDateFormatted(),

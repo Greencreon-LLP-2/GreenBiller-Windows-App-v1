@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/features/items/model/item_model.dart';
 import 'package:greenbiller/features/sale/controller/sales_create_controller.dart';
-import 'package:greenbiller/features/sale/model/temp_purchase_item.dart';
 import 'package:greenbiller/features/sale/view/widgets/sales_page_bottom_section_widget.dart';
 import 'package:greenbiller/features/sale/view/widgets/sales_top_section_widget.dart';
+import 'package:greenbiller/features/sale/view/widgets/sku_edit_dialog.dart';
 
 class NewSalePage extends GetView<SalesController> {
   const NewSalePage({super.key});
@@ -80,8 +80,8 @@ class NewSalePage extends GetView<SalesController> {
                   decoration: const InputDecoration(
                     isDense: true,
                     contentPadding: EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 6,
+                      horizontal: 10,
+                      vertical: 12,
                     ),
                     border: InputBorder.none,
                     hintText: 'Enter item name or scan barcode',
@@ -159,9 +159,9 @@ class NewSalePage extends GetView<SalesController> {
                     SalesPageTopSectionWidget(
                       controller: controller,
                       onCustomerAddSuccess: () {
-                        if (controller.storeId.value != null) {
-                          // controller.fetchAndUpdateData();
-                        }
+                        controller.fetchCustomers(
+                          controller.selectedStoreId.value,
+                        );
                       },
                     ),
                     const SizedBox(height: 10),
@@ -173,9 +173,9 @@ class NewSalePage extends GetView<SalesController> {
                       child: Text(
                         "Sales Items",
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.green.shade800,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: Colors.green.shade800,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -183,58 +183,44 @@ class NewSalePage extends GetView<SalesController> {
                       width: double.infinity,
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          const columnCount = 11; // Adjusted to match columns
-                          const itemFlex = 2.0;
-                          const discountFlex = 1.0;
-                          const totalFlex =
-                              0.5 +
-                              itemFlex +
-                              0.75 +
-                              0.75 +
-                              1 +
-                              1 +
-                              1 +
-                              discountFlex +
-                              1 +
-                              1 +
-                              1.5;
-                          final baseColumnWidth =
-                              constraints.maxWidth / totalFlex;
-                          final itemColumnWidth = baseColumnWidth * itemFlex;
-                          final discountColumnWidth =
-                              baseColumnWidth * (discountFlex / 2);
+                          // Define fixed column widths
+                          final columnWidths = {
+                            '#': 40.0,
+                            'Item': 250.0,
+                            'SKUs': 120.0,
+                            'Qty': 60.0,
+                            'Unit': 80.0,
+                            'Price/Unit': 80.0,
+                            'Sale Price': 80.0,
+                            'Disc %': 60.0,
+                            'Disc Amt': 60.0,
+                            'Tax %': 250.0,
+                            'Tax Amt': 150.0,
+                            'Amount': 150.0,
+                          };
+                          final totalTableWidth =
+                              columnWidths.values.reduce((a, b) => a + b);
 
                           return SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minWidth: constraints.maxWidth,
-                              ),
+                            child: SizedBox(
+                              width: totalTableWidth,
                               child: Column(
                                 children: [
-                                  HeaderRowWidget(
-                                    baseColumnWidth: baseColumnWidth,
-                                    itemColumnWidth: itemColumnWidth,
-                                    discountColumnWidth: discountColumnWidth,
-                                  ),
+                                  HeaderRowWidget(columnWidths: columnWidths),
                                   Obx(() {
                                     return SizedBox(
-                                      height:
-                                          controller.rowCount.value *
-                                          60, // Adjust height based on row count
-                                      width: constraints.maxWidth,
+                                      height: controller.rowCount.value * 60,
+                                      width: totalTableWidth,
                                       child: ListView.builder(
                                         physics:
-                                            const NeverScrollableScrollPhysics(), // Disable scrolling since we have outer scroll
+                                            const NeverScrollableScrollPhysics(),
                                         itemCount: controller.rowCount.value,
                                         itemBuilder: (context, index) {
                                           controller.initControllers(index);
                                           return DataRowWidget(
                                             index: index,
-                                            baseColumnWidth: baseColumnWidth,
-                                            itemColumnWidth: itemColumnWidth,
-                                            discountColumnWidth:
-                                                discountColumnWidth,
+                                            columnWidths: columnWidths,
                                             controller: controller,
                                             inputWidget: input(rowIndex: index),
                                           );
@@ -286,9 +272,9 @@ class NewSalePage extends GetView<SalesController> {
                     onPressed: controller.isLoadingSavePrint.value
                         ? null
                         : () => controller.saveSale(
-                            print: true,
-                            context: context,
-                          ),
+                              print: true,
+                              context: context,
+                            ),
                     child: controller.isLoadingSavePrint.value
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
@@ -323,9 +309,9 @@ class NewSalePage extends GetView<SalesController> {
                     onPressed: controller.isLoadingSave.value
                         ? null
                         : () => controller.saveSale(
-                            print: false,
-                            context: context,
-                          ),
+                              print: false,
+                              context: context,
+                            ),
                     child: controller.isLoadingSave.value
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
@@ -353,11 +339,13 @@ class HeaderCellWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
-      child: Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
         child: Text(
           text,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
         ),
       ),
     );
@@ -377,112 +365,47 @@ class DataCellWidget extends StatelessWidget {
 }
 
 class HeaderRowWidget extends StatelessWidget {
-  final double baseColumnWidth;
-  final double itemColumnWidth;
-  final double discountColumnWidth;
+  final Map<String, double> columnWidths;
 
-  const HeaderRowWidget({
-    super.key,
-    required this.baseColumnWidth,
-    required this.itemColumnWidth,
-    required this.discountColumnWidth,
-  });
+  const HeaderRowWidget({super.key, required this.columnWidths});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.green.shade200,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Table(
+        columnWidths: {
+          for (int i = 0; i < columnWidths.length; i++)
+            i: FixedColumnWidth(columnWidths.values.elementAt(i)),
+        },
         children: [
-          Flexible(
-            child: HeaderCellWidget(text: "#", width: baseColumnWidth * 0.5),
-          ),
-          Flexible(
-            child: HeaderCellWidget(text: "Item", width: itemColumnWidth),
-          ),
-          Flexible(
-            child: HeaderCellWidget(
-              text: "SKUs",
-              width: baseColumnWidth * 0.75,
-            ),
-          ),
-          Flexible(
-            child: HeaderCellWidget(text: "Qty", width: baseColumnWidth * 0.75),
-          ),
-          Flexible(
-            child: HeaderCellWidget(text: "Unit", width: baseColumnWidth),
-          ),
-          Flexible(
-            child: HeaderCellWidget(text: "Price/Unit", width: baseColumnWidth),
-          ),
-          Flexible(
-            child: HeaderCellWidget(text: "Sale Price", width: baseColumnWidth),
-          ),
-          Flexible(
-            child: SizedBox(
-              width: baseColumnWidth,
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    right: BorderSide(color: Colors.green.shade100),
-                  ),
-                ),
-                child: const Column(
-                  children: [
-                    Text(
-                      "Discount",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              "%",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              "Amt",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+          TableRow(
+            children: [
+              HeaderCellWidget(text: "#", width: columnWidths['#']!),
+              HeaderCellWidget(text: "Item", width: columnWidths['Item']!),
+              HeaderCellWidget(text: "SKUs", width: columnWidths['SKUs']!),
+              HeaderCellWidget(text: "Qty", width: columnWidths['Qty']!),
+              HeaderCellWidget(text: "Unit", width: columnWidths['Unit']!),
+              HeaderCellWidget(
+                text: "Price/Unit",
+                width: columnWidths['Price/Unit']!,
               ),
-            ),
-          ),
-          Flexible(
-            child: HeaderCellWidget(text: "Tax %", width: baseColumnWidth),
-          ),
-          Flexible(
-            child: HeaderCellWidget(text: "Tax Amt", width: baseColumnWidth),
-          ),
-          Flexible(
-            child: HeaderCellWidget(
-              text: "Amount",
-              width: baseColumnWidth * 1.5,
-            ),
+              HeaderCellWidget(
+                text: "Sale Price",
+                width: columnWidths['Sale Price']!,
+              ),
+              HeaderCellWidget(text: "Disc %", width: columnWidths['Disc %']!),
+              HeaderCellWidget(
+                text: "Disc Amt",
+                width: columnWidths['Disc Amt']!,
+              ),
+              HeaderCellWidget(text: "Tax %", width: columnWidths['Tax %']!),
+              HeaderCellWidget(
+                text: "Tax Amt",
+                width: columnWidths['Tax Amt']!,
+              ),
+              HeaderCellWidget(text: "Amount", width: columnWidths['Amount']!),
+            ],
           ),
         ],
       ),
@@ -492,20 +415,14 @@ class HeaderRowWidget extends StatelessWidget {
 
 class DataRowWidget extends StatelessWidget {
   final int index;
-
-  final double baseColumnWidth;
-  final double itemColumnWidth;
-  final double discountColumnWidth;
+  final Map<String, double> columnWidths;
   final SalesController controller;
   final Widget inputWidget;
 
   const DataRowWidget({
     super.key,
     required this.index,
-
-    required this.baseColumnWidth,
-    required this.itemColumnWidth,
-    required this.discountColumnWidth,
+    required this.columnWidths,
     required this.controller,
     required this.inputWidget,
   });
@@ -523,639 +440,470 @@ class DataRowWidget extends StatelessWidget {
             right: BorderSide(color: Colors.green.shade100),
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+        child: Table(
+          columnWidths: {
+            for (int i = 0; i < columnWidths.length; i++)
+              i: FixedColumnWidth(columnWidths.values.elementAt(i)),
+          },
           children: [
-            Flexible(
-              child: DataCellWidget(
-                width: baseColumnWidth * 0.5,
-                child: Center(child: Text("${index + 1}")),
-              ),
-            ),
-            Flexible(
-              child: DataCellWidget(
-                width: itemColumnWidth,
-                child: itemName.isNotEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 9,
-                          vertical: 10,
-                        ),
-                        child: Text(
-                          itemName,
-                          style: const TextStyle(fontSize: 14),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      )
-                    : inputWidget,
-              ),
-            ),
-            Flexible(
-              child: DataCellWidget(
-                width: baseColumnWidth * 0.75,
-                child: ElevatedButton(
-                  onPressed: () {
-                    controller.ensureTempPurchaseItemsSize(index);
-                    Get.dialog(
-                      SkuEditDialog(
-                        item: controller.tempPurchaseItems[index],
-                        onSave: () {
-                          controller.rowFields[index] = {
-                            ...?controller.rowFields[index],
-                            'batchNo':
-                                controller.tempPurchaseItems[index].batchNo,
-                            'quantity':
-                                controller.tempPurchaseItems[index].purchaseQty,
-                            'serialNumbers': controller
-                                .tempPurchaseItems[index]
-                                .serialNumbers,
-                            'salesPrice':
-                                controller.tempPurchaseItems[index].totalCost,
-                          };
-                          controller.batchNoControllers[index]?.text =
-                              controller.tempPurchaseItems[index].batchNo;
-                          controller.quantityControllers[index]?.text =
-                              controller.tempPurchaseItems[index].purchaseQty;
-                          controller.salesPriceControllers[index]?.text =
-                              controller.tempPurchaseItems[index].totalCost;
-                          controller.recalculateGrandTotal();
-                          controller.recalculateTotalDiscount();
-                          controller.rowFields.refresh(); // Force UI update
-                        },
-                      ),
-                      barrierDismissible: true,
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
+            TableRow(
+              children: [
+                DataCellWidget(
+                  width: columnWidths['#']!,
+                  child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 6,
+                      horizontal: 10,
+                      vertical: 12,
                     ),
-                    minimumSize: const Size(0, 0),
-                    textStyle: const TextStyle(fontSize: 14),
+                    child: Center(child: Text("${index + 1}")),
                   ),
-                  child: Obx(() {
-                    final batchNo =
-                        controller.rowFields[index]?['batchNo'] ?? '';
-                    final skuCount = batchNo
-                        .split(',')
-                        .where((s) => s.trim().isNotEmpty)
-                        .length;
-                    return Text(
-                      '$skuCount SKU${skuCount == 1 ? '' : 's'}',
-                      overflow: TextOverflow.ellipsis,
-                    );
-                  }),
                 ),
-              ),
-            ),
-            Flexible(
-              child: DataCellWidget(
-                width: baseColumnWidth * 0.75,
-                child: TextField(
-                  controller: controller.quantityControllers[index],
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(fontSize: 14),
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 6,
+                DataCellWidget(
+                  width: columnWidths['Item']!,
+                  child: itemName.isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 12,
+                          ),
+                          child: Text(
+                            itemName,
+                            style: const TextStyle(fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        )
+                      : inputWidget,
+                ),
+                DataCellWidget(
+                  width: columnWidths['SKUs']!,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      controller.ensureTempPurchaseItemsSize(index);
+                      Get.dialog(
+                        SkuEditDialog(
+                          item: controller.tempPurchaseItems[index],
+                          onSave: () {
+                            controller.rowFields[index] = {
+                              ...?controller.rowFields[index],
+                              'batchNo':
+                                  controller.tempPurchaseItems[index].batchNo,
+                              'quantity':
+                                  controller.tempPurchaseItems[index].purchaseQty,
+                              'serialNumbers':
+                                  controller.tempPurchaseItems[index].serialNumbers,
+                              'salesPrice':
+                                  controller.tempPurchaseItems[index].totalCost,
+                            };
+                            controller.batchNoControllers[index]?.text =
+                                controller.tempPurchaseItems[index].batchNo;
+                            controller.quantityControllers[index]?.text =
+                                controller.tempPurchaseItems[index].purchaseQty;
+                            controller.salesPriceControllers[index]?.text =
+                                controller.tempPurchaseItems[index].totalCost;
+                            controller.recalculateGrandTotal();
+                            controller.recalculateTotalDiscount();
+                            controller.rowFields.refresh();
+                          },
+                        ),
+                        barrierDismissible: true,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 12,
+                      ),
+                      minimumSize: const Size(0, 0),
+                      textStyle: const TextStyle(fontSize: 14),
                     ),
-                    border: InputBorder.none,
+                    child: Obx(() {
+                      final batchNo =
+                          controller.rowFields[index]?['batchNo'] ?? '';
+                      final skuCount = batchNo
+                          .split(',')
+                          .where((s) => s.trim().isNotEmpty)
+                          .length;
+                      return Text(
+                        '$skuCount SKU${skuCount == 1 ? '' : 's'}',
+                        overflow: TextOverflow.ellipsis,
+                      );
+                    }),
                   ),
-                  onChanged: (value) {
-                    final quantity = double.tryParse(value) ?? 0;
-                    final price =
-                        double.tryParse(
-                          controller.priceControllers[index]?.text ?? '0',
-                        ) ??
-                        0;
-                    final salesPrice = quantity * price;
-                    final discountPercent =
-                        double.tryParse(
-                          controller.discountPercentControllers[index]?.text ??
-                              '0',
-                        ) ??
-                        0;
-                    final discountAmount = (salesPrice * discountPercent) / 100;
-                    final taxRate =
-                        double.tryParse(
-                          controller.rowFields[index]?['taxRate'] ?? '0',
-                        ) ??
-                        0;
-                    final taxAmount = salesPrice * taxRate / 100;
-                    controller.rowFields[index] = {
-                      ...?controller.rowFields[index],
-                      'quantity': value,
-                      'salesPrice': salesPrice.toStringAsFixed(2),
-                      'discountAmount': discountAmount.toStringAsFixed(2),
-                      'taxAmount': taxAmount.toStringAsFixed(2),
-                    };
-                    controller.salesPriceControllers[index]?.text = salesPrice
-                        .toStringAsFixed(2);
-                    controller.discountAmountControllers[index]?.text =
-                        discountAmount.toStringAsFixed(2);
-                    controller.recalculateGrandTotal();
-                    controller.recalculateTotalDiscount();
-                  },
                 ),
-              ),
-            ),
-            Flexible(
-              child: DataCellWidget(
-                width: baseColumnWidth,
-                child: TextField(
-                  controller: controller.unitControllers[index],
-                  style: const TextStyle(fontSize: 14),
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 6,
-                    ),
-                    border: InputBorder.none,
-                  ),
-                  onChanged: (value) {
-                    controller.rowFields[index] = {
-                      ...?controller.rowFields[index],
-                      'unit': value,
-                    };
-                  },
-                ),
-              ),
-            ),
-            Flexible(
-              child: DataCellWidget(
-                width: baseColumnWidth,
-                child: Focus(
-                  onFocusChange: (hasFocus) async {
-                    if (!hasFocus &&
-                        controller.priceControllers[index] != null) {
-                      final oldPrice = controller.priceOldValues[index] ?? '0';
-                      controller.priceControllers[index]?.text = oldPrice;
-                    }
-                  },
+                DataCellWidget(
+                  width: columnWidths['Qty']!,
                   child: TextField(
-                    controller: controller.priceControllers[index],
+                    controller: controller.quantityControllers[index],
                     keyboardType: TextInputType.number,
                     style: const TextStyle(fontSize: 14),
                     textAlign: TextAlign.center,
                     decoration: const InputDecoration(
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 6,
+                        horizontal: 10,
+                        vertical: 12,
                       ),
                       border: InputBorder.none,
                     ),
                     onChanged: (value) {
-                      final price = double.tryParse(value) ?? 0;
-                      final quantity =
-                          double.tryParse(
-                            controller.quantityControllers[index]?.text ?? '0',
-                          ) ??
+                      final quantity = int.tryParse(value) ?? 0;
+                      final price = double.tryParse(
+                              controller.priceControllers[index]?.text ?? '0') ??
                           0;
                       final salesPrice = quantity * price;
-                      final percent =
-                          double.tryParse(
-                            controller
-                                    .discountPercentControllers[index]
-                                    ?.text ??
-                                '0',
-                          ) ??
+                      final discountPercent = double.tryParse(
+                              controller
+                                      .discountPercentControllers[index]?.text ??
+                                  '0') ??
                           0;
-                      final discountAmount = (salesPrice * percent) / 100;
-                      final taxRate =
-                          double.tryParse(
-                            controller.rowFields[index]?['taxRate'] ?? '0',
-                          ) ??
+                      final discountAmount = (salesPrice * discountPercent) / 100;
+                      final taxRate = double.tryParse(
+                              controller.rowFields[index]?['taxRate'] ?? '0') ??
                           0;
                       final taxAmount = salesPrice * taxRate / 100;
+                      final amount = salesPrice + taxAmount - discountAmount;
                       controller.rowFields[index] = {
                         ...?controller.rowFields[index],
-                        'price': value,
+                        'quantity': value,
                         'salesPrice': salesPrice.toStringAsFixed(2),
-                        'taxAmount': taxAmount.toStringAsFixed(2),
                         'discountAmount': discountAmount.toStringAsFixed(2),
+                        'taxAmount': taxAmount.toStringAsFixed(2),
+                        'amount': amount.toStringAsFixed(2),
                       };
-                      controller.salesPriceControllers[index]?.text = salesPrice
-                          .toStringAsFixed(2);
+                      controller.salesPriceControllers[index]?.text =
+                          salesPrice.toStringAsFixed(2);
                       controller.discountAmountControllers[index]?.text =
                           discountAmount.toStringAsFixed(2);
+                      controller.taxAmountControllers[index]?.text =
+                          taxAmount.toStringAsFixed(2);
+                      controller.amountControllers[index]?.text =
+                          amount.toStringAsFixed(2);
                       controller.recalculateGrandTotal();
                       controller.recalculateTotalDiscount();
                     },
                   ),
                 ),
-              ),
-            ),
-            Flexible(
-              child: DataCellWidget(
-                width: baseColumnWidth,
-                child: TextField(
-                  controller: controller.salesPriceControllers[index],
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(fontSize: 14),
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 6,
+                DataCellWidget(
+                  width: columnWidths['Unit']!,
+                  child: TextField(
+                    controller: controller.unitControllers[index],
+                    style: const TextStyle(fontSize: 14),
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 12,
+                      ),
+                      border: InputBorder.none,
                     ),
-                    border: InputBorder.none,
+                    onChanged: (value) {
+                      controller.rowFields[index] = {
+                        ...?controller.rowFields[index],
+                        'unit': value,
+                      };
+                    },
                   ),
-                  readOnly: true,
                 ),
-              ),
-            ),
-            Flexible(
-              child: DataCellWidget(
-                width: discountColumnWidth,
-                child: TextField(
-                  controller: controller.discountPercentControllers[index],
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(fontSize: 14),
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 6,
-                    ),
-                    border: InputBorder.none,
-                  ),
-                  onChanged: (value) {
-                    final percent = double.tryParse(value) ?? 0;
-                    final salesPrice =
-                        double.tryParse(
-                          controller.salesPriceControllers[index]?.text ?? '0',
-                        ) ??
-                        0;
-                    final discountAmount = (salesPrice * percent) / 100;
-                    controller.discountAmountControllers[index]?.text =
-                        discountAmount.toStringAsFixed(2);
-                    controller.rowFields[index] = {
-                      ...?controller.rowFields[index],
-                      'discountPercent': value,
-                      'discountAmount': discountAmount.toStringAsFixed(2),
-                    };
-                    controller.recalculateGrandTotal();
-                    controller.recalculateTotalDiscount();
-                  },
-                ),
-              ),
-            ),
-            Flexible(
-              child: DataCellWidget(
-                width: discountColumnWidth,
-                child: TextField(
-                  controller: controller.discountAmountControllers[index],
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(fontSize: 14),
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 6,
-                    ),
-                    border: InputBorder.none,
-                  ),
-                  onChanged: (value) {
-                    final amount = double.tryParse(value) ?? 0;
-                    final salesPrice =
-                        double.tryParse(
-                          controller.salesPriceControllers[index]?.text ?? '0',
-                        ) ??
-                        0;
-                    final percent = salesPrice > 0
-                        ? (amount / salesPrice) * 100
-                        : 0;
-                    controller.discountPercentControllers[index]?.text = percent
-                        .toStringAsFixed(2);
-                    controller.rowFields[index] = {
-                      ...?controller.rowFields[index],
-                      'discountPercent': percent.toStringAsFixed(2),
-                      'discountAmount': value,
-                    };
-                    controller.recalculateGrandTotal();
-                    controller.recalculateTotalDiscount();
-                  },
-                ),
-              ),
-            ),
-            Flexible(
-              child: DataCellWidget(
-                width: baseColumnWidth,
-                child: GestureDetector(
-                  onTap: () {
-                    if (controller.showDropdownRows.contains(index)) {
-                      controller.showDropdownRows.remove(index);
-                    } else {
-                      controller.showDropdownRows.add(index);
-                    }
-                    controller.rowFields.refresh();
-                  },
-                  child: controller.showDropdownRows.contains(index)
-                      ? DropdownButtonFormField<String>(
-                          value:
-                              controller.rowFields[index]?['taxName'] ??
-                              (controller.taxList.isNotEmpty
-                                  ? controller.taxList.first['tax_name']
-                                  : null),
-                          isExpanded: true,
-                          decoration: const InputDecoration(
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 6,
-                            ),
-                            border: InputBorder.none,
-                          ),
-                          items: controller.taxList.map((tax) {
-                            return DropdownMenuItem<String>(
-                              value: tax['tax_name'],
-                              child: Text(
-                                '${tax['tax_name']} (${tax['tax']}%)',
-                                style: const TextStyle(fontSize: 14),
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            final selectedTax = controller.taxList.firstWhere(
-                              (e) => e['tax_name'] == value,
-                              orElse: () => controller.taxList.isNotEmpty
-                                  ? controller.taxList.first
-                                  : {},
-                            );
-                            final salesPrice =
-                                double.tryParse(
-                                  controller
-                                          .salesPriceControllers[index]
-                                          ?.text ??
-                                      '0',
-                                ) ??
-                                0;
-                            final taxRate =
-                                double.tryParse(
-                                  selectedTax['tax']?.toString() ?? '0',
-                                ) ??
-                                0;
-                            final taxAmount = salesPrice * taxRate / 100;
-                            controller.rowFields[index] = {
-                              ...?controller.rowFields[index],
-                              'taxName': value ?? '',
-                              'taxRate': selectedTax['tax']?.toString() ?? '0',
-                              'taxAmount': taxAmount.toStringAsFixed(2),
-                              'taxId': selectedTax['id']?.toString() ?? '',
-                            };
-                            controller.recalculateGrandTotal();
-                            controller.rowFields.refresh();
-                          },
-                        )
-                      : Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 10,
-                          ),
-                          child: Text(
-                            '${controller.rowFields[index]?['taxName'] ?? ''} (${controller.rowFields[index]?['taxRate'] ?? '0'}%)',
-                            style: const TextStyle(fontSize: 14),
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                DataCellWidget(
+                  width: columnWidths['Price/Unit']!,
+                  child: Focus(
+                    onFocusChange: (hasFocus) async {
+                      if (!hasFocus &&
+                          controller.priceControllers[index] != null) {
+                        final oldPrice =
+                            controller.priceOldValues[index] ?? '0';
+                        controller.priceControllers[index]?.text = oldPrice;
+                      }
+                    },
+                    child: TextField(
+                      controller: controller.priceControllers[index],
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(fontSize: 14),
+                      textAlign: TextAlign.center,
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 12,
                         ),
-                ),
-              ),
-            ),
-            Flexible(
-              child: DataCellWidget(
-                width: baseColumnWidth,
-                child: TextField(
-                  controller: TextEditingController(
-                    text: controller.rowFields[index]?['taxAmount'] ?? '',
-                  ),
-                  readOnly: true,
-                  style: const TextStyle(fontSize: 14),
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 6,
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (value) {
+                        final price = double.tryParse(value) ?? 0;
+                        final quantity = double.tryParse(
+                                controller.quantityControllers[index]?.text ??
+                                    '0') ??
+                            0;
+                        final salesPrice = quantity * price;
+                        final percent = double.tryParse(
+                                controller
+                                        .discountPercentControllers[index]
+                                        ?.text ??
+                                    '0') ??
+                            0;
+                        final discountAmount = (salesPrice * percent) / 100;
+                        final taxRate = double.tryParse(
+                                controller.rowFields[index]?['taxRate'] ?? '0') ??
+                            0;
+                        final taxAmount = salesPrice * taxRate / 100;
+                        final amount = salesPrice + taxAmount - discountAmount;
+                        controller.rowFields[index] = {
+                          ...?controller.rowFields[index],
+                          'price': value,
+                          'salesPrice': salesPrice.toStringAsFixed(2),
+                          'taxAmount': taxAmount.toStringAsFixed(2),
+                          'discountAmount': discountAmount.toStringAsFixed(2),
+                          'amount': amount.toStringAsFixed(2),
+                        };
+                        controller.salesPriceControllers[index]?.text =
+                            salesPrice.toStringAsFixed(2);
+                        controller.discountAmountControllers[index]?.text =
+                            discountAmount.toStringAsFixed(2);
+                        controller.taxAmountControllers[index]?.text =
+                            taxAmount.toStringAsFixed(2);
+                        controller.amountControllers[index]?.text =
+                            amount.toStringAsFixed(2);
+                        controller.recalculateGrandTotal();
+                        controller.recalculateTotalDiscount();
+                      },
                     ),
-                    border: InputBorder.none,
                   ),
                 ),
-              ),
-            ),
-            Flexible(
-              child: DataCellWidget(
-                width: baseColumnWidth * 1.5,
-                child: TextField(
-                  controller: TextEditingController(
-                    text: (() {
-                      final salesPrice =
-                          double.tryParse(
-                            controller.salesPriceControllers[index]?.text ??
-                                '0',
-                          ) ??
+                DataCellWidget(
+                  width: columnWidths['Sale Price']!,
+                  child: TextField(
+                    controller: controller.salesPriceControllers[index],
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(fontSize: 14),
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 12,
+                      ),
+                      border: InputBorder.none,
+                    ),
+                    readOnly: true,
+                  ),
+                ),
+                DataCellWidget(
+                  width: columnWidths['Disc %']!,
+                  child: TextField(
+                    controller: controller.discountPercentControllers[index],
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(fontSize: 14),
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 12,
+                      ),
+                      border: InputBorder.none,
+                    ),
+                    onChanged: (value) {
+                      final percent = double.tryParse(value) ?? 0;
+                      final salesPrice = double.tryParse(
+                              controller.salesPriceControllers[index]?.text ??
+                                  '0') ??
                           0;
-                      final discountAmount =
-                          double.tryParse(
-                            controller.rowFields[index]?['discountAmount'] ??
-                                '0',
-                          ) ??
-                          0;
-                      final taxAmount =
-                          double.tryParse(
-                            controller.rowFields[index]?['taxAmount'] ?? '0',
-                          ) ??
+                      final discountAmount = (salesPrice * percent) / 100;
+                      final taxAmount = double.tryParse(
+                              controller.taxAmountControllers[index]?.text ??
+                                  '0') ??
                           0;
                       final amount = salesPrice + taxAmount - discountAmount;
-                      return amount.toStringAsFixed(2);
-                    })(),
-                  ),
-                  readOnly: true,
-                  style: const TextStyle(fontSize: 14),
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 6,
-                    ),
-                    border: InputBorder.none,
+                      controller.discountAmountControllers[index]?.text =
+                          discountAmount.toStringAsFixed(2);
+                      controller.rowFields[index] = {
+                        ...?controller.rowFields[index],
+                        'discountPercent': value,
+                        'discountAmount': discountAmount.toStringAsFixed(2),
+                        'amount': amount.toStringAsFixed(2),
+                      };
+                      controller.amountControllers[index]?.text =
+                          amount.toStringAsFixed(2);
+                      controller.recalculateGrandTotal();
+                      controller.recalculateTotalDiscount();
+                    },
                   ),
                 ),
-              ),
+                DataCellWidget(
+                  width: columnWidths['Disc Amt']!,
+                  child: TextField(
+                    controller: controller.discountAmountControllers[index],
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(fontSize: 14),
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 12,
+                      ),
+                      border: InputBorder.none,
+                    ),
+                    onChanged: (value) {
+                      final amount = double.tryParse(value) ?? 0;
+                      final salesPrice = double.tryParse(
+                              controller.salesPriceControllers[index]?.text ??
+                                  '0') ??
+                          0;
+                      final percent =
+                          salesPrice > 0 ? (amount / salesPrice) * 100 : 0;
+                      final taxAmount = double.tryParse(
+                              controller.taxAmountControllers[index]?.text ??
+                                  '0') ??
+                          0;
+                      final totalAmount = salesPrice + taxAmount - amount;
+                      controller.discountPercentControllers[index]?.text =
+                          percent.toStringAsFixed(2);
+                      controller.rowFields[index] = {
+                        ...?controller.rowFields[index],
+                        'discountPercent': percent.toStringAsFixed(2),
+                        'discountAmount': value,
+                        'amount': totalAmount.toStringAsFixed(2),
+                      };
+                      controller.amountControllers[index]?.text =
+                          totalAmount.toStringAsFixed(2);
+                      controller.recalculateGrandTotal();
+                      controller.recalculateTotalDiscount();
+                    },
+                  ),
+                ),
+                DataCellWidget(
+                  width: columnWidths['Tax %']!,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (controller.showDropdownRows.contains(index)) {
+                        controller.showDropdownRows.remove(index);
+                      } else {
+                        controller.showDropdownRows.add(index);
+                      }
+                      controller.rowFields.refresh();
+                    },
+                    child: controller.showDropdownRows.contains(index)
+                        ? DropdownButtonFormField<String>(
+                            value: controller.rowFields[index]?['taxName'] ??
+                                (controller.taxList.isNotEmpty
+                                    ? controller.taxList.first['tax_name']
+                                    : null),
+                            isExpanded: true,
+                            decoration: const InputDecoration(
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 12,
+                              ),
+                              border: InputBorder.none,
+                            ),
+                            items: controller.taxList.map((tax) {
+                              return DropdownMenuItem<String>(
+                                value: tax['tax_name'],
+                                child: Text(
+                                  '${tax['tax_name']} (${tax['tax']}%)',
+                                  style: const TextStyle(fontSize: 14),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              final selectedTax = controller.taxList.firstWhere(
+                                (e) => e['tax_name'] == value,
+                                orElse: () => controller.taxList.isNotEmpty
+                                    ? controller.taxList.first
+                                    : {},
+                              );
+                              final salesPrice = double.tryParse(
+                                      controller
+                                              .salesPriceControllers[index]
+                                              ?.text ??
+                                          '0') ??
+                                  0;
+                              final taxRate = double.tryParse(
+                                      selectedTax['tax']?.toString() ?? '0') ??
+                                  0;
+                              final taxAmount = salesPrice * taxRate / 100;
+                              final discountAmount = double.tryParse(
+                                      controller
+                                              .discountAmountControllers[index]
+                                              ?.text ??
+                                          '0') ??
+                                  0;
+                              final amount = salesPrice + taxAmount - discountAmount;
+                              controller.rowFields[index] = {
+                                ...?controller.rowFields[index],
+                                'taxName': value ?? '',
+                                'taxRate': selectedTax['tax']?.toString() ?? '0',
+                                'taxAmount': taxAmount.toStringAsFixed(2),
+                                'taxId': selectedTax['id']?.toString() ?? '',
+                                'amount': amount.toStringAsFixed(2),
+                              };
+                              controller.taxAmountControllers[index]?.text =
+                                  taxAmount.toStringAsFixed(2);
+                              controller.amountControllers[index]?.text =
+                                  amount.toStringAsFixed(2);
+                              controller.recalculateGrandTotal();
+                              controller.rowFields.refresh();
+                            },
+                          )
+                        : Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 12,
+                            ),
+                            child: Text(
+                              '${controller.rowFields[index]?['taxName'] ?? ''} (${controller.rowFields[index]?['taxRate'] ?? '0'}%)',
+                              style: const TextStyle(fontSize: 14),
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                  ),
+                ),
+                DataCellWidget(
+                  width: columnWidths['Tax Amt']!,
+                  child: TextField(
+                    controller: controller.taxAmountControllers[index],
+                    readOnly: true,
+                    style: const TextStyle(fontSize: 14),
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 12,
+                      ),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                DataCellWidget(
+                  width: columnWidths['Amount']!,
+                  child: TextField(
+                    controller: controller.amountControllers[index],
+                    readOnly: true,
+                    style: const TextStyle(fontSize: 14),
+                    textAlign: TextAlign.center,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 12,
+                      ),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       );
     });
-  }
-}
-
-class SkuEditDialog extends StatelessWidget {
-  final TempPurchaseItem item;
-  final VoidCallback onSave;
-
-  SkuEditDialog({super.key, required this.item, required this.onSave});
-
-  final TextEditingController serialController = TextEditingController();
-  final RxList<String> serials = RxList<String>();
-
-  @override
-  Widget build(BuildContext context) {
-    // Initialize serials from item
-    serials.value = item.serialNumbers
-        .split(',')
-        .where((s) => s.trim().isNotEmpty)
-        .toList();
-
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: 400,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.qr_code, color: Colors.green.shade700, size: 24),
-                const SizedBox(width: 8),
-                Text(
-                  'Add Serial Numbers',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green.shade700,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: serialController,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Scan or Enter Serial Number',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: Icon(
-                  Icons.qr_code_scanner,
-                  color: Colors.green.shade600,
-                ),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    final value = serialController.text.trim();
-                    if (value.isNotEmpty && !serials.contains(value)) {
-                      serials.add(value);
-                      serialController.clear();
-                    }
-                  },
-                ),
-              ),
-              onSubmitted: (value) {
-                if (value.isNotEmpty && !serials.contains(value.trim())) {
-                  serials.add(value.trim());
-                  serialController.clear();
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Item: ${item.itemName}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text('Price: ₹${item.pricePerUnit}'),
-            const SizedBox(height: 16),
-            Container(
-              constraints: const BoxConstraints(maxHeight: 200),
-              child: serials.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No serial numbers added',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    )
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: serials.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          title: Text(
-                            serials[index],
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              serials.removeAt(index);
-                            },
-                          ),
-                        );
-                      },
-                    ),
-            ),
-            const SizedBox(height: 16),
-            Text('Total Items: ${serials.length}'),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Get.back(),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    item.purchaseQty = serials.length.toString();
-                    item.batchNo = serials.join(',');
-                    item.serialNumbers = serials.join(',');
-
-                    double price = double.tryParse(item.pricePerUnit) ?? 0;
-                    item.totalCost = (serials.length * price).toStringAsFixed(
-                      2,
-                    );
-
-                    onSave();
-                    Get.back();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green.shade700,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text('Save'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

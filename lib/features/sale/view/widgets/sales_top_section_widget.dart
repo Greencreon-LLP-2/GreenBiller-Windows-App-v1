@@ -1,6 +1,7 @@
 // Placeholder for SalesPageTopSectionWidget
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:greenbiller/features/parties/view/add_cutomer_dialog.dart';
 import 'package:greenbiller/features/sale/controller/sales_create_controller.dart';
 
 class SalesPageTopSectionWidget extends StatelessWidget {
@@ -222,7 +223,11 @@ class SalesPageTopSectionWidget extends StatelessWidget {
             SizedBox(
               height: 42,
               child: ElevatedButton(
-                onPressed: controller.generateBillNumber,
+                onPressed: () {
+                  Get.dialog(
+                    AddCustomerDialog(onSuccess: onCustomerAddSuccess),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
