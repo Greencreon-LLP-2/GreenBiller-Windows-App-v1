@@ -51,4 +51,5 @@ class AppRoutes {
   static const String overview = '/overview';
   static const String parties = '/parties';
   static const String reports = '/reports';
+  static const String plans = '/plans';
 }

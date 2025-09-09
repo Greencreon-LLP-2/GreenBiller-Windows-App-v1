@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 
 import 'package:greenbiller/routes/app_routes.dart';
+import 'package:greenbiller/core/gloabl_widgets/sidebar/trial_card.dart';
+import 'package:greenbiller/core/gloabl_widgets/sidebar/sidebar_upgrade_button.dart';
 import 'package:logger/logger.dart';
 
 class AdminSidebar extends StatelessWidget {
@@ -79,7 +81,7 @@ class AdminSidebar extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            // Header
+           
             Obx(
               () => UserAccountsDrawerHeader(
                 decoration: const BoxDecoration(color: Colors.green),
@@ -104,7 +106,13 @@ class AdminSidebar extends StatelessWidget {
               ),
             ),
 
-            // Navigation
+            const SizedBox(height: 2),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2.0),
+              child: TrialCard(trialEnds: DateTime(2025, 10, 2)),
+            ),
+
+            
             Expanded(
               child: ListView(
                 children: [
@@ -309,6 +317,9 @@ class AdminSidebar extends StatelessWidget {
                 ],
               ),
             ),
+
+            // Upgrade button above logout
+            const SidebarUpgradeButton(),
 
             // Logout
             Padding(
