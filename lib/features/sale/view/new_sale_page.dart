@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/features/items/model/item_model.dart';
 import 'package:greenbiller/features/sale/controller/sales_create_controller.dart';
+import 'package:greenbiller/features/sale/model/temp_purchase_item.dart';
 import 'package:greenbiller/features/sale/view/widgets/sales_page_bottom_section_widget.dart';
 import 'package:greenbiller/features/sale/view/widgets/sales_top_section_widget.dart';
 import 'package:greenbiller/features/sale/view/widgets/sku_edit_dialog.dart';
@@ -173,9 +174,9 @@ class NewSalePage extends GetView<SalesController> {
                       child: Text(
                         "Sales Items",
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: Colors.green.shade800,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          color: Colors.green.shade800,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -187,19 +188,20 @@ class NewSalePage extends GetView<SalesController> {
                           final columnWidths = {
                             '#': 40.0,
                             'Item': 250.0,
-                            'SKUs': 120.0,
+                            'SKUs': 150.0,
                             'Qty': 60.0,
                             'Unit': 80.0,
-                            'Price/Unit': 80.0,
-                            'Sale Price': 80.0,
-                            'Disc %': 60.0,
-                            'Disc Amt': 60.0,
+                            'Price/Unit': 150.0,
+                            'Sale Price': 150.0,
+                            'Disc %': 150.0,
+                            'Disc Amt': 150.0,
                             'Tax %': 250.0,
                             'Tax Amt': 150.0,
                             'Amount': 150.0,
                           };
-                          final totalTableWidth =
-                              columnWidths.values.reduce((a, b) => a + b);
+                          final totalTableWidth = columnWidths.values.reduce(
+                            (a, b) => a + b,
+                          );
 
                           return SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
@@ -272,9 +274,9 @@ class NewSalePage extends GetView<SalesController> {
                     onPressed: controller.isLoadingSavePrint.value
                         ? null
                         : () => controller.saveSale(
-                              print: true,
-                              context: context,
-                            ),
+                            print: true,
+                            context: context,
+                          ),
                     child: controller.isLoadingSavePrint.value
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
@@ -309,9 +311,9 @@ class NewSalePage extends GetView<SalesController> {
                     onPressed: controller.isLoadingSave.value
                         ? null
                         : () => controller.saveSale(
-                              print: false,
-                              context: context,
-                            ),
+                            print: false,
+                            context: context,
+                          ),
                     child: controller.isLoadingSave.value
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
@@ -488,10 +490,12 @@ class DataRowWidget extends StatelessWidget {
                               ...?controller.rowFields[index],
                               'batchNo':
                                   controller.tempPurchaseItems[index].batchNo,
-                              'quantity':
-                                  controller.tempPurchaseItems[index].purchaseQty,
-                              'serialNumbers':
-                                  controller.tempPurchaseItems[index].serialNumbers,
+                              'quantity': controller
+                                  .tempPurchaseItems[index]
+                                  .purchaseQty,
+                              'serialNumbers': controller
+                                  .tempPurchaseItems[index]
+                                  .serialNumbers,
                               'salesPrice':
                                   controller.tempPurchaseItems[index].totalCost,
                             };
@@ -548,18 +552,26 @@ class DataRowWidget extends StatelessWidget {
                     ),
                     onChanged: (value) {
                       final quantity = int.tryParse(value) ?? 0;
-                      final price = double.tryParse(
-                              controller.priceControllers[index]?.text ?? '0') ??
+                      final price =
+                          double.tryParse(
+                            controller.priceControllers[index]?.text ?? '0',
+                          ) ??
                           0;
                       final salesPrice = quantity * price;
-                      final discountPercent = double.tryParse(
-                              controller
-                                      .discountPercentControllers[index]?.text ??
-                                  '0') ??
+                      final discountPercent =
+                          double.tryParse(
+                            controller
+                                    .discountPercentControllers[index]
+                                    ?.text ??
+                                '0',
+                          ) ??
                           0;
-                      final discountAmount = (salesPrice * discountPercent) / 100;
-                      final taxRate = double.tryParse(
-                              controller.rowFields[index]?['taxRate'] ?? '0') ??
+                      final discountAmount =
+                          (salesPrice * discountPercent) / 100;
+                      final taxRate =
+                          double.tryParse(
+                            controller.rowFields[index]?['taxRate'] ?? '0',
+                          ) ??
                           0;
                       final taxAmount = salesPrice * taxRate / 100;
                       final amount = salesPrice + taxAmount - discountAmount;
@@ -571,14 +583,38 @@ class DataRowWidget extends StatelessWidget {
                         'taxAmount': taxAmount.toStringAsFixed(2),
                         'amount': amount.toStringAsFixed(2),
                       };
-                      controller.salesPriceControllers[index]?.text =
-                          salesPrice.toStringAsFixed(2);
+                      controller.salesPriceControllers[index]?.text = salesPrice
+                          .toStringAsFixed(2);
                       controller.discountAmountControllers[index]?.text =
                           discountAmount.toStringAsFixed(2);
-                      controller.taxAmountControllers[index]?.text =
-                          taxAmount.toStringAsFixed(2);
-                      controller.amountControllers[index]?.text =
-                          amount.toStringAsFixed(2);
+                      controller.taxAmountControllers[index]?.text = taxAmount
+                          .toStringAsFixed(2);
+                      controller.amountControllers[index]?.text = amount
+                          .toStringAsFixed(2);
+                      controller.ensureTempPurchaseItemsSize(index);
+                      controller.tempPurchaseItems[index] = TempPurchaseItem(
+                        customerId: controller.customerId.value ?? '',
+                        purchaseId: '',
+                        itemId: controller.rowFields[index]?['itemId'] ?? '',
+                        itemName:
+                            controller.rowFields[index]?['itemName'] ?? '',
+                        purchaseQty: value,
+                        pricePerUnit:
+                            controller.rowFields[index]?['price'] ?? '0',
+                        taxName: controller.rowFields[index]?['taxName'] ?? '',
+                        taxId: controller.rowFields[index]?['taxId'] ?? '',
+                        taxAmount: taxAmount.toStringAsFixed(2),
+                        discountType:
+                            controller.rowFields[index]?['discount'] ?? '',
+                        discountAmount: discountAmount.toStringAsFixed(2),
+                        totalCost: salesPrice.toStringAsFixed(2),
+                        unit: controller.rowFields[index]?['unit'] ?? '',
+                        taxRate: controller.rowFields[index]?['taxRate'] ?? '0',
+                        batchNo: controller.rowFields[index]?['batchNo'] ?? '',
+                        barcode: controller.rowFields[index]?['barcode'] ?? '',
+                        serialNumbers:
+                            controller.rowFields[index]?['serialNumbers'] ?? '',
+                      );
                       controller.recalculateGrandTotal();
                       controller.recalculateTotalDiscount();
                     },
@@ -603,6 +639,35 @@ class DataRowWidget extends StatelessWidget {
                         ...?controller.rowFields[index],
                         'unit': value,
                       };
+                      controller.ensureTempPurchaseItemsSize(index);
+                      controller.tempPurchaseItems[index] = TempPurchaseItem(
+                        customerId: controller.customerId.value ?? '',
+                        purchaseId: '',
+                        itemId: controller.rowFields[index]?['itemId'] ?? '',
+                        itemName:
+                            controller.rowFields[index]?['itemName'] ?? '',
+                        purchaseQty:
+                            controller.rowFields[index]?['quantity'] ?? '0',
+                        pricePerUnit:
+                            controller.rowFields[index]?['price'] ?? '0',
+                        taxName: controller.rowFields[index]?['taxName'] ?? '',
+                        taxId: controller.rowFields[index]?['taxId'] ?? '',
+                        taxAmount:
+                            controller.rowFields[index]?['taxAmount'] ?? '0',
+                        discountType:
+                            controller.rowFields[index]?['discount'] ?? '',
+                        discountAmount:
+                            controller.rowFields[index]?['discountAmount'] ??
+                            '0',
+                        totalCost:
+                            controller.rowFields[index]?['salesPrice'] ?? '0',
+                        unit: value,
+                        taxRate: controller.rowFields[index]?['taxRate'] ?? '0',
+                        batchNo: controller.rowFields[index]?['batchNo'] ?? '',
+                        barcode: controller.rowFields[index]?['barcode'] ?? '',
+                        serialNumbers:
+                            controller.rowFields[index]?['serialNumbers'] ?? '',
+                      );
                     },
                   ),
                 ),
@@ -632,20 +697,26 @@ class DataRowWidget extends StatelessWidget {
                       ),
                       onChanged: (value) {
                         final price = double.tryParse(value) ?? 0;
-                        final quantity = double.tryParse(
-                                controller.quantityControllers[index]?.text ??
-                                    '0') ??
+                        final quantity =
+                            double.tryParse(
+                              controller.quantityControllers[index]?.text ??
+                                  '0',
+                            ) ??
                             0;
                         final salesPrice = quantity * price;
-                        final percent = double.tryParse(
-                                controller
-                                        .discountPercentControllers[index]
-                                        ?.text ??
-                                    '0') ??
+                        final percent =
+                            double.tryParse(
+                              controller
+                                      .discountPercentControllers[index]
+                                      ?.text ??
+                                  '0',
+                            ) ??
                             0;
                         final discountAmount = (salesPrice * percent) / 100;
-                        final taxRate = double.tryParse(
-                                controller.rowFields[index]?['taxRate'] ?? '0') ??
+                        final taxRate =
+                            double.tryParse(
+                              controller.rowFields[index]?['taxRate'] ?? '0',
+                            ) ??
                             0;
                         final taxAmount = salesPrice * taxRate / 100;
                         final amount = salesPrice + taxAmount - discountAmount;
@@ -661,10 +732,39 @@ class DataRowWidget extends StatelessWidget {
                             salesPrice.toStringAsFixed(2);
                         controller.discountAmountControllers[index]?.text =
                             discountAmount.toStringAsFixed(2);
-                        controller.taxAmountControllers[index]?.text =
-                            taxAmount.toStringAsFixed(2);
-                        controller.amountControllers[index]?.text =
-                            amount.toStringAsFixed(2);
+                        controller.taxAmountControllers[index]?.text = taxAmount
+                            .toStringAsFixed(2);
+                        controller.amountControllers[index]?.text = amount
+                            .toStringAsFixed(2);
+                        controller.ensureTempPurchaseItemsSize(index);
+                        controller.tempPurchaseItems[index] = TempPurchaseItem(
+                          customerId: controller.customerId.value ?? '',
+                          purchaseId: '',
+                          itemId: controller.rowFields[index]?['itemId'] ?? '',
+                          itemName:
+                              controller.rowFields[index]?['itemName'] ?? '',
+                          purchaseQty:
+                              controller.rowFields[index]?['quantity'] ?? '0',
+                          pricePerUnit: value,
+                          taxName:
+                              controller.rowFields[index]?['taxName'] ?? '',
+                          taxId: controller.rowFields[index]?['taxId'] ?? '',
+                          taxAmount: taxAmount.toStringAsFixed(2),
+                          discountType:
+                              controller.rowFields[index]?['discount'] ?? '',
+                          discountAmount: discountAmount.toStringAsFixed(2),
+                          totalCost: salesPrice.toStringAsFixed(2),
+                          unit: controller.rowFields[index]?['unit'] ?? '',
+                          taxRate:
+                              controller.rowFields[index]?['taxRate'] ?? '0',
+                          batchNo:
+                              controller.rowFields[index]?['batchNo'] ?? '',
+                          barcode:
+                              controller.rowFields[index]?['barcode'] ?? '',
+                          serialNumbers:
+                              controller.rowFields[index]?['serialNumbers'] ??
+                              '',
+                        );
                         controller.recalculateGrandTotal();
                         controller.recalculateTotalDiscount();
                       },
@@ -706,14 +806,17 @@ class DataRowWidget extends StatelessWidget {
                     ),
                     onChanged: (value) {
                       final percent = double.tryParse(value) ?? 0;
-                      final salesPrice = double.tryParse(
-                              controller.salesPriceControllers[index]?.text ??
-                                  '0') ??
+                      final salesPrice =
+                          double.tryParse(
+                            controller.salesPriceControllers[index]?.text ??
+                                '0',
+                          ) ??
                           0;
                       final discountAmount = (salesPrice * percent) / 100;
-                      final taxAmount = double.tryParse(
-                              controller.taxAmountControllers[index]?.text ??
-                                  '0') ??
+                      final taxAmount =
+                          double.tryParse(
+                            controller.taxAmountControllers[index]?.text ?? '0',
+                          ) ??
                           0;
                       final amount = salesPrice + taxAmount - discountAmount;
                       controller.discountAmountControllers[index]?.text =
@@ -724,8 +827,34 @@ class DataRowWidget extends StatelessWidget {
                         'discountAmount': discountAmount.toStringAsFixed(2),
                         'amount': amount.toStringAsFixed(2),
                       };
-                      controller.amountControllers[index]?.text =
-                          amount.toStringAsFixed(2);
+                      controller.amountControllers[index]?.text = amount
+                          .toStringAsFixed(2);
+                      controller.ensureTempPurchaseItemsSize(index);
+                      controller.tempPurchaseItems[index] = TempPurchaseItem(
+                        customerId: controller.customerId.value ?? '',
+                        purchaseId: '',
+                        itemId: controller.rowFields[index]?['itemId'] ?? '',
+                        itemName:
+                            controller.rowFields[index]?['itemName'] ?? '',
+                        purchaseQty:
+                            controller.rowFields[index]?['quantity'] ?? '0',
+                        pricePerUnit:
+                            controller.rowFields[index]?['price'] ?? '0',
+                        taxName: controller.rowFields[index]?['taxName'] ?? '',
+                        taxId: controller.rowFields[index]?['taxId'] ?? '',
+                        taxAmount: taxAmount.toStringAsFixed(2),
+                        discountType:
+                            controller.rowFields[index]?['discount'] ?? '',
+                        discountAmount: discountAmount.toStringAsFixed(2),
+                        totalCost:
+                            controller.rowFields[index]?['salesPrice'] ?? '0',
+                        unit: controller.rowFields[index]?['unit'] ?? '',
+                        taxRate: controller.rowFields[index]?['taxRate'] ?? '0',
+                        batchNo: controller.rowFields[index]?['batchNo'] ?? '',
+                        barcode: controller.rowFields[index]?['barcode'] ?? '',
+                        serialNumbers:
+                            controller.rowFields[index]?['serialNumbers'] ?? '',
+                      );
                       controller.recalculateGrandTotal();
                       controller.recalculateTotalDiscount();
                     },
@@ -748,15 +877,19 @@ class DataRowWidget extends StatelessWidget {
                     ),
                     onChanged: (value) {
                       final amount = double.tryParse(value) ?? 0;
-                      final salesPrice = double.tryParse(
-                              controller.salesPriceControllers[index]?.text ??
-                                  '0') ??
+                      final salesPrice =
+                          double.tryParse(
+                            controller.salesPriceControllers[index]?.text ??
+                                '0',
+                          ) ??
                           0;
-                      final percent =
-                          salesPrice > 0 ? (amount / salesPrice) * 100 : 0;
-                      final taxAmount = double.tryParse(
-                              controller.taxAmountControllers[index]?.text ??
-                                  '0') ??
+                      final percent = salesPrice > 0
+                          ? (amount / salesPrice) * 100
+                          : 0;
+                      final taxAmount =
+                          double.tryParse(
+                            controller.taxAmountControllers[index]?.text ?? '0',
+                          ) ??
                           0;
                       final totalAmount = salesPrice + taxAmount - amount;
                       controller.discountPercentControllers[index]?.text =
@@ -767,8 +900,34 @@ class DataRowWidget extends StatelessWidget {
                         'discountAmount': value,
                         'amount': totalAmount.toStringAsFixed(2),
                       };
-                      controller.amountControllers[index]?.text =
-                          totalAmount.toStringAsFixed(2);
+                      controller.amountControllers[index]?.text = totalAmount
+                          .toStringAsFixed(2);
+                      controller.ensureTempPurchaseItemsSize(index);
+                      controller.tempPurchaseItems[index] = TempPurchaseItem(
+                        customerId: controller.customerId.value ?? '',
+                        purchaseId: '',
+                        itemId: controller.rowFields[index]?['itemId'] ?? '',
+                        itemName:
+                            controller.rowFields[index]?['itemName'] ?? '',
+                        purchaseQty:
+                            controller.rowFields[index]?['quantity'] ?? '0',
+                        pricePerUnit:
+                            controller.rowFields[index]?['price'] ?? '0',
+                        taxName: controller.rowFields[index]?['taxName'] ?? '',
+                        taxId: controller.rowFields[index]?['taxId'] ?? '',
+                        taxAmount: taxAmount.toStringAsFixed(2),
+                        discountType:
+                            controller.rowFields[index]?['discount'] ?? '',
+                        discountAmount: value,
+                        totalCost:
+                            controller.rowFields[index]?['salesPrice'] ?? '0',
+                        unit: controller.rowFields[index]?['unit'] ?? '',
+                        taxRate: controller.rowFields[index]?['taxRate'] ?? '0',
+                        batchNo: controller.rowFields[index]?['batchNo'] ?? '',
+                        barcode: controller.rowFields[index]?['barcode'] ?? '',
+                        serialNumbers:
+                            controller.rowFields[index]?['serialNumbers'] ?? '',
+                      );
                       controller.recalculateGrandTotal();
                       controller.recalculateTotalDiscount();
                     },
@@ -787,7 +946,8 @@ class DataRowWidget extends StatelessWidget {
                     },
                     child: controller.showDropdownRows.contains(index)
                         ? DropdownButtonFormField<String>(
-                            value: controller.rowFields[index]?['taxName'] ??
+                            value:
+                                controller.rowFields[index]?['taxName'] ??
                                 (controller.taxList.isNotEmpty
                                     ? controller.taxList.first['tax_name']
                                     : null),
@@ -818,36 +978,89 @@ class DataRowWidget extends StatelessWidget {
                                     ? controller.taxList.first
                                     : {},
                               );
-                              final salesPrice = double.tryParse(
-                                      controller
-                                              .salesPriceControllers[index]
-                                              ?.text ??
-                                          '0') ??
+                              final salesPrice =
+                                  double.tryParse(
+                                    controller
+                                            .salesPriceControllers[index]
+                                            ?.text ??
+                                        '0',
+                                  ) ??
                                   0;
-                              final taxRate = double.tryParse(
-                                      selectedTax['tax']?.toString() ?? '0') ??
+                              final taxRate =
+                                  double.tryParse(
+                                    selectedTax['tax']?.toString() ?? '0',
+                                  ) ??
                                   0;
                               final taxAmount = salesPrice * taxRate / 100;
-                              final discountAmount = double.tryParse(
-                                      controller
-                                              .discountAmountControllers[index]
-                                              ?.text ??
-                                          '0') ??
+                              final discountAmount =
+                                  double.tryParse(
+                                    controller
+                                            .discountAmountControllers[index]
+                                            ?.text ??
+                                        '0',
+                                  ) ??
                                   0;
-                              final amount = salesPrice + taxAmount - discountAmount;
+                              final amount =
+                                  salesPrice + taxAmount - discountAmount;
                               controller.rowFields[index] = {
                                 ...?controller.rowFields[index],
                                 'taxName': value ?? '',
-                                'taxRate': selectedTax['tax']?.toString() ?? '0',
+                                'taxRate':
+                                    selectedTax['tax']?.toString() ?? '0',
                                 'taxAmount': taxAmount.toStringAsFixed(2),
                                 'taxId': selectedTax['id']?.toString() ?? '',
                                 'amount': amount.toStringAsFixed(2),
                               };
                               controller.taxAmountControllers[index]?.text =
                                   taxAmount.toStringAsFixed(2);
-                              controller.amountControllers[index]?.text =
-                                  amount.toStringAsFixed(2);
+                              controller.amountControllers[index]?.text = amount
+                                  .toStringAsFixed(2);
+                              controller.ensureTempPurchaseItemsSize(index);
+                              controller
+                                  .tempPurchaseItems[index] = TempPurchaseItem(
+                                customerId: controller.customerId.value ?? '',
+                                purchaseId: '',
+                                itemId:
+                                    controller.rowFields[index]?['itemId'] ??
+                                    '',
+                                itemName:
+                                    controller.rowFields[index]?['itemName'] ??
+                                    '',
+                                purchaseQty:
+                                    controller.rowFields[index]?['quantity'] ??
+                                    '0',
+                                pricePerUnit:
+                                    controller.rowFields[index]?['price'] ??
+                                    '0',
+                                taxName: value ?? '',
+                                taxId: selectedTax['id']?.toString() ?? '',
+                                taxAmount: taxAmount.toStringAsFixed(2),
+                                discountType:
+                                    controller.rowFields[index]?['discount'] ??
+                                    '',
+                                discountAmount: discountAmount.toStringAsFixed(
+                                  2,
+                                ),
+                                totalCost:
+                                    controller
+                                        .rowFields[index]?['salesPrice'] ??
+                                    '0',
+                                unit:
+                                    controller.rowFields[index]?['unit'] ?? '',
+                                taxRate: selectedTax['tax']?.toString() ?? '0',
+                                batchNo:
+                                    controller.rowFields[index]?['batchNo'] ??
+                                    '',
+                                barcode:
+                                    controller.rowFields[index]?['barcode'] ??
+                                    '',
+                                serialNumbers:
+                                    controller
+                                        .rowFields[index]?['serialNumbers'] ??
+                                    '',
+                              );
                               controller.recalculateGrandTotal();
+                              controller.recalculateTotalDiscount();
                               controller.rowFields.refresh();
                             },
                           )

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:greenbiller/core/gloabl_widgets/dropdowns/custom_dropdown.dart';
 import 'package:greenbiller/features/sale/controller/sales_create_controller.dart';
 
 class SalesPageBottomSectionWidget extends StatelessWidget {
@@ -47,7 +46,7 @@ class SalesPageBottomSectionWidget extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Left Column - Payment Type, Sales Bill ID, Sales Note, Order Number
+              // Left Column - Payment Type, Sales Bill ID, Sales Note
               Expanded(
                 flex: 3,
                 child: Column(
@@ -89,8 +88,7 @@ class SalesPageBottomSectionWidget extends StatelessWidget {
                               child: Text('Bank Transfer'),
                             ),
                           ],
-                          onChanged: (val) =>
-                              controller.salesType.value = val ?? "",
+                          onChanged: controller.onSalesTypeChanged,
                           decoration: InputDecoration(
                             hintText: "Select Payment Type",
                             hintStyle: TextStyle(color: Colors.grey.shade500),
@@ -139,7 +137,7 @@ class SalesPageBottomSectionWidget extends StatelessWidget {
                             controller: controller.saleBillConrtoller,
                             maxLines: 1,
                             style: const TextStyle(fontSize: 14),
-                            readOnly: true, // Bill number is generated
+                            readOnly: true,
                             decoration: InputDecoration(
                               hintText: "Sales Bill ID",
                               hintStyle: TextStyle(color: Colors.grey.shade500),
@@ -262,7 +260,10 @@ class SalesPageBottomSectionWidget extends StatelessWidget {
                         "Other Charges",
                         controller.otherChargesController,
                         Icons.add_circle_outline,
-                        () => controller.recalculateGrandTotal(),
+                        () {
+                          controller.recalculateGrandTotal();
+                          controller.grandTotal.refresh();
+                        },
                       ),
                       const SizedBox(height: 12),
                       // Total Discount
@@ -279,63 +280,43 @@ class SalesPageBottomSectionWidget extends StatelessWidget {
                       Divider(color: Colors.green.shade300, thickness: 1),
                       const SizedBox(height: 8),
                       // Grand Total
-                      Obx(() {
-                        final grandTotal =
-                            controller.tempSubTotal.value +
-                            controller.tempTotalTax.value +
-                            (double.tryParse(
-                                  controller.otherChargesController.text,
-                                ) ??
-                                0) -
-                            controller.tempTotalDiscount.value;
-
-                        return _buildSummaryRow(
+                      Obx(
+                        () => _buildSummaryRow(
                           "Grand Total",
-                          "₹${grandTotal.toStringAsFixed(2)}",
+                          "₹${controller.grandTotal.value.toStringAsFixed(2)}",
                           isReadOnly: true,
                           isBold: true,
                           fontSize: 18,
                           color: Colors.green.shade800,
-                        );
-                      }),
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       // Paid Amount
                       _buildSummaryRowWithInput(
                         "Paid Amount",
                         controller.paidAmountController,
                         Icons.account_balance_wallet,
-                        null,
+                        () {
+                          controller.updateBalance();
+                          controller.balance.refresh();
+                        },
                       ),
                       const SizedBox(height: 16),
                       // Balance
                       Obx(() {
-                        final grandTotal =
-                            controller.tempSubTotal.value +
-                            controller.tempTotalTax.value +
-                            (double.tryParse(
-                                  controller.otherChargesController.text,
-                                ) ??
-                                0) -
-                            controller.tempTotalDiscount.value;
-                        final balance =
-                            grandTotal -
-                            (double.tryParse(
-                                  controller.paidAmountController.text,
-                                ) ??
-                                0);
                         return Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: balance < 0
+                            color: controller.balance.value < 0
                                 ? Colors.red.shade50
-                                : balance > 0
+                                : controller.balance.value > 0
                                 ? Colors.orange.shade50
                                 : Colors.green.shade100,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: balance < 0
+                              color: controller.balance.value < 0
                                   ? Colors.red.shade300
-                                  : balance > 0
+                                  : controller.balance.value > 0
                                   ? Colors.orange.shade300
                                   : Colors.green.shade400,
                             ),
@@ -346,31 +327,31 @@ class SalesPageBottomSectionWidget extends StatelessWidget {
                               Row(
                                 children: [
                                   Icon(
-                                    balance < 0
+                                    controller.balance.value < 0
                                         ? Icons.arrow_downward
-                                        : balance > 0
+                                        : controller.balance.value > 0
                                         ? Icons.arrow_upward
                                         : Icons.check_circle,
-                                    color: balance < 0
+                                    color: controller.balance.value < 0
                                         ? Colors.red.shade600
-                                        : balance > 0
+                                        : controller.balance.value > 0
                                         ? Colors.orange.shade600
                                         : Colors.green.shade700,
                                     size: 18,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    balance < 0
+                                    controller.balance.value < 0
                                         ? "Credit Balance"
-                                        : balance > 0
+                                        : controller.balance.value > 0
                                         ? "Balance Due"
                                         : "Balanced",
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: balance < 0
+                                      color: controller.balance.value < 0
                                           ? Colors.red.shade700
-                                          : balance > 0
+                                          : controller.balance.value > 0
                                           ? Colors.orange.shade700
                                           : Colors.green.shade700,
                                     ),
@@ -378,13 +359,13 @@ class SalesPageBottomSectionWidget extends StatelessWidget {
                                 ],
                               ),
                               Text(
-                                "₹${balance.abs().toStringAsFixed(2)}",
+                                "₹${controller.balance.value.abs().toStringAsFixed(2)}",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: balance < 0
+                                  color: controller.balance.value < 0
                                       ? Colors.red.shade700
-                                      : balance > 0
+                                      : controller.balance.value > 0
                                       ? Colors.orange.shade700
                                       : Colors.green.shade700,
                                 ),
@@ -481,7 +462,9 @@ class SalesPageBottomSectionWidget extends StatelessWidget {
                   fontSize: 14,
                 ),
               ),
-              onChanged: (value) => onChanged?.call(),
+              onChanged: (value) {
+                onChanged?.call();
+              },
             ),
           ),
         ),
