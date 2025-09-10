@@ -1288,7 +1288,7 @@ class AddItemsPage extends GetView<AddItemController> {
       return Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: DropdownButtonFormField<String>(
-          initialValue: selectedValue,
+          value: selectedValue,
           onChanged: onChanged,
           icon: const Icon(Icons.keyboard_arrow_down, size: 20),
           iconEnabledColor: accentColor.withOpacity(0.7),

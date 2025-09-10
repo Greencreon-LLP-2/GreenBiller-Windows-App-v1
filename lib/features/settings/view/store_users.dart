@@ -499,7 +499,7 @@ class StoreUsers extends GetView<UserCreationController> {
                       children: [
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            initialValue: controller.selectedRole.value,
+                            value: controller.selectedRole.value,
                             decoration: InputDecoration(
                               labelText: 'Role',
                               prefixIcon: const Icon(
