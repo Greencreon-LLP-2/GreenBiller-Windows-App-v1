@@ -7,6 +7,8 @@ import 'package:greenbiller/core/gloabl_widgets/sidebar/admin_sidebar.dart';
 import 'package:greenbiller/entry_point/controller/store_admin_controller.dart';
 import 'package:greenbiller/entry_point/model/dashboard_model.dart';
 import 'package:greenbiller/entry_point/store_admin/cyber_punk_sales_chart.dart';
+import 'package:greenbiller/features/items/views/items/items_dashboard_page.dart';
+import 'package:greenbiller/routes/app_routes.dart';
 
 class StoreAdminEntryPoint extends GetView<StoreAdminController> {
   const StoreAdminEntryPoint({super.key});
@@ -80,8 +82,6 @@ class StoreAdminEntryPoint extends GetView<StoreAdminController> {
                       final dashboard = controller.dashboardData.value!;
                       final overview = dashboard.businessOverview;
                       final transactions = dashboard.recentTransactions ?? [];
-                      final salesOverview =
-                          dashboard.salesOverviewLast7Days ?? [];
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,10 +245,14 @@ class StoreAdminEntryPoint extends GetView<StoreAdminController> {
                                       children: [
                                         quickActionTileGradient(
                                           Icons.add,
-                                          "New Sale",
+                                          "Items",
                                           Colors.green,
                                           Colors.greenAccent,
-                                          () => Get.to('/new-sale'),
+                                          () {
+                                            Get.toNamed(
+                                              AppRoutes.itemsDashboard,
+                                            );
+                                          },
                                         ),
                                         quickActionTileGradient(
                                           Icons.sync_alt,

@@ -19,11 +19,13 @@ import 'package:greenbiller/features/items/controller/brand_controller.dart';
 import 'package:greenbiller/features/items/controller/category_controller.dart';
 import 'package:greenbiller/features/items/controller/category_items_controller.dart';
 import 'package:greenbiller/features/items/controller/edit_item_controller.dart';
+import 'package:greenbiller/features/items/controller/items_dashboard_controller.dart';
 import 'package:greenbiller/features/items/controller/unit_controller.dart';
 import 'package:greenbiller/features/items/views/brands/brand_page.dart';
 import 'package:greenbiller/features/items/views/category/categories_page.dart';
 import 'package:greenbiller/features/items/views/items/add_items_page.dart';
 import 'package:greenbiller/features/items/views/items/all_items_page.dart';
+import 'package:greenbiller/features/items/views/items/items_dashboard_page.dart';
 import 'package:greenbiller/features/items/views/units/units_page.dart';
 import 'package:greenbiller/features/notifications/view/notification_settings_page.dart';
 import 'package:greenbiller/features/parties/controller/parties_controller.dart';
@@ -458,6 +460,13 @@ class MyApp extends StatelessWidget {
           page: () => StockTransferItemPage(),
           binding: BindingsBuilder(() {
             Get.put(StockController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.itemsDashboard,
+          page: () => ItemsDashboardPage(),
+          binding: BindingsBuilder(() {
+            Get.put(ItemsDashboardController());
           }),
         ),
       ],

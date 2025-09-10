@@ -4,7 +4,6 @@ import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:flutter/services.dart';
 
-
 // Text styles similar to reference code
 class AppTextStyles {
   static const TextStyle h1 = TextStyle(
@@ -94,13 +93,13 @@ class LogoHeaderWidget extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: accentColor.withOpacity(0.1),
-          ),
-          child: const Icon(
-            Icons.account_balance_wallet,
-            size: 100,
-            color: accentColor,
+            image: const DecorationImage(
+              image: AssetImage('assets/images/logo_image.png'),
+              fit: BoxFit.contain,
+            ),
           ),
         ),
+
         const SizedBox(height: 24),
         Text(
           'Green Biller',
@@ -303,9 +302,9 @@ class LoginFormContent extends StatelessWidget {
                       },
                       inputFormatters: [
                         LengthLimitingTextInputFormatter(30),
-                        FilteringTextInputFormatter.deny(RegExp(r'\s'))
+                        FilteringTextInputFormatter.deny(RegExp(r'\s')),
                       ],
-                      
+
                       controller: passwordController,
                       obscureText: !isVisible,
                     );
