@@ -1,0 +1,60 @@
+# Flutter/Dart related
+.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.flutter-versions
+.generated/
+.idea/
+.vscode/
+.flutter/
+
+# Android
+**/android/.gradle/
+**/android/app/build/
+**/android/build/
+
+# iOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# Web
+**/web/.dart_tool/
+**/web/build/
+
+# MacOS
+**/macos/Pods/
+**/macos/Flutter/Generated.xcconfig
+**/macos/Runner/GeneratedPluginRegistrant.*
+
+# Windows
+**/windows/flutter/ephemeral/
+
+# Linux
+**/linux/flutter/ephemeral/
+
+# Misc
+*.lock
+pubspec.lock
+
+# Logs
+*.log
+
+# IntelliJ
+*.iml
+.idea/
+
+# VS Code
+.vscode/
+
+# Others
+*.DS_Store
+*.class
+*.jar
+*.war
+*.ear
