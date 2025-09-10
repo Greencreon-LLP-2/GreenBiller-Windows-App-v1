@@ -81,7 +81,6 @@ class AdminSidebar extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-           
             Obx(
               () => UserAccountsDrawerHeader(
                 decoration: const BoxDecoration(color: Colors.green),
@@ -112,13 +111,12 @@ class AdminSidebar extends StatelessWidget {
               child: TrialCard(trialEnds: DateTime(2025, 10, 2)),
             ),
 
-            
             Expanded(
               child: ListView(
                 children: [
                   _buildNavTile(
                     title: "Dashboard",
-                    icon: Icons.home,
+                    icon: Icons.dashboard_outlined,
                     route: AppRoutes.adminDashboard,
                     currentRoute: currentRoute,
                     onTap: () => Get.toNamed(AppRoutes.adminDashboard),
@@ -126,36 +124,35 @@ class AdminSidebar extends StatelessWidget {
                   _buildSectionHeader("Quick Actions"),
                   _buildNavTile(
                     title: "Overview",
-                    icon: Icons.dashboard_outlined,
+                    icon: Icons.insights_outlined,
                     route: AppRoutes.overview,
                     currentRoute: currentRoute,
                     onTap: () => Get.toNamed(AppRoutes.overview),
                   ),
                   _buildNavTile(
-                    title: "Create Purchase",
-                    icon: Icons.add_shopping_cart,
+                    title: "New Purchase",
+                    icon: Icons.add_shopping_cart_outlined,
                     route: AppRoutes.newPurchase,
                     currentRoute: currentRoute,
                     onTap: () => Get.toNamed(AppRoutes.newPurchase),
                   ),
                   _buildNavTile(
-                    title: "Create Sales",
-                    icon: Icons.sell,
+                    title: "New Sale",
+                    icon: Icons.sell_outlined,
                     route: AppRoutes.newSales,
                     currentRoute: currentRoute,
                     onTap: () => Get.toNamed(AppRoutes.newSales),
                   ),
-                  _buildSectionHeader("Dashboard"),
+                  _buildSectionHeader("Business"),
                   _buildNavTile(
                     title: "Parties",
-                    icon: Icons.person_outline,
+                    icon: Icons.people_outlined,
                     route: AppRoutes.parties,
                     currentRoute: currentRoute,
                     onTap: () => Get.toNamed(AppRoutes.parties),
                   ),
-
                   _buildNavTile(
-                    title: "View Stores",
+                    title: "Stores",
                     icon: Icons.store_outlined,
                     route: AppRoutes.viewStore,
                     currentRoute: currentRoute,
@@ -163,15 +160,15 @@ class AdminSidebar extends StatelessWidget {
                   ),
                   _buildNavTile(
                     title: "Reports",
-                    icon: Icons.book,
+                    icon: Icons.analytics_outlined,
                     route: AppRoutes.reports,
                     currentRoute: currentRoute,
                     onTap: () => Get.toNamed(AppRoutes.reports),
                   ),
-                  _buildSectionHeader("Items"),
+                  _buildSectionHeader("Inventory"),
                   ExpansionTile(
                     leading: const Icon(
-                      Icons.inventory_outlined,
+                      Icons.inventory_2_outlined,
                       color: Colors.grey,
                     ),
                     title: const Text(
@@ -197,14 +194,14 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       _buildNavTile(
                         title: "View Items",
-                        icon: Icons.list_alt,
+                        icon: Icons.list_alt_outlined,
                         route: AppRoutes.viewItems,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.viewItems),
                         indent: 16,
                       ),
                       _buildNavTile(
-                        title: "Item Categories",
+                        title: "Categories",
                         icon: Icons.category_outlined,
                         route: AppRoutes.categories,
                         currentRoute: currentRoute,
@@ -229,8 +226,40 @@ class AdminSidebar extends StatelessWidget {
                       ),
                     ],
                   ),
-
-                  _buildSectionHeader("Sales & Purchases"),
+                  ExpansionTile(
+                    leading: const Icon(
+                      Icons.move_to_inbox_outlined,
+                      color: Colors.grey,
+                    ),
+                    title: const Text(
+                      "Stock Management",
+                      style: TextStyle(fontSize: 15),
+                    ),
+                    childrenPadding: const EdgeInsets.only(left: 16),
+                    initiallyExpanded: [
+                      AppRoutes.stockAdjustment,
+                      AppRoutes.stockTransfer,
+                    ].contains(currentRoute),
+                    children: [
+                      _buildNavTile(
+                        title: "Stock Adjustment",
+                        icon: Icons.tune_outlined,
+                        route: AppRoutes.stockAdjustment,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.stockAdjustment),
+                        indent: 16,
+                      ),
+                      _buildNavTile(
+                        title: "Stock Transfer",
+                        icon: Icons.swap_horiz_outlined,
+                        route: AppRoutes.stockTransfer,
+                        currentRoute: currentRoute,
+                        onTap: () => Get.toNamed(AppRoutes.stockTransfer),
+                        indent: 16,
+                      ),
+                    ],
+                  ),
+                  _buildSectionHeader("Transactions"),
                   ExpansionTile(
                     leading: const Icon(
                       Icons.receipt_long_outlined,
@@ -244,41 +273,38 @@ class AdminSidebar extends StatelessWidget {
                     initiallyExpanded: [
                       AppRoutes.viewPurchaseBills,
                       AppRoutes.purchaseReturnView,
+                      AppRoutes.allPaymentOutView,
                     ].contains(currentRoute),
                     children: [
                       _buildNavTile(
                         title: "Purchase History",
-                        icon: Icons.history,
+                        icon: Icons.history_outlined,
                         route: AppRoutes.viewPurchaseBills,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.viewPurchaseBills),
                         indent: 16,
                       ),
                       _buildNavTile(
-                        title: "View Purchase Returns",
-                        icon: Icons.arrow_back,
+                        title: "Purchase Returns",
+                        icon: Icons.swap_horiz_outlined,
                         route: AppRoutes.purchaseReturnView,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
                         indent: 16,
                       ),
-
                       _buildNavTile(
                         title: "Payment Out",
-                        icon: Icons.history,
+                        icon: Icons.payments_outlined,
                         route: AppRoutes.allPaymentOutView,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.allPaymentOutView),
                         indent: 16,
                       ),
-                      // Note: /purchase/return-create/:purchaseId is not included here
-                      // as it requires a purchaseId and is accessed contextually
                     ],
-
                   ),
                   ExpansionTile(
                     leading: const Icon(
-                      Icons.receipt_long_outlined,
+                      Icons.point_of_sale_outlined,
                       color: Colors.grey,
                     ),
                     title: const Text("Sales", style: TextStyle(fontSize: 15)),
@@ -286,11 +312,13 @@ class AdminSidebar extends StatelessWidget {
                     initiallyExpanded: [
                       AppRoutes.viewAllsales,
                       AppRoutes.viewAllsalesOrders,
+                      AppRoutes.viewAllsalesReturns,
+                      AppRoutes.allPaymentInView,
                     ].contains(currentRoute),
                     children: [
                       _buildNavTile(
                         title: "Sales History",
-                        icon: Icons.history,
+                        icon: Icons.history_outlined,
                         route: AppRoutes.viewAllsales,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.viewAllsales),
@@ -298,16 +326,15 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       _buildNavTile(
                         title: "Sale Orders",
-                        icon: Icons.arrow_back,
+                        icon: Icons.shopping_cart_outlined,
                         route: AppRoutes.viewAllsalesOrders,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.viewAllsalesOrders),
                         indent: 16,
                       ),
-
                       _buildNavTile(
                         title: "Sale Returns",
-                        icon: Icons.arrow_back,
+                        icon: Icons.swap_horiz_outlined,
                         route: AppRoutes.viewAllsalesReturns,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.viewAllsalesReturns),
@@ -315,31 +342,14 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       _buildNavTile(
                         title: "Payment In",
-                        icon: Icons.arrow_back,
+                        icon: Icons.payments_outlined,
                         route: AppRoutes.allPaymentInView,
                         currentRoute: currentRoute,
                         onTap: () => Get.toNamed(AppRoutes.allPaymentInView),
                         indent: 16,
                       ),
-                      _buildNavTile(
-                        title: "Stock Adjustment",
-                        icon: Icons.arrow_back,
-                        route: AppRoutes.purchaseReturnView,
-                        currentRoute: currentRoute,
-                        onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
-                        indent: 16,
-                      ),
-                      _buildNavTile(
-                        title: "Stock Transfer",
-                        icon: Icons.arrow_back,
-                        route: AppRoutes.purchaseReturnView,
-                        currentRoute: currentRoute,
-                        onTap: () => Get.toNamed(AppRoutes.purchaseReturnView),
-                        indent: 16,
-                      ),
                     ],
                   ),
-
                   _buildSectionHeader("Settings"),
                   ExpansionTile(
                     leading: const Icon(
@@ -396,9 +406,7 @@ class AdminSidebar extends StatelessWidget {
               ),
             ),
 
-          
             const SidebarUpgradeButton(),
-
 
             Padding(
               padding: const EdgeInsets.all(8.0),

@@ -75,6 +75,9 @@ import 'package:greenbiller/features/settings/controller/store_user_creation_con
 import 'package:greenbiller/features/settings/view/business_profile_page.dart';
 import 'package:greenbiller/features/settings/view/invoice_settings_page.dart';
 import 'package:greenbiller/features/settings/view/store_users.dart';
+import 'package:greenbiller/features/stock/controller/stock_controller.dart';
+import 'package:greenbiller/features/stock/view/stock_adjustment_item_page.dart';
+import 'package:greenbiller/features/stock/view/stock_transfer_item_page.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
 import 'package:greenbiller/features/store/controller/store_warehouse_details_controller.dart';
 import 'package:greenbiller/features/store/view/edit_store_page.dart';
@@ -441,6 +444,20 @@ class MyApp extends StatelessWidget {
           page: () => PlanPage(),
           binding: BindingsBuilder(() {
             Get.put(PlanController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.stockAdjustment,
+          page: () => StockAdjustmentItemPage(),
+          binding: BindingsBuilder(() {
+            Get.put(StockController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.stockTransfer,
+          page: () => StockTransferItemPage(),
+          binding: BindingsBuilder(() {
+            Get.put(StockController());
           }),
         ),
       ],
