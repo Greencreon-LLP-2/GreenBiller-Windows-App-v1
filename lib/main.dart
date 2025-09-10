@@ -135,7 +135,8 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'GreenBiller',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.login,
+      // initialRoute: AppRoutes.login,
+      initialRoute: AppRoutes.adminDashboard,
       getPages: [
         // Authentication Routes
         GetPage(name: AppRoutes.login, page: () => const LoginPage()),
@@ -146,9 +147,9 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: AppRoutes.adminDashboard,
           page: () => const StoreAdminEntryPoint(),
-          binding: BindingsBuilder((){
+          binding: BindingsBuilder(() {
             Get.put(StoreAdminController());
-          })
+          }),
         ),
         GetPage(
           name: AppRoutes.managerDashboard,
