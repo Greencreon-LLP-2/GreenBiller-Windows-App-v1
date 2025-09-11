@@ -1,289 +1,364 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:dio/dio.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
-import 'package:logger/logger.dart';
+import 'package:greenbiller/features/auth/controller/auth_controller.dart';
+import 'package:greenbiller/features/parties/models/customer_model.dart';
+import 'package:greenbiller/features/parties/models/supplier_model.dart';
 
 class AddPaymentController extends GetxController {
-  late final DioClient dioClient;
-  late final Logger logger;
-  AddPaymentController();
+  final DioClient _dioClient = DioClient();
+  final TextEditingController searchCustomerController =
+      TextEditingController();
+  final TextEditingController searchSupplierController =
+      TextEditingController();
+  final TextEditingController saleIdController = TextEditingController();
+  final TextEditingController paymentController = TextEditingController();
+  final TextEditingController referenceController = TextEditingController();
+  final TextEditingController noteController = TextEditingController();
 
-  // ================= CUSTOMER SEARCH & SELECTION =================
-  final searchController = TextEditingController();
-  final customers = <Map<String, dynamic>>[].obs;
-  final selectedCustomer = Rxn<Map<String, dynamic>>();
-  final isLoadingCustomers = false.obs;
-  final customerSuggestions = <Map<String, dynamic>>[].obs;
-  final showSuggestions = false.obs;
-
-  final suppliers = <Map<String, dynamic>>[].obs;
-  final selectedSupplier = Rxn<Map<String, dynamic>>();
-  final isLoadingSuppliers = false.obs;
-  final supplierSuggestions = <Map<String, dynamic>>[].obs;
-  final showSupplierSuggestions = false.obs;
-
-  // ================= PAYMENT FIELDS =================
-  final saleIdController = TextEditingController();
-  final paymentController = TextEditingController();
-  final referenceController = TextEditingController();
-  final noteController = TextEditingController();
-  final paymentType = 'Cash'.obs;
   final selectedDate = DateTime.now().obs;
+  final paymentType = 'Cash'.obs;
   final isSaving = false.obs;
+
+  final customerList = <CustomerData>[].obs;
+  final supplierList = <SupplierData>[].obs;
+  final customerSuggestions = <CustomerData>[].obs;
+  final supplierSuggestions = <SupplierData>[].obs;
+  final selectedCustomer = Rxn<CustomerData>();
+  final selectedSupplier = Rxn<SupplierData>();
+  final showSuggestions = false.obs;
+  final showSupplierSuggestions = false.obs;
+  final isLoading = false.obs;
+  final hasError = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    dioClient = DioClient();
-    logger = Logger();
+    searchCustomerController.addListener(onCustomerSearch);
+    searchSupplierController.addListener(onSupplierSearch);
     fetchCustomers();
     fetchSuppliers();
-    searchController.addListener(onSearchChanged);
+  }
+
+  Future<void> fetchCustomers() async {
+    isLoading.value = true;
+    hasError.value = false;
+    try {
+      final response = await _dioClient.dio.get(viewCustomerUrl);
+
+      if (response.statusCode == 200) {
+        final customerModel = CustomerModel.fromJson(response.data);
+        if (customerModel.status == 1 && customerModel.data != null) {
+          customerSuggestions.assignAll(customerModel.data!);
+          customerList.assignAll(customerModel.data!);
+          print('Fetched ${customerModel.data!.length} customers');
+        } else {
+          throw Exception(customerModel.message ?? 'Failed to load customers');
+        }
+      } else {
+        throw Exception('Failed to load customers: ${response.statusMessage}');
+      }
+    } catch (e) {
+      hasError.value = true;
+      Get.snackbar(
+        'Error',
+        'Failed to load customers: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      print('Error fetching customers: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void onCustomerSearch() {
+    final query = searchCustomerController.text.trim().toLowerCase();
+
+    // If no customers in the list
+    if (customerList.isEmpty) {
+      Get.snackbar(
+        "No Customers Found",
+        "Please add customers first",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      showSuggestions.value = false;
+      customerSuggestions.clear();
+      return;
+    }
+
+    if (query.isEmpty) {
+      showSuggestions.value = false;
+      customerSuggestions.clear();
+      return;
+    }
+
+    showSuggestions.value = true;
+
+    final results = customerList
+        .where(
+          (customer) =>
+              (customer.customerName ?? '').toLowerCase().contains(query) ||
+              (customer.mobile ?? '').toLowerCase().contains(query),
+        )
+        .toList();
+
+    customerSuggestions.assignAll(results);
+    print('Customer suggestions filtered: ${customerSuggestions.length}');
+    for (var c in results) {
+      print(
+        '➡️ ID: ${c.id}, Name: ${c.customerName}, Mobile: ${c.mobile}, Email: ${c.email}',
+      );
+    }
+  }
+
+  // ------------------ SUPPLIER ------------------
+  void onSupplierSearch() {
+    final query = searchSupplierController.text.trim().toLowerCase();
+
+    // If no suppliers in the list
+    if (supplierList.isEmpty) {
+      Get.snackbar(
+        "No Suppliers Found",
+        "Please add suppliers first",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      showSupplierSuggestions.value = false;
+      supplierSuggestions.clear();
+      return;
+    }
+
+    if (query.isEmpty) {
+      showSupplierSuggestions.value = false;
+      supplierSuggestions.clear();
+      return;
+    }
+
+    showSupplierSuggestions.value = true;
+
+    final results = supplierList
+        .where(
+          (supplier) =>
+              (supplier.supplierName ?? '').toLowerCase().contains(query) ||
+              (supplier.mobile ?? '').toLowerCase().contains(query),
+        )
+        .toList();
+
+    supplierSuggestions.assignAll(results);
+
+    print('Supplier suggestions filtered: ${supplierSuggestions.length}');
+    for (var s in results) {
+      print(
+        '➡️ ID: ${s.id}, Name: ${s.supplierName}, Mobile: ${s.mobile}, Email: ${s.email}',
+      );
+    }
+  }
+
+  Future<void> fetchSuppliers() async {
+    isLoading.value = true;
+    hasError.value = false;
+    try {
+      final authController = Get.find<AuthController>();
+      final accessToken = authController.user.value?.accessToken;
+      if (accessToken == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _dioClient.dio.get(
+        viewSupplierUrl,
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+
+      if (response.statusCode == 200) {
+        final supplierModel = SupplierModel.fromJson(response.data);
+        if (supplierModel.status == 1 && supplierModel.data != null) {
+          supplierSuggestions.assignAll(supplierModel.data!);
+          supplierList.assignAll(supplierModel.data!);
+          print('Fetched ${supplierModel.data!.length} suppliers');
+        } else {
+          throw Exception(supplierModel.message ?? 'Failed to load suppliers');
+        }
+      } else {
+        throw Exception('Failed to load suppliers: ${response.statusMessage}');
+      }
+    } catch (e) {
+      hasError.value = true;
+      Get.snackbar(
+        'Error',
+        'Failed to load suppliers: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      print('Error fetching suppliers: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void selectCustomer(CustomerData customer) {
+    selectedCustomer.value = customer;
+    showSuggestions.value = false;
+    searchCustomerController.clear();
+    print('Selected customer: ${customer.customerName}');
+  }
+
+  void selectSupplier(SupplierData supplier) {
+    selectedSupplier.value = supplier;
+    showSupplierSuggestions.value = false;
+    searchSupplierController.clear();
+    print('Selected supplier: ${supplier.supplierName}');
+  }
+
+  Future<void> refreshCustomers() async {
+    await fetchCustomers();
+    selectedCustomer.value = null;
+    print('Customers refreshed');
+  }
+
+  Future<void> refreshSuppliers() async {
+    await fetchSuppliers();
+    selectedSupplier.value = null;
+    print('Suppliers refreshed');
+  }
+
+  Future<void> pickDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate.value,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      selectedDate.value = picked;
+      print('Selected date: $picked');
+    }
+  }
+
+  Future<void> savePaymentIn() async {
+    if (selectedCustomer.value == null) {
+      Get.snackbar(
+        'Error',
+        'Please select a customer',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+    if (saleIdController.text.isEmpty || paymentController.text.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Please fill all required fields',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+    isSaving.value = true;
+    try {
+      final response = await _dioClient.dio.post(
+        addSalesPaymentInUrl, // Assumed in api_constants.dart
+        data: {
+          'customer_id': selectedCustomer.value!.id,
+          'sale_id': saleIdController.text,
+          'payment': paymentController.text,
+          'payment_type': paymentType.value,
+          'reference_no': referenceController.text,
+          'payment_note': noteController.text,
+          'payment_date': selectedDate.value.toIso8601String(),
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar(
+          'Success',
+          'Payment In saved successfully',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+     
+      } else {
+        throw Exception('Failed to save payment: ${response.statusMessage}');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to save payment: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      print('Error saving payment in: $e');
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  Future<void> savePaymentOut() async {
+    if (selectedSupplier.value == null) {
+      Get.snackbar(
+        'Error',
+        'Please select a supplier',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+    if (saleIdController.text.isEmpty || paymentController.text.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Please fill all required fields',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+    isSaving.value = true;
+    try {
+      final response = await _dioClient.dio.post(
+        addPurcahsePaymentInUrl, // Assumed in api_constants.dart
+        data: {
+          'supplier_id': selectedSupplier.value!.id,
+          'purchase_id': saleIdController.text,
+          'payment': paymentController.text,
+          'payment_type': paymentType.value,
+          'reference_no': referenceController.text,
+          'payment_note': noteController.text,
+          'payment_date': selectedDate.value.toIso8601String(),
+        },
+      );
+
+      if (response.statusCode == 201) {
+        Get.snackbar(
+          'Success',
+          'Payment Out saved successfully',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+    
+      } else {
+        throw Exception('Failed to save payment: ${response.statusMessage}');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to save payment: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      print('Error saving payment out: $e');
+    } finally {
+      isSaving.value = false;
+    }
   }
 
   @override
   void onClose() {
-    searchController.dispose();
+    searchSupplierController.dispose();
     saleIdController.dispose();
     paymentController.dispose();
     referenceController.dispose();
     noteController.dispose();
     super.onClose();
-  }
-
-  // ================= CUSTOMER METHODS =================
-  Future<void> fetchCustomers({String? storeId}) async {
-    try {
-      isLoadingCustomers.value = true;
-      final response = await dioClient.dio.get(
-        '$viewCustomerUrl${storeId != null ? '/$storeId' : ''}',
-      );
-      if (response.data != null && response.data['data'] != null) {
-        customers.value = List<Map<String, dynamic>>.from(
-          response.data['data'],
-        );
-      }
-    } catch (e) {
-      logger.e('Error fetching customers: $e');
-      Get.snackbar('Error', 'Failed to load customers');
-    } finally {
-      isLoadingCustomers.value = false;
-    }
-  }
-
-  void onSearchChanged() {
-    final query = searchController.text.toLowerCase().trim();
-    if (query.isEmpty) {
-      customerSuggestions.clear();
-      showSuggestions.value = false;
-      return;
-    }
-    Future.delayed(const Duration(milliseconds: 100), () {
-      final filtered = customers
-          .where(
-            (c) => (c['customer_name'] ?? '').toString().toLowerCase().contains(
-              query,
-            ),
-          )
-          .toList();
-      customerSuggestions.value = filtered;
-      showSuggestions.value = filtered.isNotEmpty;
-    });
-  }
-
-  void selectCustomer(Map<String, dynamic> customer) {
-    selectedCustomer.value = customer;
-    searchController.text = customer['customer_name'] ?? '';
-    showSuggestions.value = false;
-  }
-
-  void refreshCustomers() {
-    fetchCustomers();
-    selectedCustomer.value = null;
-    searchController.clear();
-  }
-
-  // ================= SUPPLIER METHODS =================
-  Future<void> fetchSuppliers({String? storeId}) async {
-    try {
-      isLoadingSuppliers.value = true;
-      final response = await dioClient.dio.get(
-        '$viewSupplierUrl${storeId != null ? '/$storeId' : ''}',
-      );
-      if (response.data != null && response.data['data'] != null) {
-        suppliers.value = List<Map<String, dynamic>>.from(
-          response.data['data'],
-        );
-      }
-    } catch (e) {
-      logger.e('Error fetching suppliers: $e');
-      Get.snackbar('Error', 'Failed to load suppliers');
-    } finally {
-      isLoadingSuppliers.value = false;
-    }
-  }
-
-  void onSupplierSearch(String query) {
-    if (query.isEmpty) {
-      supplierSuggestions.clear();
-      showSupplierSuggestions.value = false;
-      return;
-    }
-    Future.delayed(const Duration(milliseconds: 100), () {
-      final filtered = suppliers
-          .where(
-            (s) => (s['supplier_name'] ?? '').toString().toLowerCase().contains(
-              query.toLowerCase(),
-            ),
-          )
-          .toList();
-      supplierSuggestions.value = filtered;
-      showSupplierSuggestions.value = filtered.isNotEmpty;
-    });
-  }
-
-  void selectSupplier(Map<String, dynamic> supplier) {
-    selectedSupplier.value = supplier;
-    showSupplierSuggestions.value = false;
-  }
-
-  void refreshSuppliers() {
-    fetchSuppliers();
-    selectedSupplier.value = null;
-  }
-
-  // ================== PAYMENT METHODS ==================
-  void pickDate(BuildContext context) async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate.value,
-      firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 5),
-    );
-    if (picked != null) selectedDate.value = picked;
-  }
-
-  Future<void> savePaymentIn() async {
-    if (selectedCustomer.value == null) {
-      Get.snackbar('Error', 'Please select a customer first');
-      return;
-    }
-
-    int? saleId = int.tryParse(saleIdController.text);
-    double? payment = double.tryParse(paymentController.text);
-
-    if (saleId == null) {
-      Get.snackbar('Error', 'Sale ID must be a number');
-      return;
-    }
-    if (payment == null || payment <= 0) {
-      Get.snackbar('Error', 'Enter a valid payment amount');
-      return;
-    }
-
-    final data = {
-      'customer_id': selectedCustomer.value!['id'],
-      'sale_id': saleId,
-      'payment': payment.toString(),
-      'payment_date': selectedDate.value.toIso8601String().split('T')[0],
-      'payment_type': paymentType.value,
-      'reference_no': referenceController.text.isNotEmpty
-          ? referenceController.text
-          : null,
-      'payment_note': noteController.text.isNotEmpty
-          ? noteController.text
-          : null,
-    };
-
-    await _savePayment('$baseUrl/salespayment-in', data);
-  }
-
-  Future<void> savePaymentOut() async {
-    if (selectedSupplier.value == null) {
-      Get.snackbar('Error', 'Please select a supplier first');
-      return;
-    }
-
-    double? payment = double.tryParse(paymentController.text);
-    if (payment == null || payment <= 0) {
-      Get.snackbar('Error', 'Enter a valid payment amount');
-      return;
-    }
-
-    final supplierDue =
-        double.tryParse(
-          selectedSupplier.value!['purchase_due']?.toString() ?? '0',
-        ) ??
-        0;
-
-    if (supplierDue > 0 && payment > supplierDue) {
-      Get.snackbar('Error', 'Payment exceeds supplier due of ₹ $supplierDue');
-      return;
-    }
-
-    final data = {
-      'supplier_id': selectedSupplier.value!['id'],
-      'payment': payment.toString(),
-      'payment_date': selectedDate.value.toIso8601String().split('T')[0],
-      'payment_type': paymentType.value,
-      'payment_note': noteController.text.isNotEmpty
-          ? noteController.text
-          : null,
-      'purchase_id': saleIdController.text.isNotEmpty
-          ? saleIdController.text
-          : null,
-      'reference_no': referenceController.text.isNotEmpty
-          ? referenceController.text
-          : null,
-    };
-
-    await _savePayment('$baseUrl/purchasepayment-out', data);
-  }
-
-  Future<void> _savePayment(String url, Map<String, dynamic> data) async {
-    try {
-      isSaving.value = true;
-      final response = await dioClient.dio.post(url, data: data);
-
-      if ((response.statusCode == 200 || response.statusCode == 201) &&
-          response.data['status'] == true) {
-        Get.snackbar(
-          'Success',
-          response.data['message'] ?? 'Payment saved successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.shade600,
-          colorText: Colors.white,
-        );
-        // Clear inputs
-        saleIdController.clear();
-        paymentController.clear();
-        referenceController.clear();
-        noteController.clear();
-        selectedCustomer.value = null;
-        selectedSupplier.value = null;
-        searchController.clear();
-      } else {
-        Get.snackbar(
-          'Error',
-          response.data['message'] ?? 'Failed to save payment',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade600,
-          colorText: Colors.white,
-        );
-      }
-    } catch (e) {
-      logger.e('Error saving payment: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to save payment',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade600,
-        colorText: Colors.white,
-      );
-    } finally {
-      isSaving.value = false;
-    }
   }
 }

@@ -24,6 +24,7 @@ class AppRoutes {
   static const String notificationDetails = '/notification-details';
 
   // Inventory Management Routes
+  static const String itemsDashboard = '/items/dashboard';
   static const String addItems = '/items/add';
   static const String viewItems = '/items/view';
   static const String brands = '/brands';
@@ -43,8 +44,7 @@ class AppRoutes {
   static const String viewAllsalesOrders = '/sales/orders/view';
   static const String createsaleOrder = '/sales/create/orders';
   static const String viewAllsalesReturns = '/sales/reutrns/view';
-  static const String stockAdjustment = '/stock/adjustment';
-  static const String stockTransfer = '/stock/transfer';
+
   static const String creditNote = '/sales/creditnote';
 
   // payment Routes
@@ -69,12 +69,12 @@ class AppRoutes {
   static const String purcahseSummaryByCustomer =
       '/reports/purchase-supplier-base-summary';
 
+  //stock
+  static const String stockAdjustment = '/stock/adjustment';
+  static const String stockTransfer = '/stock/transfer';
   // Other Routes
   static const String maintenance = '/maintenance';
   static const String overview = '/overview';
   static const String parties = '/parties';
-
-
   static const String plans = '/plans';
-
 }

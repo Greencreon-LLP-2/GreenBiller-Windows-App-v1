@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
+
 import 'package:greenbiller/core/gloabl_widgets/cards/card_container.dart';
 import 'package:greenbiller/features/parties/view/add_supplier_dialog.dart';
 import 'package:greenbiller/features/payment/controller/add_payment_controller.dart';
@@ -45,96 +46,140 @@ class AddPaymentOutPage extends GetView<AddPaymentController> {
           children: [
             Row(
               children: [
-                Icon(Icons.store, color: Colors.grey),
-                SizedBox(width: 6),
+                const Icon(Icons.store, color: Colors.grey),
+                const SizedBox(width: 10),
                 const Text(
                   'Supplier Information',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 20),
             TextField(
-              controller: controller.searchController,
-              onChanged: controller.onSupplierSearch, // hook supplier search
+              controller: controller.searchSupplierController,
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 labelText: 'Search supplier',
                 hintText: 'Search supplier by name or phone',
-
-                border: OutlineInputBorder(
+                border: const OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                 ),
-                suffixIcon: controller.searchController.text.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          controller.searchController.clear();
-                          controller.showSupplierSuggestions.value = false;
-                        },
-                      ),
+
+                suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: controller.searchSupplierController,
+                  builder: (context, value, _) {
+                    if (value.text.isEmpty) {
+                      return const SizedBox();
+                    }
+                    return IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        controller.searchSupplierController.clear();
+                        controller.showSupplierSuggestions.value = false;
+                      },
+                    );
+                  },
+                ),
               ),
             ),
-            const SizedBox(height: 20),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.black12,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 15,
-                  bottom: 15,
-                  right: 10,
-                  left: 10,
+            Obx(
+              () => controller.isLoading.value
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : controller.hasError.value
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Text(
+                              'Failed to load suppliers',
+                              style: TextStyle(color: Colors.red.shade700),
+                            ),
+                            const SizedBox(height: 8),
+                            ElevatedButton(
+                              onPressed: controller.fetchSuppliers,
+                              child: const Text('Retry'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : const SizedBox(),
+            ),
+            Obx(
+              () => controller.showSupplierSuggestions.value
+                  ? Container(
+                      constraints: const BoxConstraints(maxHeight: 150),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.grey.shade100,
+                      ),
+                      margin: const EdgeInsets.only(top: 8),
+                      child: controller.supplierSuggestions.isEmpty
+                          ? const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text('No suppliers found'),
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: controller.supplierSuggestions.length,
+                              itemBuilder: (context, index) {
+                                final supplier =
+                                    controller.supplierSuggestions[index];
+                                return ListTile(
+                                  title: Text(supplier.supplierName ?? ''),
+                                  subtitle: Text(supplier.mobile ?? '-'),
+                                  onTap: () =>
+                                      controller.selectSupplier(supplier),
+                                );
+                              },
+                            ),
+                    )
+                  : const SizedBox(),
+            ),
+            const SizedBox(height: 12),
+            Obx(() {
+              final selected = controller.selectedSupplier.value;
+              return Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey.shade100,
                 ),
                 child: Row(
                   children: [
-                    Obx(() {
-                      if (controller.showSupplierSuggestions.value) {
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: controller.supplierSuggestions.length,
-                          itemBuilder: (context, index) {
-                            final supplier =
-                                controller.supplierSuggestions[index];
-                            return ListTile(
-                              title: Text(supplier['supplier_name'] ?? ''),
-                              onTap: () => controller.selectSupplier(supplier),
-                            );
-                          },
-                        );
-                      }
-                      return const SizedBox();
-                    }),
-                    const SizedBox(height: 12),
-                    Obx(() {
-                      final selected = controller.selectedSupplier.value;
-                      if (selected == null)
-                        return const Text('No supplier selected');
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Name: ${selected['supplier_name']}'),
-                          Text('Phone: ${selected['mobile'] ?? '-'}'),
-                          Text('Email: ${selected['email'] ?? '-'}'),
-                        ],
-                      );
-                    }),
-                    Spacer(),
+                    Expanded(
+                      child: selected == null
+                          ? const Text('No supplier selected')
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Name: ${selected.supplierName}'),
+                                Text('Phone: ${selected.mobile ?? '-'}'),
+                                Text('Email: ${selected.email ?? '-'}'),
+                              ],
+                            ),
+                    ),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadiusGeometry.circular(5),
+                          borderRadius: BorderRadiusGeometry.all(
+                            Radius.circular(8),
+                          ),
                         ),
                       ),
                       onPressed: () {
                         showDialog(
                           context: context,
                           builder: (_) => AddSupplierDialog(
-                            onSuccess: controller
-                                .refreshSuppliers, // refresh suppliers
+                            onSuccess: controller.refreshSuppliers,
                           ),
                         );
                       },
@@ -143,8 +188,8 @@ class AddPaymentOutPage extends GetView<AddPaymentController> {
                     ),
                   ],
                 ),
-              ),
-            ),
+              );
+            }),
           ],
         ),
       ),
@@ -158,6 +203,7 @@ class AddPaymentOutPage extends GetView<AddPaymentController> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -165,11 +211,11 @@ class AddPaymentOutPage extends GetView<AddPaymentController> {
                 const SizedBox(width: 10),
                 const Text(
                   'Payment Details',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            const SizedBox(height: 35),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -185,7 +231,7 @@ class AddPaymentOutPage extends GetView<AddPaymentController> {
                     ),
                   ),
                 ),
-                SizedBox(width: 30),
+                const SizedBox(width: 16),
                 Expanded(
                   child: TextField(
                     controller: controller.paymentController,
@@ -202,8 +248,7 @@ class AddPaymentOutPage extends GetView<AddPaymentController> {
                 ),
               ],
             ),
-            const SizedBox(height: 30),
-
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -228,10 +273,10 @@ class AddPaymentOutPage extends GetView<AddPaymentController> {
                     }),
                   ),
                 ),
-                SizedBox(width: 30),
+                const SizedBox(width: 16),
                 Expanded(
-                  child: Obx(() {
-                    return DropdownButtonFormField<String>(
+                  child: Obx(
+                    () => DropdownButtonFormField<String>(
                       value: controller.paymentType.value,
                       items: const [
                         DropdownMenuItem(value: 'Cash', child: Text('Cash')),
@@ -255,29 +300,22 @@ class AddPaymentOutPage extends GetView<AddPaymentController> {
                         ),
                         labelText: 'Payment Type',
                       ),
-                    );
-                  }),
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
-            Row(
-              children: [
-                SizedBox(
-                  width: Get.width * 0.44,
-                  child: TextField(
-                    controller: controller.referenceController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                      ),
-                      labelText: 'Reference Number',
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
+            TextField(
+              controller: controller.referenceController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+                labelText: 'Reference Number (Optional)',
+              ),
+            ),
+            const SizedBox(height: 20),
             TextField(
               controller: controller.noteController,
               maxLines: 3,
@@ -285,13 +323,12 @@ class AddPaymentOutPage extends GetView<AddPaymentController> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(8)),
                 ),
-
-                labelText: 'Payment Note(Optional)',
+                labelText: 'Payment Note (Optional)',
               ),
             ),
             const SizedBox(height: 20),
-            Obx(() {
-              return controller.isSaving.value
+            Obx(
+              () => controller.isSaving.value
                   ? const Center(child: CircularProgressIndicator())
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -299,7 +336,9 @@ class AddPaymentOutPage extends GetView<AddPaymentController> {
                         OutlinedButton(
                           style: OutlinedButton.styleFrom(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadiusGeometry.circular(8),
+                              borderRadius: BorderRadiusGeometry.all(
+                                Radius.circular(8),
+                              ),
                             ),
                           ),
                           onPressed: () => Get.back(),
@@ -314,18 +353,19 @@ class AddPaymentOutPage extends GetView<AddPaymentController> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadiusGeometry.circular(8),
+                              borderRadius: BorderRadiusGeometry.all(
+                                Radius.circular(8),
+                              ),
                             ),
                           ),
-
                           child: const Text(
                             'Save Payment',
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
                       ],
-                    );
-            }),
+                    ),
+            ),
           ],
         ),
       ),

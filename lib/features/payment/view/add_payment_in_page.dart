@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:greenbiller/core/colors.dart';
+
 import 'package:greenbiller/core/gloabl_widgets/cards/card_container.dart';
 import 'package:greenbiller/features/payment/controller/add_payment_controller.dart';
 
@@ -45,78 +45,125 @@ class AddPaymentInPage extends GetView<AddPaymentController> {
           children: [
             Row(
               children: [
-                Icon(Icons.person, color: Colors.grey),
-                SizedBox(width: 10),
+                const Icon(Icons.person, color: Colors.grey),
+                const SizedBox(width: 10),
                 const Text(
                   'Customer Information',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 20),
             TextField(
-              controller: controller.searchController,
+              controller: controller.searchCustomerController,
               decoration: InputDecoration(
-                border: OutlineInputBorder(
+                border: const OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(8)),
                 ),
                 labelText: 'Search customer',
-                prefixIcon: Icon(Icons.search),
-                suffixIcon: controller.searchController.text.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () => controller.searchController.clear(),
-                      ),
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: controller.searchCustomerController,
+                  builder: (context, value, _) {
+                    if (value.text.isEmpty) {
+                      return const SizedBox();
+                    }
+                    return IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        controller.searchCustomerController.clear();
+                        controller.showSuggestions.value = false;
+                      },
+                    );
+                  },
+                ),
               ),
             ),
-            const SizedBox(height: 30),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.black12,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 15,
-                  bottom: 15,
-                  right: 10,
-                  left: 10,
+            Obx(
+              () => controller.isLoading.value
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : controller.hasError.value
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Text(
+                              'Failed to load customers',
+                              style: TextStyle(color: Colors.red.shade700),
+                            ),
+                            const SizedBox(height: 8),
+                            ElevatedButton(
+                              onPressed: controller.fetchCustomers,
+                              child: const Text('Retry'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : const SizedBox(),
+            ),
+            Obx(
+              () => controller.showSuggestions.value
+                  ? Container(
+                      constraints: const BoxConstraints(maxHeight: 150),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.grey.shade100,
+                      ),
+                      margin: const EdgeInsets.only(top: 8),
+                      child: controller.customerSuggestions.isEmpty
+                          ? const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text('No customers found'),
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: controller.customerSuggestions.length,
+                              itemBuilder: (context, index) {
+                                final customer =
+                                    controller.customerSuggestions[index];
+                                return ListTile(
+                                  title: Text(customer.customerName ?? ''),
+                                  subtitle: Text(customer.mobile ?? '-'),
+                                  onTap: () =>
+                                      controller.selectCustomer(customer),
+                                );
+                              },
+                            ),
+                    )
+                  : const SizedBox(),
+            ),
+            const SizedBox(height: 12),
+            Obx(() {
+              final selected = controller.selectedCustomer.value;
+              return Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.grey.shade100,
                 ),
                 child: Row(
                   children: [
-                    Obx(() {
-                      if (controller.showSuggestions.value) {
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: controller.customerSuggestions.length,
-                          itemBuilder: (context, index) {
-                            final customer =
-                                controller.customerSuggestions[index];
-                            return ListTile(
-                              title: Text(customer['customer_name'] ?? ''),
-                              onTap: () => controller.selectCustomer(customer),
-                            );
-                          },
-                        );
-                      }
-                      return const SizedBox();
-                    }),
-                    const SizedBox(height: 12),
-                    Obx(() {
-                      final selected = controller.selectedCustomer.value;
-                      if (selected == null)
-                        return const Text('No customer selected');
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Name: ${selected['customer_name']}'),
-                          Text('Phone: ${selected['mobile'] ?? '-'}'),
-                          Text('Email: ${selected['email'] ?? '-'}'),
-                        ],
-                      );
-                    }),
-                    Spacer(),
+                    Expanded(
+                      child: selected == null
+                          ? const Text('No customer selected')
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Name: ${selected.customerName}'),
+                                Text('Phone: ${selected.mobile ?? '-'}'),
+                                Text('Email: ${selected.email ?? '-'}'),
+                              ],
+                            ),
+                    ),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -131,10 +178,8 @@ class AddPaymentInPage extends GetView<AddPaymentController> {
                     ),
                   ],
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
+              );
+            }),
           ],
         ),
       ),
@@ -152,15 +197,15 @@ class AddPaymentInPage extends GetView<AddPaymentController> {
           children: [
             Row(
               children: [
-                Icon(Icons.payments_outlined, color: Colors.grey),
-                SizedBox(width: 10),
+                const Icon(Icons.payments_outlined, color: Colors.grey),
+                const SizedBox(width: 10),
                 const Text(
                   'Payment Details',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            const SizedBox(height: 35),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -176,7 +221,7 @@ class AddPaymentInPage extends GetView<AddPaymentController> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 30),
+                const SizedBox(width: 16),
                 Expanded(
                   child: TextField(
                     controller: controller.paymentController,
@@ -193,8 +238,7 @@ class AddPaymentInPage extends GetView<AddPaymentController> {
                 ),
               ],
             ),
-            const SizedBox(height: 30),
-
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -208,10 +252,10 @@ class AddPaymentInPage extends GetView<AddPaymentController> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 30),
+                const SizedBox(width: 16),
                 Expanded(
-                  child: Obx(() {
-                    return DropdownButtonFormField<String>(
+                  child: Obx(
+                    () => DropdownButtonFormField<String>(
                       value: controller.paymentType.value,
                       isExpanded: true,
                       items: const [
@@ -227,18 +271,19 @@ class AddPaymentInPage extends GetView<AddPaymentController> {
                           child: Text('Credit'),
                         ),
                       ],
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
                         ),
+                        labelText: 'Payment Type',
                       ),
                       onChanged: (val) => controller.paymentType.value = val!,
-                    );
-                  }),
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
             TextField(
               controller: controller.noteController,
               maxLines: 3,
@@ -249,8 +294,7 @@ class AddPaymentInPage extends GetView<AddPaymentController> {
                 labelText: 'Payment Note',
               ),
             ),
-            const SizedBox(height: 30),
-
+            const SizedBox(height: 20),
             Row(
               children: [
                 Obx(
@@ -260,17 +304,16 @@ class AddPaymentInPage extends GetView<AddPaymentController> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.lightBlueAccent,
-                        // border: Border.all(color: Colors.red),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        style: TextStyle(color: Colors.white),
                         'Payment Date: ${controller.selectedDate.value.day}/${controller.selectedDate.value.month}/${controller.selectedDate.value.year}',
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Obx(
                   () => ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -294,7 +337,6 @@ class AddPaymentInPage extends GetView<AddPaymentController> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
           ],
         ),
       ),

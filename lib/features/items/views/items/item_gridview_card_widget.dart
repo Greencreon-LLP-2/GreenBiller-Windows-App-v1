@@ -413,29 +413,40 @@ class ItemGridViewCardWidget extends StatelessWidget {
                             runSpacing: fontSize * 0.3,
                             children: [
                               _buildTag(
+                                item.id.toString(),
+                                Icons.numbers,
+                                smallFontSize,
+                                Colors.amberAccent,
+                              ),
+                              _buildTag(
                                 item.categoryName,
                                 Icons.category_sharp,
                                 smallFontSize,
+                                null,
                               ),
                               _buildTag(
                                 item.brandName,
                                 Icons.branding_watermark,
                                 smallFontSize,
+                                null,
                               ),
                               _buildTag(
                                 item.storeName,
                                 Icons.store,
                                 smallFontSize,
+                                null,
                               ),
                               _buildTag(
                                 item.sku,
                                 Icons.qr_code_outlined,
                                 smallFontSize,
+                                null,
                               ),
                               _buildTag(
                                 item.unitId.toString(),
                                 Icons.inventory,
                                 smallFontSize,
+                                null,
                               ),
                             ],
                           ),
@@ -552,14 +563,19 @@ class ItemGridViewCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildTag(String text, IconData icon, double fontSize) {
+  Widget _buildTag(
+    String text,
+    IconData icon,
+    double fontSize,
+    Color? bgcolor,
+  ) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: fontSize * 0.8,
         vertical: fontSize * 0.4,
       ),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: bgcolor ?? Colors.grey.shade100,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.grey.shade200),
       ),

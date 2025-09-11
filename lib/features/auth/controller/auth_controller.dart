@@ -78,8 +78,7 @@ class AuthController extends GetxController {
   void resetOtp() {
     try {
       otp.value = '';
-    }
-    catch(_){}
+    } catch (_) {}
   }
 
   Future<bool> _isNetworkError() async {
