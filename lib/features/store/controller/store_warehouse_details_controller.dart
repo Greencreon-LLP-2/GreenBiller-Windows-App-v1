@@ -42,6 +42,25 @@ class StoreWarehouseDetailsController extends GetxController {
     commonApi = CommonApiFunctionsController();
   }
 
+  void updateStore(int newId) {
+    if (storeId.value != newId) {
+      storeId.value = newId;
+      fetchStoreDetails();
+      fetchWarehouseDetails();
+    }
+  }
+
+  void updateWarehouse(int newStoreId, int newWarehouseId) {
+    if (storeId.value != newStoreId) {
+      storeId.value = newStoreId;
+    }
+    if (warehouseId.value != newWarehouseId) {
+      warehouseId.value = newWarehouseId;
+      fetchSingleWarehouse();
+      fetchWarehouseItems();
+    }
+  }
+
   /// Fetch store details
   Future<void> fetchStoreDetails() async {
     if (storeId.value == 0) return;

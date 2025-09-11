@@ -4,13 +4,12 @@ import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
 
 class EditStorePage extends GetView<StoreController> {
-  const EditStorePage({super.key});
+  final int storeId;
+  const EditStorePage({super.key, required this.storeId});
 
   @override
   Widget build(BuildContext context) {
-    controller.editStoreId.value = int.parse(
-      Get.parameters['storeEditId'] ?? '0',
-    );
+    controller.editStoreId.value = storeId;
     // Initialize controllers with existing store data
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {

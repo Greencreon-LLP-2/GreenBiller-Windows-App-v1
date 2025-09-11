@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
+import 'package:greenbiller/core/utils/subscription_util.dart';
 import 'package:greenbiller/features/auth/model/user_role_model.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
 import 'package:greenbiller/features/store/view/add_store_dialog.dart';
@@ -45,12 +46,20 @@ class StorePage extends GetView<StoreController> {
         controller: controller.tabController,
         children: const [AdminStoresTab(), AdminWarehousesTab()],
       ),
-      floatingActionButton: Obx(
-        () => _buildFloatingActionButton(
+      floatingActionButton: Obx(() {
+        final user = controller.authController.user.value;
+        final hasAccess = SubscriptionUtil.hasValidSubscription(
+          user,
+          allowTrial: false,
+        );
+
+        if (!hasAccess) return SizedBox.shrink(); // hides FAB
+
+        return _buildFloatingActionButton(
           context,
           controller.currentTabIndex.value,
-        ),
-      ),
+        );
+      }),
     );
   }
 

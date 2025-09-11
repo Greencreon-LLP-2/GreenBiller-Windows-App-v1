@@ -195,6 +195,13 @@ class StoreController extends GetxController
     }
   }
 
+  String generateSlug(String text) {
+    return text
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s-]'), '')
+        .replaceAll(' ', '-');
+  }
+
   Future<void> addStore() async {
     if (!storeFormKey.currentState!.validate()) return;
 
@@ -204,6 +211,7 @@ class StoreController extends GetxController
         "store_code": "store-${DateTime.now().millisecondsSinceEpoch}",
         "store_name": storeNameController.text,
         "website": storeWebsiteController.text,
+        "slug": generateSlug(storeNameController.text),
         "store_email": storeEmailController.text,
         "store_phone": storePhoneController.text,
         "store_address": storeAddressController.text,
@@ -551,7 +559,7 @@ class StoreController extends GetxController
           borderRadius: 12,
         );
         await getWarehouseList();
-        Get.back();
+       
       } else {
         _showError(response.data);
       }

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
+import 'package:greenbiller/features/store/controller/store_warehouse_details_controller.dart';
 import 'package:greenbiller/features/store/model/warehouse_model.dart';
 import 'package:greenbiller/features/store/view/edit_warehouse_page.dart';
+import 'package:greenbiller/features/store/view/warehouse_detail_page.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 
 class AdminWarehousesTab extends GetView<StoreController> {
@@ -243,14 +245,19 @@ class AdminWarehousesTab extends GetView<StoreController> {
                                   borderRadius: BorderRadius.circular(16),
                                   onTap: () {
                                     if (warehouse.storeId != null) {
-                                      Get.toNamed(
-                                        AppRoutes.singleWarehouseView,
-                                        parameters: {
-                                          'warehouseId': warehouse.id
-                                              .toString(),
-                                          'storeId': warehouse.storeId
-                                              .toString(),
-                                        },
+                                      Get.to(
+                                        WarehouseDetailScreen(
+                                          storeId: int.parse(
+                                            warehouse.storeId!,
+                                          ),
+                                          warehouseId: warehouse.id!,
+                                        ),
+                                        binding: BindingsBuilder(() {
+                                          Get.put(
+                                            StoreWarehouseDetailsController(),
+                                            permanent: false,
+                                          );
+                                        }),
                                       );
                                     } else {
                                       Get.snackbar(
@@ -521,17 +528,24 @@ class AdminWarehousesTab extends GetView<StoreController> {
                                                     onPressed: () {
                                                       if (warehouse.storeId !=
                                                           null) {
-                                                        Get.toNamed(
-                                                          AppRoutes
-                                                              .singleWarehouseView,
-                                                          parameters: {
-                                                            'warehouseId':
-                                                                warehouse.id
-                                                                    .toString(),
-                                                            'storeId': warehouse
-                                                                .storeId
-                                                                .toString(),
-                                                          },
+                                                        Get.to(
+                                                          WarehouseDetailScreen(
+                                                            storeId: int.parse(
+                                                              warehouse
+                                                                  .storeId!,
+                                                            ),
+                                                            warehouseId:
+                                                                warehouse.id!,
+                                                          ),
+                                                          binding: BindingsBuilder(
+                                                            () {
+                                                              Get.put(
+                                                                StoreWarehouseDetailsController(),
+                                                                permanent:
+                                                                    false,
+                                                              );
+                                                            },
+                                                          ),
                                                         );
                                                       } else {
                                                         Get.snackbar(

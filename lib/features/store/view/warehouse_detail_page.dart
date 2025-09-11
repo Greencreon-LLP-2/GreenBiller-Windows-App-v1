@@ -86,17 +86,18 @@ class SummaryCard extends StatelessWidget {
 }
 
 class WarehouseDetailScreen extends GetView<StoreWarehouseDetailsController> {
-  const WarehouseDetailScreen({super.key});
+  final int storeId;
+  final int warehouseId;
+  const WarehouseDetailScreen({
+    super.key,
+    required this.storeId,
+    required this.warehouseId,
+  });
 
   @override
   Widget build(BuildContext context) {
-    controller.warehouseId.value = int.parse(
-      Get.parameters['warehouseId'] ?? '0',
-    );
-    controller.storeId.value = int.parse(Get.parameters['storeId'] ?? '0');
-    controller.fetchSingleWarehouse();
-    controller.fetchWarehouseItems();
 
+    controller.updateWarehouse(storeId, warehouseId);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Warehouse Details'),

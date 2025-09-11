@@ -3,6 +3,9 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
+import 'package:greenbiller/features/store/controller/store_warehouse_details_controller.dart';
+import 'package:greenbiller/features/store/view/edit_store_page.dart';
+import 'package:greenbiller/features/store/view/store_detail_page.dart';
 
 import 'package:greenbiller/routes/app_routes.dart';
 
@@ -274,7 +277,8 @@ class AdminStoresTab extends GetView<StoreController> {
     final storeName = store.storeName ?? 'Unnamed Store';
     final customersCount = store.customersCount ?? 0;
     final suppliersCount = store.suppliersCount ?? 0;
-    final storeId = store.id?.toString() ?? '';
+    final storeId = store.id?.toString() ?? '0';
+
     final location = store.storeAddress ?? 'No address';
     final phone = store.storePhone ?? '';
     final email = store.storeEmail ?? '';
@@ -289,7 +293,7 @@ class AdminStoresTab extends GetView<StoreController> {
     final purchaseCount = controller.purchaseCounts[storeId] ?? 0;
     final purchaseReturnCount = controller.purchaseReturnCounts[storeId] ?? 0;
 
-    if (storeId.isEmpty) {
+    if (storeId == null) {
       return Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(20),
@@ -330,9 +334,13 @@ class AdminStoresTab extends GetView<StoreController> {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            Get.toNamed(
-              AppRoutes.singleStoreView,
-              parameters: {'storeId': storeId.toString()},
+            Get.to(
+              () => StoreDetailScreen(
+                storeId: int.parse(storeId),
+              ), // pass as argument
+              binding: BindingsBuilder(() {
+                Get.put(StoreWarehouseDetailsController(), permanent: false);
+              }),
             );
           },
           child: Padding(
@@ -462,9 +470,13 @@ class AdminStoresTab extends GetView<StoreController> {
                       color: Colors.blue,
                       tooltip: 'Edit Store',
                       onTap: () {
-                        Get.toNamed(
-                          AppRoutes.editStoreView,
-                          parameters: {'storeEditId': storeId.toString()},
+                        Get.to(
+                          () => EditStorePage(
+                            storeId: int.parse(storeId),
+                          ), // pass as argument
+                          binding: BindingsBuilder(() {
+                            Get.put(StoreController(), permanent: false);
+                          }),
                         );
                       },
                     ),
@@ -474,9 +486,16 @@ class AdminStoresTab extends GetView<StoreController> {
                       color: Colors.grey,
                       tooltip: 'View Details',
                       onTap: () {
-                        Get.toNamed(
-                          AppRoutes.singleStoreView,
-                          parameters: {'storeId': storeId.toString()},
+                        Get.to(
+                          () => StoreDetailScreen(
+                            storeId: int.parse(storeId),
+                          ), // pass as argument
+                          binding: BindingsBuilder(() {
+                            Get.put(
+                              StoreWarehouseDetailsController(),
+                              permanent: false,
+                            );
+                          }),
                         );
                       },
                     ),

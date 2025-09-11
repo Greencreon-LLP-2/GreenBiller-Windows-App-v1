@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
+import 'package:greenbiller/core/utils/subscription_util.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/auth/model/user_model.dart';
 import 'package:greenbiller/routes/app_routes.dart';
@@ -522,16 +523,20 @@ class AdminSidebar extends StatelessWidget {
                           onTap: () => Get.toNamed(AppRoutes.usersSettings),
                           indent: 16,
                         ),
+                        _buildNavTile(
+                          title: "Stores Settings",
+                          icon: Icons.store,
+                          route: AppRoutes.storesSettings,
+                          currentRoute: currentRoute,
+                          onTap: () => Get.toNamed(AppRoutes.storesSettings),
+                          indent: 16,
+                        ),
                       ],
                     ),
                     Obx(() {
                       final user = authController.user.value;
-                      if (user != null) {
-                        if (user.subscriptionId == null) {
-                          //upgrade button only
-                          return SidebarUpgradeButton();
-                        }
-                        return const SizedBox.shrink();
+                      if (!SubscriptionUtil.hasValidSubscription(user)) {
+                        return SidebarUpgradeButton();
                       }
                       return const SizedBox.shrink();
                     }),

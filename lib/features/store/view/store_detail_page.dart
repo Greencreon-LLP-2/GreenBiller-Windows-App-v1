@@ -5,13 +5,13 @@ import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/store/controller/store_warehouse_details_controller.dart';
 
 class StoreDetailScreen extends GetView<StoreWarehouseDetailsController> {
-  const StoreDetailScreen({super.key});
+  final int storeId;
+  const StoreDetailScreen({super.key, required this.storeId});
 
   @override
   Widget build(BuildContext context) {
-    controller.storeId.value = int.parse(Get.parameters['storeId'] ?? '0');
-    controller.fetchStoreDetails();
-    controller.fetchWarehouseDetails();
+    controller.updateStore(storeId);
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(

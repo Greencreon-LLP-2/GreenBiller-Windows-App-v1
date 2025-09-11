@@ -295,27 +295,6 @@ class MyApp extends StatelessWidget {
             Get.put(StoreController());
           }),
         ),
-        GetPage(
-          name: AppRoutes.singleStoreView,
-          page: () => const StoreDetailScreen(),
-          binding: BindingsBuilder(() {
-            Get.put(StoreWarehouseDetailsController());
-          }),
-        ),
-        GetPage(
-          name: AppRoutes.editStoreView,
-          page: () => EditStorePage(),
-          binding: BindingsBuilder(() {
-            Get.put(StoreController());
-          }),
-        ),
-        GetPage(
-          name: AppRoutes.singleWarehouseView,
-          page: () => const WarehouseDetailScreen(),
-          binding: BindingsBuilder(() {
-            Get.put(StoreWarehouseDetailsController());
-          }),
-        ),
 
         // Other Routes
         GetPage(name: AppRoutes.maintenance, page: () => const Maintenance()),
