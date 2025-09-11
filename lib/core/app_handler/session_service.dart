@@ -183,7 +183,7 @@ class SessionService {
         sendPort.send(errorStatus);
       }
 
-      await Future.delayed(const Duration(seconds: 30));
+      await Future.delayed(const Duration(minutes: 1));
     }
   }
 

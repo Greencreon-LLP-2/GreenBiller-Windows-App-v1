@@ -7,8 +7,11 @@ import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/settings/controller/account_settings_controller.dart';
 import 'package:greenbiller/routes/app_routes.dart';
-import 'package:logger/logger.dart';
+
 import 'package:dio/dio.dart' as dio;
+import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class PurchaseItem {
   final TextEditingController item = TextEditingController();
@@ -102,7 +105,7 @@ class NewPurchaseController extends GetxController {
   late HiveService hiveService;
   late AuthController authController;
   late CommonApiFunctionsController commonApi;
-  late Logger logger;
+
   late AccountController accountController;
   // Form Controllers
   late TextEditingController storeController;
@@ -135,13 +138,17 @@ class NewPurchaseController extends GetxController {
 
   // Dropdown Data
   final RxMap<String, String> storeMap = <String, String>{}.obs;
+  final RxList<dynamic> actualStoreData = <dynamic>[].obs;
   final RxMap<String, String> warehouseMap = <String, String>{}.obs;
   final RxMap<String, String> supplierMap = <String, String>{}.obs;
+  final RxList<dynamic> actualsupplierData = <dynamic>[].obs;
   final RxList<Map<String, dynamic>> itemsList = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> taxList = <Map<String, dynamic>>[].obs;
   final RxString selectedStoreId = ''.obs;
   final RxString selectedWarehouseId = ''.obs;
   final RxString selectedSupplierId = ''.obs;
+
+  final isLoadingSavePrint = false.obs;
 
   @override
   void onInit() {
@@ -151,7 +158,6 @@ class NewPurchaseController extends GetxController {
     authController = Get.find<AuthController>();
     accountController = Get.put(AccountController());
     commonApi = Get.find<CommonApiFunctionsController>();
-    logger = Logger();
 
     storeController = TextEditingController();
     warehouseController = TextEditingController();
@@ -177,7 +183,7 @@ class NewPurchaseController extends GetxController {
       paidAmount.value = double.tryParse(paidAmountController.text) ?? 0.0;
       calculateBalance();
     });
-
+    generateBillNumber();
     // Initial API
     fetchStores();
     fetchTaxes();
@@ -250,6 +256,7 @@ class NewPurchaseController extends GetxController {
     isLoadingStores.value = true;
     try {
       final List<dynamic> response = await commonApi.fetchStoreList();
+      actualStoreData.value = response;
       storeMap.value = {
         for (var store in response) store['store_name']: store['id'].toString(),
       };
@@ -281,6 +288,7 @@ class NewPurchaseController extends GetxController {
     isLoadingSuppliers.value = true;
     try {
       final List<dynamic> response = await commonApi.fetchSuppliers(storeId);
+      actualsupplierData.value = response;
       supplierMap.value = {
         for (var supplier in response)
           supplier['supplier_name']: supplier['id'].toString(),
@@ -435,7 +443,10 @@ class NewPurchaseController extends GetxController {
     return true;
   }
 
-  Future<void> savePurchase() async {
+  Future<void> savePurchase({
+    bool printer = false,
+    required BuildContext context,
+  }) async {
     if (!validateForm()) return;
     if (selectedAccountId.value.isEmpty) {
       Get.snackbar(
@@ -446,7 +457,13 @@ class NewPurchaseController extends GetxController {
       );
       return;
     }
-    isLoading.value = true;
+
+    // Preserve items for printing
+    final itemsCopy = List<PurchaseItem>.from(items);
+
+    final isLoadingFlag = printer ? isLoadingSavePrint : isLoading;
+    isLoadingFlag.value = true;
+
     try {
       final purchaseCode =
           'G_B_${selectedStoreId.value}_${DateTime.now().millisecondsSinceEpoch}_${userId.value}';
@@ -546,8 +563,10 @@ class NewPurchaseController extends GetxController {
           'supplier_id': int.parse(selectedSupplierId.value),
           'payment_date': billDateController.text,
           'payment_type': paymentType.value,
-          'payment': paidAmountController.text,
-          'account_id': int.parse(selectedAccountId.value), 
+          'payment': paidAmountController.text.isNotEmpty
+              ? paidAmountController.text
+              : '0',
+          'account_id': int.parse(selectedAccountId.value),
           'payment_note': noteController.text,
         };
 
@@ -581,34 +600,41 @@ class NewPurchaseController extends GetxController {
                 .toList(),
           });
         } catch (e) {
-          logger.e('Failed to save purchase locally: $e');
+          // logger.e('Failed to save purchase locally: $e');
         }
 
         Get.snackbar(
           'Success',
-          'Purchase saved successfully!',
+          printer
+              ? 'Purchase saved and printed successfully!'
+              : 'Purchase saved successfully!',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
+        generateBillNumber();
+        // Restore items for printing
+        if (printer) {
+          items.clear();
+          items.addAll(itemsCopy);
+          calculateTotals();
+          final selectedStore = actualStoreData.firstWhere(
+            (store) => store['id'].toString() == selectedStoreId.value,
+            orElse: () => {},
+          );
+          final selectedSupplier = actualsupplierData.toList().firstWhere(
+            (supplier) => supplier['id'].toString() == selectedSupplierId.value,
+            orElse: () => <String, dynamic>{},
+          );
+
+          await printPurchaseBill(context, selectedStore, selectedSupplier);
+        }
 
         clearForm();
       } else {
         _handleErrorResponse(purchaseResponse);
       }
-    } on dio.DioException catch (e) {
-      if (e.response != null) {
-        _handleErrorResponse(e.response!);
-      } else {
-        Get.snackbar(
-          'Error',
-          'Network error: ${e.message}',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    } catch (e) {
+    } catch (e, stack) {
       Get.snackbar(
         'Error',
         'Unexpected error: $e',
@@ -616,8 +642,10 @@ class NewPurchaseController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+      print(e);
+      print(stack);
     } finally {
-      isLoading.value = false;
+      isLoadingFlag.value = false;
     }
   }
 
@@ -670,7 +698,7 @@ class NewPurchaseController extends GetxController {
     warehouseMap.clear();
     supplierMap.clear();
     itemsList.clear();
-    selectedAccountId.value='';
+    selectedAccountId.value = '';
     for (var item in items) {
       item.dispose();
     }
@@ -688,122 +716,344 @@ class NewPurchaseController extends GetxController {
   void setBillDate(DateTime date) {
     billDateController.text = date.toString().split(' ')[0];
   }
-}
 
-class SerialNumberModal extends StatelessWidget {
-  final PurchaseItem item;
-  final VoidCallback onSave;
+  Future<void> printPurchaseBill(
+    BuildContext context,
+    Map<String, dynamic> storeData,
+    Map<String, dynamic> supplierData,
+  ) async {
+    print("print Invoked");
+    final doc = pw.Document();
+    final isA4 = storeData['default_printer'] == 'a4';
+    final currencySymbol = storeData['currency_symbol'] ?? '₹';
 
-  SerialNumberModal({required this.item, required this.onSave});
+    // Create a non-reactive snapshot of items
+    final itemsSnapshot = List<PurchaseItem>.from(items);
 
-  final TextEditingController serialController = TextEditingController();
+    String getStoreValue(String key, {String fallback = 'N/A'}) {
+      return storeData[key]?.toString() ?? fallback;
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: 400,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.qr_code, color: Colors.green.shade700, size: 24),
-                const SizedBox(width: 8),
-                Text(
-                  'Add Serial Numbers',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green.shade700,
+    String getSupplierValue(String key, {String fallback = 'N/A'}) {
+      return supplierData[key]?.toString() ?? fallback;
+    }
+
+    doc.addPage(
+      pw.Page(
+        pageFormat: isA4 ? PdfPageFormat.a4 : PdfPageFormat.roll80,
+        margin: pw.EdgeInsets.all(isA4 ? 40 : 5),
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              // Header
+              if (isA4) ...[
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          getStoreValue(
+                            'store_name',
+                            fallback: 'Your Store Name',
+                          ),
+                          style: pw.TextStyle(
+                            fontSize: 20,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                        pw.SizedBox(height: 5),
+                        pw.Text(getStoreValue('store_address')),
+                        pw.Text(getStoreValue('store_city')),
+                        pw.Text(getStoreValue('store_state')),
+                        pw.Text(getStoreValue('store_country')),
+                        pw.Text(getStoreValue('store_postal_code')),
+                        pw.Text('Phone: ${getStoreValue('store_phone')}'),
+                        pw.Text('Email: ${getStoreValue('store_email')}'),
+                        pw.Text('Tax Number: ${getStoreValue('tax_number')}'),
+                      ],
+                    ),
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        pw.Text(
+                          'Purchase Invoice',
+                          style: pw.TextStyle(
+                            fontSize: 24,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                        pw.SizedBox(height: 5),
+                        pw.Text('Bill No: ${billNumberController.text}'),
+                        pw.Text('Date: ${billDateController.text}'),
+                        pw.Text(
+                          'Supplier: ${getSupplierValue('supplier_name', fallback: supplierController.text)}',
+                        ),
+                        pw.Text('Owner: ${getStoreValue('owner_name')}'),
+                        pw.Text('Email: ${getStoreValue('owner_email')}'),
+                      ],
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 20),
+              ] else ...[
+                pw.Text(
+                  getStoreValue(
+                    'store_name',
+                    fallback: storeController.text.isNotEmpty
+                        ? storeController.text
+                        : 'Your Store Name',
+                  ),
+                  style: pw.TextStyle(
+                    fontSize: 10,
+                    fontWeight: pw.FontWeight.bold,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: serialController,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Scan or Enter Serial Number',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                pw.Text(
+                  'Date: ${billDateController.text}',
+                  style: const pw.TextStyle(fontSize: 7),
                 ),
-                prefixIcon: Icon(
-                  Icons.qr_code_scanner,
-                  color: Colors.green.shade600,
+                pw.Text(
+                  'Supplier: ${getSupplierValue('supplier_name', fallback: supplierController.text)}',
+                  style: const pw.TextStyle(fontSize: 7),
+                ),
+                pw.Text(
+                  'Bill No: ${billNumberController.text}',
+                  style: const pw.TextStyle(fontSize: 7),
+                ),
+                pw.SizedBox(height: 5),
+              ],
+              // Items Title
+              pw.Text(
+                'Items',
+                style: pw.TextStyle(
+                  fontSize: isA4 ? 16 : 7,
+                  fontWeight: pw.FontWeight.bold,
                 ),
               ),
-              onSubmitted: (value) {
-                if (value.isNotEmpty && !item.serials.contains(value)) {
-                  item.serials.add(value);
-                  serialController.clear();
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            Obx(
-              () => Container(
-                constraints: const BoxConstraints(maxHeight: 200),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: item.serials.isEmpty
-                        ? [const Text('No serial numbers added')]
-                        : item.serials.asMap().entries.map((entry) {
-                            int idx = entry.key;
-                            String serial = entry.value;
-                            return ListTile(
-                              title: Text(serial),
-                              trailing: IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
+              pw.SizedBox(height: isA4 ? 10 : 2),
+              // Itemized Table
+              pw.Table(
+                border: pw.TableBorder.all(width: isA4 ? 1 : 0.5),
+                columnWidths: isA4
+                    ? {
+                        0: const pw.FixedColumnWidth(30),
+                        1: const pw.FlexColumnWidth(3),
+                        2: const pw.FixedColumnWidth(60),
+                        3: const pw.FixedColumnWidth(50),
+                        4: const pw.FixedColumnWidth(60),
+                        5: const pw.FixedColumnWidth(60),
+                        6: const pw.FixedColumnWidth(60),
+                        7: const pw.FixedColumnWidth(80),
+                      }
+                    : {
+                        0: const pw.FixedColumnWidth(12),
+                        1: const pw.FixedColumnWidth(60),
+                        2: const pw.FixedColumnWidth(25),
+                        3: const pw.FixedColumnWidth(18),
+                        4: const pw.FixedColumnWidth(25),
+                        5: const pw.FixedColumnWidth(20),
+                        6: const pw.FixedColumnWidth(20),
+                        7: const pw.FixedColumnWidth(30),
+                      },
+                children: [
+                  // Header Row
+                  pw.TableRow(
+                    children:
+                        [
+                              '#',
+                              'Item',
+                              'SKU',
+                              'Qty',
+                              'Price',
+                              'Disc',
+                              'Tax',
+                              'Total',
+                            ]
+                            .map(
+                              (header) => pw.Padding(
+                                padding: pw.EdgeInsets.all(isA4 ? 8 : 2),
+                                child: pw.Text(
+                                  header,
+                                  style: pw.TextStyle(
+                                    fontSize: isA4 ? 12 : 7,
+                                    fontWeight: pw.FontWeight.bold,
+                                  ),
                                 ),
-                                onPressed: () {
-                                  item.serials.removeAt(idx);
-                                },
                               ),
-                            );
-                          }).toList(),
+                            )
+                            .toList(),
                   ),
+                  // Item Rows
+                  ...itemsSnapshot
+                      .asMap()
+                      .entries
+                      .where((entry) => entry.value.item.text.isNotEmpty)
+                      .map((entry) {
+                        final index = entry.key;
+                        final item = entry.value;
+                        return pw.TableRow(
+                          children: [
+                            pw.Padding(
+                              padding: pw.EdgeInsets.all(isA4 ? 8 : 2),
+                              child: pw.Text(
+                                '${index + 1}',
+                                style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: pw.EdgeInsets.all(isA4 ? 8 : 2),
+                              child: pw.Text(
+                                item.item.text.isNotEmpty
+                                    ? item.item.text
+                                    : 'Unknown Item',
+                                style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: pw.EdgeInsets.all(isA4 ? 8 : 2),
+                              child: pw.Text(
+                                item.sku.text.isNotEmpty ? item.sku.text : '-',
+                                style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: pw.EdgeInsets.all(isA4 ? 8 : 2),
+                              child: pw.Text(
+                                item.qty.text.isNotEmpty ? item.qty.text : '0',
+                                style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: pw.EdgeInsets.all(isA4 ? 8 : 2),
+                              child: pw.Text(
+                                '$currencySymbol${item.pricePerUnit.text.isNotEmpty ? double.parse(item.pricePerUnit.text).toStringAsFixed(2) : '0.00'}',
+                                style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: pw.EdgeInsets.all(isA4 ? 8 : 2),
+                              child: pw.Text(
+                                '$currencySymbol${item.discountAmount.text.isNotEmpty ? double.parse(item.discountAmount.text).toStringAsFixed(2) : '0.00'}',
+                                style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: pw.EdgeInsets.all(isA4 ? 8 : 2),
+                              child: pw.Text(
+                                '$currencySymbol${item.taxAmount.text.isNotEmpty ? double.parse(item.taxAmount.text).toStringAsFixed(2) : '0.00'}',
+                                style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: pw.EdgeInsets.all(isA4 ? 8 : 2),
+                              child: pw.Text(
+                                '$currencySymbol${item.totalAmount.text.isNotEmpty ? double.parse(item.totalAmount.text).toStringAsFixed(2) : '0.00'}',
+                                style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                              ),
+                            ),
+                          ],
+                        );
+                      })
+                      .toList(),
+                ],
+              ),
+              pw.SizedBox(height: isA4 ? 20 : 2),
+              // Totals
+              pw.Align(
+                alignment: pw.Alignment.centerRight,
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.Text(
+                      'Subtotal: $currencySymbol${subtotal.value.toStringAsFixed(2)}',
+                      style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                    ),
+                    pw.SizedBox(height: isA4 ? 8 : 2),
+                    pw.Text(
+                      'Total Tax: $currencySymbol${totalTax.value.toStringAsFixed(2)}',
+                      style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                    ),
+                    pw.SizedBox(height: isA4 ? 8 : 2),
+                    pw.Text(
+                      'Total Discount: $currencySymbol${totalDiscount.value.toStringAsFixed(2)}',
+                      style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                    ),
+                    pw.SizedBox(height: isA4 ? 8 : 2),
+                    pw.Text(
+                      'Other Charges: $currencySymbol${otherCharges.value.toStringAsFixed(2)}',
+                      style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                    ),
+                    pw.SizedBox(height: isA4 ? 8 : 2),
+                    pw.Text(
+                      'Grand Total: $currencySymbol${grandTotal.value.toStringAsFixed(2)}',
+                      style: pw.TextStyle(
+                        fontSize: isA4 ? 12 : 7,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: isA4 ? 8 : 2),
+                    pw.Text(
+                      'Paid Amount: $currencySymbol${paidAmount.value.toStringAsFixed(2)}',
+                      style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                    ),
+                    pw.SizedBox(height: isA4 ? 8 : 2),
+                    pw.Text(
+                      'Balance: $currencySymbol${balanceAmount.value.toStringAsFixed(2)}',
+                      style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Get.back(),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(color: Colors.grey),
+              pw.SizedBox(height: isA4 ? 20 : 5),
+              // Footer
+              if (isA4) ...[
+                pw.Center(
+                  child: pw.Text(
+                    'Thank you for your purchase!',
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    onSave();
-                    Get.back();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green.shade700,
-                    foregroundColor: Colors.white,
+                pw.SizedBox(height: 10),
+                pw.Center(
+                  child: pw.Text(
+                    'Payment is due upon receipt. Please contact us at ${getStoreValue('store_email')} for any inquiries.',
+                    style: const pw.TextStyle(fontSize: 10),
                   ),
-                  child: const Text('Save'),
+                ),
+              ] else ...[
+                pw.Center(
+                  child: pw.Text(
+                    'Thank you for your purchase!',
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
-            ),
-          ],
-        ),
+            ],
+          );
+        },
       ),
+    );
+
+    // Sanitize bill number to ensure valid file name
+    final billNumber = billNumberController.text.isNotEmpty
+        ? billNumberController.text.replaceAll(RegExp(r'[^\w\-]'), '_')
+        : 'invoice';
+    final fileName = 'Bill_$billNumber.pdf';
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => doc.save(),
+      name: fileName,
+      format: isA4 ? PdfPageFormat.a4 : PdfPageFormat.roll80,
     );
   }
 }
+

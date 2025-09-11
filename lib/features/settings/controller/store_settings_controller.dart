@@ -2,20 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
+import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/store/model/single_store_model.dart';
 import 'package:dio/dio.dart' as dio;
 
 class StoreSettingsController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final DioClient dioClient = DioClient();
-  final AuthController authController = Get.find<AuthController>();
+  late final DioClient dioClient;
+  late final CommonApiFunctionsController commonApi;
+  late AuthController authController;
+
   late TabController tabController;
 
   final RxBool isLoading = true.obs;
   final RxInt storeId = 0.obs;
-  final RxString userId = ''.obs;
+
   SingleStoreDetailedModel? originalStore;
+
+  // Store state
+  final selectedStore = Rxn<String>();
+  final selectedStoreId = Rxn<int>();
+  final isLoadingStores = false.obs;
+  final storeMap = <String, int>{}.obs;
 
   // Boolean fields (int in model, 0 or 1)
   final RxBool showSignature = false.obs;
@@ -41,6 +50,9 @@ class StoreSettingsController extends GetxController
   final RxBool ifExpiry = false.obs;
   final RxBool ifBatchNo = false.obs;
   final RxBool previousBalanceBit = false.obs;
+
+  final List<String> defaultPrinterList = ['a4', 'thermal', 'dot_matrix'];
+  final selectedPrinter = 'a4'.obs;
 
   // Text controllers for string and numeric fields
   final mobileController = TextEditingController();
@@ -82,7 +94,6 @@ class StoreSettingsController extends GetxController
   final currentSubscriptionIdController = TextEditingController();
   final statusController = TextEditingController();
   final createdByController = TextEditingController();
-  final defaultPrinterController = TextEditingController();
 
   // Prefix controllers
   final Map<String, TextEditingController> prefixControllers = {
@@ -109,10 +120,13 @@ class StoreSettingsController extends GetxController
   @override
   void onInit() {
     super.onInit();
+    dioClient = DioClient();
+    commonApi = Get.find<CommonApiFunctionsController>();
+    authController = Get.find<AuthController>();
     tabController = TabController(length: 4, vsync: this);
     storeId.value = int.parse(Get.parameters['storeEditId'] ?? '0');
-    userId.value = authController.user.value?.userId?.toString() ?? '0';
-    fetchStoreData();
+
+    loadStores();
   }
 
   @override
@@ -157,27 +171,55 @@ class StoreSettingsController extends GetxController
     currentSubscriptionIdController.dispose();
     statusController.dispose();
     createdByController.dispose();
-    defaultPrinterController.dispose();
+
     prefixControllers.forEach((_, controller) => controller.dispose());
     super.onClose();
   }
 
-  Future<void> fetchStoreData() async {
+  Future<void> loadStores() async {
+    try {
+      isLoadingStores.value = true;
+      final stores = await commonApi.fetchStores();
+
+      if (stores.isNotEmpty) {
+        storeMap.assignAll(stores);
+        selectedStore.value = stores.keys.first;
+        selectedStoreId.value = stores.values.first;
+        // Load settings for the first store
+        await fetchStoreData(selectedStoreId.value!);
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load stores: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingStores.value = false;
+    }
+  }
+
+  Future<void> onStoreChanged(String? storeName) async {
+    if (storeName == null) return;
+
+    selectedStore.value = storeName;
+    selectedStoreId.value = storeMap[storeName];
+
+    if (selectedStoreId.value != null) {
+      await fetchStoreData(selectedStoreId.value!);
+    }
+  }
+
+  Future<void> fetchStoreData(int storeId) async {
     try {
       isLoading.value = true;
-      final response = await dioClient.dio.get(
-        '$viewStoreUrl/${storeId.value}',
-        options: dio.Options(
-          headers: {
-            'Authorization':
-                'Bearer ${authController.user.value?.accessToken ?? ''}',
-            'Content-Type': 'application/json',
-          },
-        ),
-      );
+      originalStore = null;
+      final response = await dioClient.dio.get('$viewSignleStore/$storeId');
 
-      if (response.statusCode != 200 || response.data['data'] == null) {
-        throw Exception('No data returned for store ${storeId.value}');
+      if (response.statusCode != 200) {
+        throw Exception('No data returned for store $storeId');
       }
 
       final store = originalStore = SingleStoreDetailedModel.fromJson(
@@ -267,7 +309,7 @@ class StoreSettingsController extends GetxController
       );
       set(statusController, store.status, fallback: 'active');
       set(createdByController, store.createdBy);
-      set(defaultPrinterController, store.defaultPrinter);
+      selectedPrinter.value = store.defaultPrinter ?? 'a4';
 
       // Set prefix controllers
       final prefixFields = {
@@ -317,56 +359,83 @@ class StoreSettingsController extends GetxController
         return;
       }
 
-      final payload = {'user_id': userId.value};
+      final payload = {};
 
       // Compare and add changed boolean fields
-      if (showSignature.value != (originalStore!.showSignature == 1))
+      if (showSignature.value != (originalStore!.showSignature == 1)) {
         payload['show_signature'] = showSignature.value ? '1' : '0';
-      if (ifGst.value != (originalStore!.ifGst == 1))
+      }
+      if (ifGst.value != (originalStore!.ifGst == 1)) {
         payload['if_gst'] = ifGst.value ? '1' : '0';
-      if (ifVat.value != (originalStore!.ifVat == 1))
+      }
+      if (ifVat.value != (originalStore!.ifVat == 1)) {
         payload['if_vat'] = ifVat.value ? '1' : '0';
-      if (smsStatus.value != (originalStore!.smsStatus == 1))
+      }
+      if (smsStatus.value != (originalStore!.smsStatus == 1)) {
         payload['sms_status'] = smsStatus.value ? '1' : '0';
-      if (smtpStatus.value != (originalStore!.smtpStatus == 1))
+      }
+      if (smtpStatus.value != (originalStore!.smtpStatus == 1)) {
         payload['smtp_status'] = smtpStatus.value ? '1' : '0';
-      if (ifMsg91.value != (originalStore!.ifMsg91 == 1))
+      }
+      if (ifMsg91.value != (originalStore!.ifMsg91 == 1)) {
         payload['if_msg91'] = ifMsg91.value ? '1' : '0';
-      if (ifOtp.value != (originalStore!.ifOtp == 1))
+      }
+      if (ifOtp.value != (originalStore!.ifOtp == 1)) {
         payload['if_otp'] = ifOtp.value ? '1' : '0';
-      if (ifCod.value != (originalStore!.ifCod == 1))
+      }
+      if (ifCod.value != (originalStore!.ifCod == 1)) {
         payload['if_cod'] = ifCod.value ? '1' : '0';
-      if (ifPickupAtStore.value != (originalStore!.ifPickupAtStore == 1))
+      }
+      if (ifPickupAtStore.value != (originalStore!.ifPickupAtStore == 1)) {
         payload['if_pickupatestore'] = ifPickupAtStore.value ? '1' : '0';
-      if (ifFixedDelivery.value != (originalStore!.ifFixedDelivery == 1))
+      }
+      if (ifFixedDelivery.value != (originalStore!.ifFixedDelivery == 1)) {
         payload['if_fixeddelivery'] = ifFixedDelivery.value ? '1' : '0';
-      if (ifHandlingCharge.value != (originalStore!.ifHandlingCharge == 1))
+      }
+      if (ifHandlingCharge.value != (originalStore!.ifHandlingCharge == 1)) {
         payload['if_handlingcharge'] = ifHandlingCharge.value ? '1' : '0';
-      if (tAndCStatus.value != (originalStore!.tAndCStatus == 1))
+      }
+      if (tAndCStatus.value != (originalStore!.tAndCStatus == 1)) {
         payload['t_and_c_status'] = tAndCStatus.value ? '1' : '0';
-      if (tAndCStatusPos.value != (originalStore!.tAndCStatusPos == 1))
+      }
+      if (tAndCStatusPos.value != (originalStore!.tAndCStatusPos == 1)) {
         payload['t_and_c_status_pos'] = tAndCStatusPos.value ? '1' : '0';
-      if (numberToWords.value != (originalStore!.numberToWords == 1))
+      }
+      if (numberToWords.value != (originalStore!.numberToWords == 1)) {
         payload['number_to_words'] = numberToWords.value ? '1' : '0';
-      if (ifExecutiveApp.value != (originalStore!.ifExecutiveApp == 1))
+      }
+      if (ifExecutiveApp.value != (originalStore!.ifExecutiveApp == 1)) {
         payload['if_executiveapp'] = ifExecutiveApp.value ? '1' : '0';
-      if (ifCustomerApp.value != (originalStore!.ifCustomerApp == 1))
+      }
+      if (ifCustomerApp.value != (originalStore!.ifCustomerApp == 1)) {
         payload['if_customerapp'] = ifCustomerApp.value ? '1' : '0';
-      if (ifDeliveryApp.value != (originalStore!.ifDeliveryApp == 1))
+      }
+      if (ifDeliveryApp.value != (originalStore!.ifDeliveryApp == 1)) {
         payload['if_deliveryapp'] = ifDeliveryApp.value ? '1' : '0';
-      if (ifOneSignal.value != (originalStore!.ifOneSignal == 1))
+      }
+      if (ifOneSignal.value != (originalStore!.ifOneSignal == 1)) {
         payload['if_onesignal'] = ifOneSignal.value ? '1' : '0';
-      if (ifModelNo.value != (originalStore!.ifModelNo == 1))
+      }
+      if (ifModelNo.value != (originalStore!.ifModelNo == 1)) {
         payload['if_modelno'] = ifModelNo.value ? '1' : '0';
-      if (ifSerialNo.value != (originalStore!.ifSerialNo == 1))
+      }
+      if (ifSerialNo.value != (originalStore!.ifSerialNo == 1)) {
         payload['if_serialno'] = ifSerialNo.value ? '1' : '0';
-      if (ifExpiry.value != (originalStore!.ifExpiry == 1))
+      }
+      if (ifExpiry.value != (originalStore!.ifExpiry == 1)) {
         payload['if_expiry'] = ifExpiry.value ? '1' : '0';
-      if (ifBatchNo.value != (originalStore!.ifBatchNo == 1))
+      }
+      if (ifBatchNo.value != (originalStore!.ifBatchNo == 1)) {
         payload['if_batchno'] = ifBatchNo.value ? '1' : '0';
-      if (previousBalanceBit.value != (originalStore!.previousBalanceBit == 1))
+      }
+      if (previousBalanceBit.value !=
+          (originalStore!.previousBalanceBit == 1)) {
         payload['previous_balancebit'] = previousBalanceBit.value ? '1' : '0';
+      }
 
+      if (selectedPrinter.value != originalStore!.defaultPrinter) {
+        payload['default_printer'] = selectedPrinter.value;
+      }
       // Compare and add changed text fields
       void addIfChanged(
         TextEditingController controller,
@@ -504,11 +573,6 @@ class StoreSettingsController extends GetxController
         fallback: 'active',
       );
       addIfChanged(createdByController, originalStore!.createdBy, 'created_by');
-      addIfChanged(
-        defaultPrinterController,
-        originalStore!.defaultPrinter,
-        'default_printer',
-      );
 
       // Prefix fields
       prefixControllers.forEach((key, controller) {
@@ -535,7 +599,7 @@ class StoreSettingsController extends GetxController
         addIfChanged(
           controller,
           original,
-          key.toLowerCase().replaceAll(' ', '_') + '_init',
+          '${key.toLowerCase().replaceAll(' ', '_')}_init',
         );
       });
 
@@ -552,15 +616,8 @@ class StoreSettingsController extends GetxController
       }
 
       final response = await dioClient.dio.put(
-        '$editStoreUrl/${storeId.value}',
+        '$editStoreUrl/${selectedStoreId.value}',
         data: payload,
-        options: dio.Options(
-          headers: {
-            'Authorization':
-                'Bearer ${authController.user.value?.accessToken ?? ''}',
-            'Content-Type': 'application/json',
-          },
-        ),
       );
 
       if (response.statusCode == 200) {
@@ -570,7 +627,6 @@ class StoreSettingsController extends GetxController
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
-        Get.back();
       } else {
         Get.snackbar(
           'Error',

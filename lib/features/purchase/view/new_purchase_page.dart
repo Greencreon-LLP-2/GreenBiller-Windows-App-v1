@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/features/purchase/controller/new_purchase_controller.dart';
+import 'package:greenbiller/features/sale/view/widgets/serial_no_modal_widget.dart';
 
 class NewPurchasePage extends GetView<NewPurchaseController> {
   const NewPurchasePage({super.key});
@@ -39,7 +40,11 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
             actions: [
               IconButton(
                 icon: const Icon(Icons.save, color: Colors.white),
-                onPressed: controller.savePurchase,
+                onPressed: () {
+                  if (!controller.isLoading.value) {
+                    controller.savePurchase(context: context, printer: false);
+                  }
+                },
               ),
               IconButton(
                 icon: const Icon(Icons.clear, color: Colors.white),
@@ -141,21 +146,45 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
             SizedBox(
               width: 120,
               child: ElevatedButton(
-                onPressed: controller.clearForm,
+                onPressed: controller.isLoadingSavePrint.value
+                    ? null
+                    : () async {
+                        await controller.savePurchase(
+                          printer: true,
+                          context: context,
+                        );
+                      },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey.shade600,
+                  backgroundColor: Colors.green.shade700,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   textStyle: const TextStyle(fontSize: 14),
                 ),
-                child: const Text("Clear Form"),
+                child: controller.isLoadingSavePrint.value
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Save & Print',
+                        style: TextStyle(fontSize: 16),
+                      ),
               ),
             ),
             const SizedBox(width: 12),
             SizedBox(
               width: 120,
               child: ElevatedButton(
-                onPressed: controller.savePurchase,
+                onPressed: () {
+                  if (!controller.isLoading.value &&
+                      !controller.isLoadingSavePrint.value) {
+                    controller.savePurchase(context: context, printer: false);
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green.shade700,
                   foregroundColor: Colors.white,
@@ -277,6 +306,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             controller: controller.billNumberController,
                             style: const TextStyle(fontSize: 14),
                             decoration: InputDecoration(
+                              enabled: false,
                               hintText: "Enter bill no.",
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               isDense: true,
@@ -293,24 +323,7 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        SizedBox(
-                          height: 42,
-                          child: ElevatedButton(
-                            onPressed: controller.generateBillNumber,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                              ),
-                            ),
-                            child: const Text(
-                              "Generate",
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        ),
+                       
                       ],
                     ),
                   ],
@@ -417,8 +430,8 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
     return LayoutBuilder(
       builder: (context, constraints) {
         const columnCount = 13;
-        const itemFlex = 3;
-        const otherFlex = 1;
+        const itemFlex = 2;
+        const otherFlex = 0.8;
         const totalFlex = itemFlex + (columnCount - 1) * otherFlex;
         final baseColumnWidth = constraints.maxWidth / totalFlex;
         final itemColumnWidth = baseColumnWidth * itemFlex;
@@ -620,7 +633,14 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             controller.isLoadingTaxes.value
                                 ? const Text("Loading...")
                                 : DropdownButtonFormField<String>(
-                                    value: item.taxName,
+                                    value:
+                                        controller.taxList.toList().any(
+                                          (tax) =>
+                                              tax['tax_name'] == item.taxName,
+                                        )
+                                        ? item.taxName
+                                        : null,
+
                                     isExpanded: true,
                                     decoration: const InputDecoration(
                                       isDense: true,

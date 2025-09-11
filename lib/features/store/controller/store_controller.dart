@@ -559,7 +559,6 @@ class StoreController extends GetxController
           borderRadius: 12,
         );
         await getWarehouseList();
-       
       } else {
         _showError(response.data);
       }

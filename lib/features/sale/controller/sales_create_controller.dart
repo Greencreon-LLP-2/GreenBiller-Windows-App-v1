@@ -52,8 +52,10 @@ class SalesController extends GetxController {
 
   // Dropdown Data
   final RxMap<String, String> storeMap = <String, String>{}.obs;
+  final RxList<dynamic> actualStoreData = <dynamic>[].obs;
   final RxMap<String, String> warehouseMap = <String, String>{}.obs;
   final RxMap<String, String> customerMap = <String, String>{}.obs;
+  final RxList<dynamic> actualCustomerData = <dynamic>[].obs;
   final RxList<Map<String, dynamic>> itemsList = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> taxList = <Map<String, dynamic>>[].obs;
   final RxString selectedStoreId = ''.obs;
@@ -215,6 +217,7 @@ class SalesController extends GetxController {
     isLoadingStores.value = true;
     try {
       final response = await _commonApi.fetchStoreList();
+      actualStoreData.value = response;
       storeMap.value = {
         for (var store in response) store['store_name']: store['id'].toString(),
       };
@@ -260,6 +263,7 @@ class SalesController extends GetxController {
     isLoadingCustomers.value = true;
     try {
       final List<dynamic> response = await _commonApi.fetchCustomers(storeId);
+      actualCustomerData.value = response;
       customerMap.value = {
         for (var customer in response)
           customer['customer_name']: customer['id'].toString(),

@@ -9,7 +9,6 @@ import 'package:greenbiller/features/sale/view/widgets/sku_edit_dialog.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:intl/intl.dart';
 
 class NewSalePage extends GetView<SalesController> {
   const NewSalePage({super.key});
@@ -112,429 +111,6 @@ class NewSalePage extends GetView<SalesController> {
         );
       }
 
-      Future<void> _printBill(BuildContext context) async {
-        final pdf = pw.Document();
-
-        // Debug print to verify rowFields content
-        print('rowFields before printing: ${controller.rowFields}');
-        controller.rowFields.forEach((key, value) {
-          print(
-            'Row $key: itemName=${value['itemName']}, quantity=${value['quantity']}, price=${value['price']}, batchNo=${value['batchNo']}',
-          );
-        });
-
-        pdf.addPage(
-          pw.Page(
-            pageFormat: PdfPageFormat.roll57,
-            margin: const pw.EdgeInsets.all(
-              5,
-            ), // Reduced margins for 80mm paper
-            build: (pw.Context context) {
-              return pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  pw.Text(
-                    controller.storeController.text.isNotEmpty
-                        ? controller.storeController.text
-                        : 'Your Store Name',
-                    style: pw.TextStyle(
-                      fontSize: 10,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Text(
-                    'Date: ${controller.getCurrentDateFormatted()}',
-                    style: const pw.TextStyle(fontSize: 7),
-                  ),
-                  pw.Text(
-                    'Customer: ${controller.customerController.text.isNotEmpty ? controller.customerController.text : 'Walk-in Customer'}',
-                    style: const pw.TextStyle(fontSize: 7),
-                  ),
-                  pw.Text(
-                    'Bill No: ${controller.saleBillConrtoller.text}',
-                    style: const pw.TextStyle(fontSize: 7),
-                  ),
-                  pw.SizedBox(height: 5),
-                  pw.Divider(thickness: 0.5),
-
-                  // Itemized List
-                  pw.Text(
-                    'Items',
-                    style: pw.TextStyle(
-                      fontSize: 7,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                  pw.SizedBox(height: 4),
-                  pw.Table(
-                    border: pw.TableBorder.all(width: 0.5),
-                    columnWidths: {
-                      0: const pw.FixedColumnWidth(12), // # (reduced)
-                      1: const pw.FixedColumnWidth(60), // Item (reduced)
-                      2: const pw.FixedColumnWidth(25), // SKU (new)
-                      3: const pw.FixedColumnWidth(18), // Qty (reduced)
-                      4: const pw.FixedColumnWidth(25), // Price (reduced)
-                      5: const pw.FixedColumnWidth(20), // Disc (reduced)
-                      6: const pw.FixedColumnWidth(20), // Tax (reduced)
-                      7: const pw.FixedColumnWidth(30), // Total (reduced)
-                    },
-                    children: [
-                      // Header Row
-                      pw.TableRow(
-                        children: [
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 2,
-                              vertical: 1,
-                            ),
-                            child: pw.Text(
-                              '#',
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                fontSize: 7,
-                              ),
-                              textAlign: pw.TextAlign.center,
-                            ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 2,
-                              vertical: 1,
-                            ),
-                            child: pw.Text(
-                              'Item',
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                fontSize: 7,
-                              ),
-                              textAlign: pw.TextAlign.left,
-                            ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 2,
-                              vertical: 1,
-                            ),
-                            child: pw.Text(
-                              'SKU',
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                fontSize: 7,
-                              ),
-                              textAlign: pw.TextAlign.center,
-                            ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 2,
-                              vertical: 1,
-                            ),
-                            child: pw.Text(
-                              'Qty',
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                fontSize: 7,
-                              ),
-                              textAlign: pw.TextAlign.center,
-                            ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 2,
-                              vertical: 1,
-                            ),
-                            child: pw.Text(
-                              'Price',
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                fontSize: 7,
-                              ),
-                              textAlign: pw.TextAlign.center,
-                            ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 2,
-                              vertical: 1,
-                            ),
-                            child: pw.Text(
-                              'Disc',
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                fontSize: 7,
-                              ),
-                              textAlign: pw.TextAlign.center,
-                            ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 2,
-                              vertical: 1,
-                            ),
-                            child: pw.Text(
-                              'Tax',
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                fontSize: 7,
-                              ),
-                              textAlign: pw.TextAlign.center,
-                            ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 2,
-                              vertical: 1,
-                            ),
-                            child: pw.Text(
-                              'Total',
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                fontSize: 7,
-                              ),
-                              textAlign: pw.TextAlign.center,
-                            ),
-                          ),
-                        ],
-                      ),
-                      // Data Rows
-                      ...controller.rowFields.entries
-                          .where(
-                            (entry) =>
-                                (entry.value['itemName'] ?? '').isNotEmpty,
-                          )
-                          .map((entry) {
-                            final index = int.parse(entry.key.toString()) + 1;
-                            final row = entry.value;
-                            return pw.TableRow(
-                              children: [
-                                pw.Padding(
-                                  padding: const pw.EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                    vertical: 1,
-                                  ),
-                                  child: pw.Text(
-                                    index.toString(),
-                                    textAlign: pw.TextAlign.center,
-                                    style: const pw.TextStyle(fontSize: 7),
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: const pw.EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                    vertical: 1,
-                                  ),
-                                  child: pw.Text(
-                                    row['itemName']?.toString() ??
-                                        'Unknown Item',
-                                    textAlign: pw.TextAlign.left,
-                                    style: const pw.TextStyle(fontSize: 7),
-                                    maxLines: 2,
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: const pw.EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                    vertical: 1,
-                                  ),
-                                  child: pw.Text(
-                                    row['batchNo']?.toString() ?? '-',
-                                    textAlign: pw.TextAlign.center,
-                                    style: const pw.TextStyle(fontSize: 7),
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: const pw.EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                    vertical: 1,
-                                  ),
-                                  child: pw.Text(
-                                    row['quantity']?.toString() ?? '0',
-                                    textAlign: pw.TextAlign.center,
-                                    style: const pw.TextStyle(fontSize: 7),
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: const pw.EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                    vertical: 1,
-                                  ),
-                                  child: pw.Text(
-                                    '\$${double.tryParse(row['price']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
-                                    textAlign: pw.TextAlign.center,
-                                    style: const pw.TextStyle(fontSize: 7),
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: const pw.EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                    vertical: 1,
-                                  ),
-                                  child: pw.Text(
-                                    '\$${double.tryParse(row['discountAmount']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
-                                    textAlign: pw.TextAlign.center,
-                                    style: const pw.TextStyle(fontSize: 7),
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: const pw.EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                    vertical: 1,
-                                  ),
-                                  child: pw.Text(
-                                    '\$${double.tryParse(row['taxAmount']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
-                                    textAlign: pw.TextAlign.center,
-                                    style: const pw.TextStyle(fontSize: 7),
-                                  ),
-                                ),
-                                pw.Padding(
-                                  padding: const pw.EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                    vertical: 1,
-                                  ),
-                                  child: pw.Text(
-                                    '\$${double.tryParse(row['amount']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
-                                    textAlign: pw.TextAlign.center,
-                                    style: const pw.TextStyle(fontSize: 7),
-                                  ),
-                                ),
-                              ],
-                            );
-                          })
-                          .toList(),
-                    ],
-                  ),
-                  pw.SizedBox(height: 5),
-                  pw.Divider(thickness: 0.5),
-
-                  // Totals
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(
-                        'Subtotal:',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                      pw.Text(
-                        '\$${controller.tempSubTotal.value.toStringAsFixed(2)}',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(
-                        'Total Tax:',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                      pw.Text(
-                        '\$${controller.tempTotalTax.value.toStringAsFixed(2)}',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(
-                        'Total Discount:',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                      pw.Text(
-                        '\$${controller.tempTotalDiscount.value.toStringAsFixed(2)}',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(
-                        'Other Charges:',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                      pw.Text(
-                        '\$${controller.otherChargesController.text.isNotEmpty ? double.tryParse(controller.otherChargesController.text)?.toStringAsFixed(2) ?? '0.00' : '0.00'}',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(
-                        'Grand Total:',
-                        style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 7,
-                        ),
-                      ),
-                      pw.Text(
-                        '\$${controller.grandTotal.value.toStringAsFixed(2)}',
-                        style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 7,
-                        ),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(
-                        'Paid Amount:',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                      pw.Text(
-                        '\$${controller.paidAmountController.text.isNotEmpty ? double.tryParse(controller.paidAmountController.text)?.toStringAsFixed(2) ?? '0.00' : '0.00'}',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(
-                        'Balance:',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                      pw.Text(
-                        '\$${controller.balance.value.toStringAsFixed(2)}',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 5),
-                  pw.Divider(thickness: 0.5),
-
-                  // Footer
-                  pw.Text(
-                    'Thank you for your purchase!',
-                    style: const pw.TextStyle(fontSize: 8),
-                    textAlign: pw.TextAlign.center,
-                  ),
-                ],
-              );
-            },
-          ),
-        );
-
-        // Directly open print dialog
-        await Printing.layoutPdf(
-          onLayout: (PdfPageFormat format) async => pdf.save(),
-          name: 'Bill_${controller.saleBillConrtoller.text}',
-          format: PdfPageFormat.roll80,
-        );
-      }
-
       return Stack(
         children: [
           Scaffold(
@@ -615,7 +191,7 @@ class NewSalePage extends GetView<SalesController> {
                           final columnWidths = {
                             '#': 40.0,
                             'Item': 250.0,
-                            'SKUs': 150.0,
+                            'Serial No': 150.0,
                             'Qty': 60.0,
                             'Unit': 80.0,
                             'Price/Unit': 150.0,
@@ -701,6 +277,23 @@ class NewSalePage extends GetView<SalesController> {
                     onPressed: controller.isLoadingSavePrint.value
                         ? null
                         : () async {
+                            final selectedStore = controller.actualStoreData
+                                .firstWhere(
+                                  (store) =>
+                                      store['id'] ==
+                                      controller.selectedStoreId.value,
+                                  orElse: () => null,
+                                );
+
+                            final selectedCustomer = controller
+                                .actualCustomerData
+                                .firstWhere(
+                                  (customer) =>
+                                      customer['id'] ==
+                                      controller.selectedCustomerId.value,
+                                  orElse: () => null,
+                                );
+
                             // Save copies of rowFields and tempPurchaseItems
                             final rowFieldsCopy =
                                 Map<int, Map<String, String>>.from(
@@ -710,12 +303,6 @@ class NewSalePage extends GetView<SalesController> {
                                 List<TempPurchaseItem>.from(
                                   controller.tempPurchaseItems,
                                 );
-                            print(
-                              'rowFields before saveSale: ${controller.rowFields}',
-                            );
-                            print(
-                              'tempPurchaseItems before saveSale: ${controller.tempPurchaseItems}',
-                            );
 
                             // Call saveSale to store data in the backend
                             await controller.saveSale(
@@ -765,7 +352,20 @@ class NewSalePage extends GetView<SalesController> {
                               );
 
                               // Print the bill directly
-                              await _printBill(context);
+                              if (context.mounted) {
+                                await printBill(
+                                  context,
+                                  selectedStore,
+                                  selectedCustomer,
+                                );
+                              } else {
+                                Get.snackbar(
+                                  'Error',
+                                  'Cant start print and save, Contact Admin',
+                                  backgroundColor: Colors.red,
+                                  colorText: Colors.white,
+                                );
+                              }
                             }
                           },
                     child: controller.isLoadingSavePrint.value
@@ -819,6 +419,544 @@ class NewSalePage extends GetView<SalesController> {
         ],
       );
     });
+  }
+
+  Future<void> printBill(
+    BuildContext context,
+    dynamic storeData,
+    dynamic customerData,
+  ) async {
+    final pdf = pw.Document();
+    final defaultPrinter = storeData?['default_printer'] ?? 'a4';
+    final isA4 = defaultPrinter == 'a4';
+
+    // Helper function to get store data with fallback
+    String getStoreValue(String key, {String fallback = 'N/A'}) {
+      if (key == 'currency_symbol') {
+        return storeData?[key]?.toString().isNotEmpty ?? false
+            ? storeData[key].toString()
+            : '₹';
+      }
+      return storeData?[key]?.toString().isNotEmpty ?? false
+          ? storeData[key].toString()
+          : fallback;
+    }
+
+    // Common table header
+    final tableHeader = pw.TableRow(
+      children: [
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: pw.Text(
+            '#',
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: isA4 ? 12 : 7,
+            ),
+            textAlign: pw.TextAlign.center,
+          ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: pw.Text(
+            'Item',
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: isA4 ? 12 : 7,
+            ),
+            textAlign: pw.TextAlign.left,
+          ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: pw.Text(
+            'SKU',
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: isA4 ? 12 : 7,
+            ),
+            textAlign: pw.TextAlign.center,
+          ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: pw.Text(
+            'Qty',
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: isA4 ? 12 : 7,
+            ),
+            textAlign: pw.TextAlign.center,
+          ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: pw.Text(
+            'Price',
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: isA4 ? 12 : 7,
+            ),
+            textAlign: pw.TextAlign.center,
+          ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: pw.Text(
+            'Disc',
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: isA4 ? 12 : 7,
+            ),
+            textAlign: pw.TextAlign.center,
+          ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: pw.Text(
+            'Tax',
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: isA4 ? 12 : 7,
+            ),
+            textAlign: pw.TextAlign.center,
+          ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: pw.Text(
+            'Total',
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: isA4 ? 12 : 7,
+            ),
+            textAlign: pw.TextAlign.center,
+          ),
+        ),
+      ],
+    );
+
+    // Common table data rows
+    final tableRows = controller.rowFields.entries
+        .where((entry) => (entry.value['itemName'] ?? '').isNotEmpty)
+        .map((entry) {
+          final index = int.parse(entry.key.toString()) + 1;
+          final row = entry.value;
+          return pw.TableRow(
+            children: [
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 4,
+                ),
+                child: pw.Text(
+                  index.toString(),
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 4,
+                ),
+                child: pw.Text(
+                  row['itemName']?.toString() ?? 'Unknown Item',
+                  textAlign: pw.TextAlign.left,
+                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  maxLines: 2,
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 4,
+                ),
+                child: pw.Text(
+                  row['batchNo']?.toString() ?? '-',
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 4,
+                ),
+                child: pw.Text(
+                  row['quantity']?.toString() ?? '0',
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 4,
+                ),
+                child: pw.Text(
+                  '${getStoreValue('currency_symbol')}${double.tryParse(row['price']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 4,
+                ),
+                child: pw.Text(
+                  '${getStoreValue('currency_symbol')}${double.tryParse(row['discountAmount']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 4,
+                ),
+                child: pw.Text(
+                  '${getStoreValue('currency_symbol')}${double.tryParse(row['taxAmount']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                ),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 4,
+                ),
+                child: pw.Text(
+                  '${getStoreValue('currency_symbol')}${double.tryParse(row['amount']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                ),
+              ),
+            ],
+          );
+        })
+        .toList();
+
+    // Common totals section
+    final totalsSection = [
+      pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('Subtotal:', style: pw.TextStyle(fontSize: isA4 ? 12 : 7)),
+          pw.Text(
+            '${getStoreValue('currency_symbol')}${controller.tempSubTotal.value.toStringAsFixed(2)}',
+            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+          ),
+        ],
+      ),
+      pw.SizedBox(height: isA4 ? 8 : 2),
+      pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('Total Tax:', style: pw.TextStyle(fontSize: isA4 ? 12 : 7)),
+          pw.Text(
+            '${getStoreValue('currency_symbol')}${controller.tempTotalTax.value.toStringAsFixed(2)}',
+            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+          ),
+        ],
+      ),
+      pw.SizedBox(height: isA4 ? 8 : 2),
+      pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(
+            'Total Discount:',
+            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+          ),
+          pw.Text(
+            '${getStoreValue('currency_symbol')}${controller.tempTotalDiscount.value.toStringAsFixed(2)}',
+            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+          ),
+        ],
+      ),
+      pw.SizedBox(height: isA4 ? 8 : 2),
+      pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(
+            'Other Charges:',
+            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+          ),
+          pw.Text(
+            '${getStoreValue('currency_symbol')}${controller.otherChargesController.text.isNotEmpty ? double.tryParse(controller.otherChargesController.text)?.toStringAsFixed(2) ?? '0.00' : '0.00'}',
+            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+          ),
+        ],
+      ),
+      pw.SizedBox(height: isA4 ? 8 : 2),
+      pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(
+            'Grand Total:',
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: isA4 ? 12 : 7,
+            ),
+          ),
+          pw.Text(
+            '${getStoreValue('currency_symbol')}${controller.grandTotal.value.toStringAsFixed(2)}',
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: isA4 ? 12 : 7,
+            ),
+          ),
+        ],
+      ),
+      pw.SizedBox(height: isA4 ? 8 : 2),
+      pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('Paid Amount:', style: pw.TextStyle(fontSize: isA4 ? 12 : 7)),
+          pw.Text(
+            '${getStoreValue('currency_symbol')}${controller.paidAmountController.text.isNotEmpty ? double.tryParse(controller.paidAmountController.text)?.toStringAsFixed(2) ?? '0.00' : '0.00'}',
+            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+          ),
+        ],
+      ),
+      pw.SizedBox(height: isA4 ? 8 : 2),
+      pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('Balance:', style: pw.TextStyle(fontSize: isA4 ? 12 : 7)),
+          pw.Text(
+            '${getStoreValue('currency_symbol')}${controller.balance.value.toStringAsFixed(2)}',
+            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+          ),
+        ],
+      ),
+    ];
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: isA4 ? PdfPageFormat.a4 : PdfPageFormat.roll80,
+        margin: pw.EdgeInsets.all(isA4 ? 40 : 5),
+        build: (pw.Context context) {
+          return isA4
+              ? pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    // A4 Header
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text(
+                              getStoreValue(
+                                'store_name',
+                                fallback:
+                                    controller.storeController.text.isNotEmpty
+                                    ? controller.storeController.text
+                                    : 'Your Store Name',
+                              ),
+                              style: pw.TextStyle(
+                                fontSize: 20,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                            pw.SizedBox(height: 8),
+                            pw.Text(
+                              'Address: ${getStoreValue('store_address')}',
+                              style: const pw.TextStyle(fontSize: 12),
+                            ),
+                            pw.Text(
+                              '${getStoreValue('store_city')}${getStoreValue('store_state').isNotEmpty ? ', ${getStoreValue('store_state')}' : ''}${getStoreValue('store_country').isNotEmpty ? ', ${getStoreValue('store_country')}' : ''}${getStoreValue('store_postal_code').isNotEmpty ? ' ${getStoreValue('store_postal_code')}' : ''}',
+                              style: const pw.TextStyle(fontSize: 12),
+                            ),
+                            pw.Text(
+                              'Phone: ${getStoreValue('store_phone')}',
+                              style: const pw.TextStyle(fontSize: 12),
+                            ),
+                            pw.Text(
+                              'Email: ${getStoreValue('store_email')}',
+                              style: const pw.TextStyle(fontSize: 12),
+                            ),
+                            pw.Text(
+                              'Tax Number: ${getStoreValue('tax_number')}',
+                              style: const pw.TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                        pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.end,
+                          children: [
+                            pw.Text(
+                              'Invoice',
+                              style: pw.TextStyle(
+                                fontSize: 24,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                            pw.SizedBox(height: 8),
+                            pw.Text(
+                              'Bill No: ${controller.saleBillConrtoller.text}',
+                              style: const pw.TextStyle(fontSize: 12),
+                            ),
+                            pw.Text(
+                              'Date: ${controller.getCurrentDateFormatted()}',
+                              style: const pw.TextStyle(fontSize: 12),
+                            ),
+                            pw.Text(
+                              'Customer: ${controller.customerController.text.isNotEmpty ? controller.customerController.text : 'Walk-in Customer'}',
+                              style: const pw.TextStyle(fontSize: 12),
+                            ),
+                            pw.Text(
+                              'Owner: ${getStoreValue('owner_name')}',
+                              style: const pw.TextStyle(fontSize: 12),
+                            ),
+                            pw.Text(
+                              'Owner Email: ${getStoreValue('owner_email')}',
+                              style: const pw.TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 20),
+                    pw.Divider(thickness: 1),
+
+                    // A4 Itemized List
+                    pw.Text(
+                      'Items',
+                      style: pw.TextStyle(
+                        fontSize: 16,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 10),
+                    pw.Table(
+                      border: pw.TableBorder.all(width: 1),
+                      columnWidths: {
+                        0: const pw.FixedColumnWidth(30), // #
+                        1: const pw.FlexColumnWidth(3), // Item
+                        2: const pw.FixedColumnWidth(60), // SKU
+                        3: const pw.FixedColumnWidth(50), // Qty
+                        4: const pw.FixedColumnWidth(60), // Price
+                        5: const pw.FixedColumnWidth(60), // Disc
+                        6: const pw.FixedColumnWidth(60), // Tax
+                        7: const pw.FixedColumnWidth(80), // Total
+                      },
+                      children: [tableHeader, ...tableRows],
+                    ),
+                    pw.SizedBox(height: 20),
+                    pw.Divider(thickness: 1),
+
+                    // A4 Totals
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: totalsSection,
+                    ),
+                    pw.SizedBox(height: 20),
+                    pw.Divider(thickness: 1),
+
+                    // A4 Footer
+                    pw.Text(
+                      'Thank you for your purchase!',
+                      style: const pw.TextStyle(fontSize: 12),
+                      textAlign: pw.TextAlign.center,
+                    ),
+                    pw.SizedBox(height: 10),
+                    pw.Text(
+                      'Terms & Conditions: Payment is due upon receipt. Please contact us at ${getStoreValue('store_email')} for any inquiries.',
+                      style: const pw.TextStyle(fontSize: 10),
+                      textAlign: pw.TextAlign.center,
+                    ),
+                  ],
+                )
+              : pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    // Thermal Header
+                    pw.Text(
+                      controller.storeController.text.isNotEmpty
+                          ? controller.storeController.text
+                          : 'Your Store Name',
+                      style: pw.TextStyle(
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      'Date: ${controller.getCurrentDateFormatted()}',
+                      style: const pw.TextStyle(fontSize: 7),
+                    ),
+                    pw.Text(
+                      'Customer: ${controller.customerController.text.isNotEmpty ? controller.customerController.text : 'Walk-in Customer'}',
+                      style: const pw.TextStyle(fontSize: 7),
+                    ),
+                    pw.Text(
+                      'Bill No: ${controller.saleBillConrtoller.text}',
+                      style: const pw.TextStyle(fontSize: 7),
+                    ),
+                    pw.SizedBox(height: 5),
+                    pw.Divider(thickness: 0.5),
+
+                    // Thermal Itemized List
+                    pw.Text(
+                      'Items',
+                      style: pw.TextStyle(
+                        fontSize: 7,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Table(
+                      border: pw.TableBorder.all(width: 0.5),
+                      columnWidths: {
+                        0: const pw.FixedColumnWidth(12), // #
+                        1: const pw.FixedColumnWidth(60), // Item
+                        2: const pw.FixedColumnWidth(25), // SKU
+                        3: const pw.FixedColumnWidth(18), // Qty
+                        4: const pw.FixedColumnWidth(25), // Price
+                        5: const pw.FixedColumnWidth(20), // Disc
+                        6: const pw.FixedColumnWidth(20), // Tax
+                        7: const pw.FixedColumnWidth(30), // Total
+                      },
+                      children: [tableHeader, ...tableRows],
+                    ),
+                    pw.SizedBox(height: 5),
+                    pw.Divider(thickness: 0.5),
+
+                    // Thermal Totals
+                    ...totalsSection,
+                    pw.SizedBox(height: 5),
+                    pw.Divider(thickness: 0.5),
+
+                    // Thermal Footer
+                    pw.Text(
+                      'Thank you for your purchase!',
+                      style: const pw.TextStyle(fontSize: 8),
+                      textAlign: pw.TextAlign.center,
+                    ),
+                  ],
+                );
+        },
+      ),
+    );
+
+    
+    // Sanitize bill number to ensure valid file name
+    final billNumber = controller.saleBillConrtoller.text.isNotEmpty
+        ? controller.saleBillConrtoller.text.replaceAll(RegExp(r'[^\w\-]'), '_')
+        : 'invoice';
+    final fileName = 'Bill_$billNumber.pdf';
+
+    // Open print dialog with customized file name
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+      name: fileName,
+      format: isA4 ? PdfPageFormat.a4 : PdfPageFormat.roll80,
+    );
   }
 }
 
@@ -1440,10 +1578,16 @@ class DataRowWidget extends StatelessWidget {
                     child: controller.showDropdownRows.contains(index)
                         ? DropdownButtonFormField<String>(
                             value:
-                                controller.rowFields[index]?['taxName'] ??
-                                (controller.taxList.isNotEmpty
-                                    ? controller.taxList.first['tax_name']
-                                    : null),
+                                (controller.taxList.toList().any(
+                                  (tax) =>
+                                      tax['tax_name'] ==
+                                      controller.rowFields[index]?['taxName'],
+                                ))
+                                ? controller.rowFields[index]!['taxName']
+                                : (controller.taxList.isNotEmpty
+                                      ? controller.taxList.first['tax_name']
+                                      : null),
+
                             isExpanded: true,
                             decoration: const InputDecoration(
                               isDense: true,
@@ -1457,7 +1601,7 @@ class DataRowWidget extends StatelessWidget {
                               return DropdownMenuItem<String>(
                                 value: tax['tax_name'],
                                 child: Text(
-                                  '${tax['tax_name']} (${tax['tax']}%)',
+                                  '${tax['tax']}%',
                                   style: const TextStyle(fontSize: 14),
                                   textAlign: TextAlign.center,
                                   overflow: TextOverflow.ellipsis,
