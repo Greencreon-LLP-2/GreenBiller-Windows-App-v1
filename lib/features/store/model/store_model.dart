@@ -12,8 +12,12 @@ class StoreModel {
       data: (json['data'] as List?)
           ?.map((e) => StoreData.fromJson(e as Map<String, dynamic>))
           .toList(),
-      totalstore: json['totalstore'] is int ? json['totalstore'] : int.tryParse(json['totalstore']?.toString() ?? ''),
-      status: json['status'] is int ? json['status'] : int.tryParse(json['status']?.toString() ?? ''),
+      totalstore: json['totalstore'] is int
+          ? json['totalstore']
+          : int.tryParse(json['totalstore']?.toString() ?? ''),
+      status: json['status'] is int
+          ? json['status']
+          : int.tryParse(json['status']?.toString() ?? ''),
     );
   }
 }
@@ -45,6 +49,7 @@ class StoreData {
   final DateTime? updatedAt;
   final String? ownerName;
   final String? ownerEmail;
+  final String? defaultPrinter;
   final int? suppliersCount;
   final int? customersCount;
   final int? purchasesCount;
@@ -89,11 +94,14 @@ class StoreData {
     this.salesReturnsCount,
     this.warehousesCount,
     this.categoriesCount,
+    this.defaultPrinter,
   });
 
   factory StoreData.fromJson(Map<String, dynamic> json) {
     return StoreData(
-      id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? ''),
+      id: json['id'] is int
+          ? json['id']
+          : int.tryParse(json['id']?.toString() ?? ''),
       storeName: json['store_name']?.toString(),
       storeCode: json['store_code']?.toString(),
       storeLogo: json['store_logo']?.toString(),
@@ -115,18 +123,39 @@ class StoreData {
       taxNumber: json['tax_number']?.toString(),
       website: json['website']?.toString(),
       status: json['status']?.toString(),
-      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'].toString()) : null,
+      defaultPrinter: json['default_printer']?.toString(),
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'].toString())
+          : null,
       ownerName: json['owner_name']?.toString(),
       ownerEmail: json['owner_email']?.toString(),
-      suppliersCount: json['suppliers_count'] is int ? json['suppliers_count'] : int.tryParse(json['suppliers_count']?.toString() ?? '0'),
-      customersCount: json['customers_count'] is int ? json['customers_count'] : int.tryParse(json['customers_count']?.toString() ?? '0'),
-      purchasesCount: json['purchases_count'] is int ? json['purchases_count'] : int.tryParse(json['purchases_count']?.toString() ?? '0'),
-      purchaseReturnsCount: json['purchase_returns_count'] is int ? json['purchase_returns_count'] : int.tryParse(json['purchase_returns_count']?.toString() ?? '0'),
-      salesCount: json['sales_count'] is int ? json['sales_count'] : int.tryParse(json['sales_count']?.toString() ?? '0'),
-      salesReturnsCount: json['sales_returns_count'] is int ? json['sales_returns_count'] : int.tryParse(json['sales_returns_count']?.toString() ?? '0'),
-      warehousesCount: json['warehouses_count'] is int ? json['warehouses_count'] : int.tryParse(json['warehouses_count']?.toString() ?? '0'),
-      categoriesCount: json['categories_count'] is int ? json['categories_count'] : int.tryParse(json['categories_count']?.toString() ?? '0'),
+      suppliersCount: json['suppliers_count'] is int
+          ? json['suppliers_count']
+          : int.tryParse(json['suppliers_count']?.toString() ?? '0'),
+      customersCount: json['customers_count'] is int
+          ? json['customers_count']
+          : int.tryParse(json['customers_count']?.toString() ?? '0'),
+      purchasesCount: json['purchases_count'] is int
+          ? json['purchases_count']
+          : int.tryParse(json['purchases_count']?.toString() ?? '0'),
+      purchaseReturnsCount: json['purchase_returns_count'] is int
+          ? json['purchase_returns_count']
+          : int.tryParse(json['purchase_returns_count']?.toString() ?? '0'),
+      salesCount: json['sales_count'] is int
+          ? json['sales_count']
+          : int.tryParse(json['sales_count']?.toString() ?? '0'),
+      salesReturnsCount: json['sales_returns_count'] is int
+          ? json['sales_returns_count']
+          : int.tryParse(json['sales_returns_count']?.toString() ?? '0'),
+      warehousesCount: json['warehouses_count'] is int
+          ? json['warehouses_count']
+          : int.tryParse(json['warehouses_count']?.toString() ?? '0'),
+      categoriesCount: json['categories_count'] is int
+          ? json['categories_count']
+          : int.tryParse(json['categories_count']?.toString() ?? '0'),
     );
   }
 }

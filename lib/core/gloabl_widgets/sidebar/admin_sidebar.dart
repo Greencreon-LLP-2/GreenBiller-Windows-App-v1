@@ -183,7 +183,6 @@ class AdminSidebar extends StatelessWidget {
                               true, // custom flag in your TrialCard widget
                         ),
                       ),
-                      SidebarUpgradeButton(),
                     ],
                   );
                 }
@@ -525,6 +524,17 @@ class AdminSidebar extends StatelessWidget {
                         ),
                       ],
                     ),
+                    Obx(() {
+                      final user = authController.user.value;
+                      if (user != null) {
+                        if (user.subscriptionId == null) {
+                          //upgrade button only
+                          return SidebarUpgradeButton();
+                        }
+                        return const SizedBox.shrink();
+                      }
+                      return const SizedBox.shrink();
+                    }),
                   ],
                 );
               }),

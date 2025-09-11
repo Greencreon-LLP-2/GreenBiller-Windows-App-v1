@@ -33,7 +33,8 @@ class AddItemController extends GetxController
   final RxInt userId = 0.obs;
   final isProcessing = false.obs;
 
-  final selectedTaxType = Rxn<String>();
+  // final selectedTaxType = Rxn<String>();
+  final selectedTaxRate = Rxn<String>();
   final selectedDiscountType = Rxn<String>();
   final calculatedProfit = 0.0.obs;
 
@@ -45,7 +46,9 @@ class AddItemController extends GetxController
   final isLoadingWarehouses = false.obs;
 
   final taxMap = <String, double>{}.obs; // tax_name -> tax value
-  final taxList = <String>[].obs; // dropdown options
+  final taxRateList = <String>[].obs; // dropdown options
+  final List<String> taxTypeList = ['Inclusive Tax', 'Exclusive Tax'];
+  final selectedTaxType = 'Exclusive Tax'.obs;
   final unitList = <UnitItem>[].obs;
   final selectedUnit = Rxn<UnitItem>();
   final selectedSubUnit = Rxn<UnitItem>();
@@ -64,7 +67,7 @@ class AddItemController extends GetxController
   late TextEditingController descriptionController;
   late TextEditingController purchasePriceController;
   late TextEditingController wholesalePriceController;
-  late TextEditingController taxRateController;
+
   late TextEditingController salesPriceController;
   late TextEditingController mrpController;
   late TextEditingController discountController;
@@ -99,7 +102,7 @@ class AddItemController extends GetxController
 
     descriptionController = TextEditingController();
     purchasePriceController = TextEditingController();
-    taxRateController = TextEditingController();
+
     salesPriceController = TextEditingController();
     mrpController = TextEditingController();
     discountController = TextEditingController();
@@ -130,7 +133,7 @@ class AddItemController extends GetxController
 
     descriptionController.dispose();
     purchasePriceController.dispose();
-    taxRateController.dispose();
+
     salesPriceController.dispose();
     mrpController.dispose();
     discountController.dispose();
@@ -156,17 +159,17 @@ class AddItemController extends GetxController
     try {
       final taxes = await commonApi.fetchTaxList();
       taxMap.clear();
-      taxList.clear();
+      taxRateList.clear();
 
       // Always append "None"
       taxMap["None"] = 0;
-      taxList.add("None");
+      taxRateList.add("None");
 
       for (final tax in taxes) {
         final name = tax['tax_name'] as String;
         final value = double.tryParse(tax['tax'].toString()) ?? 0;
         taxMap[name] = value;
-        taxList.add(name);
+        taxRateList.add(name);
       }
     } catch (e) {
       _logger.e("Error loading tax list: $e");
@@ -273,6 +276,7 @@ class AddItemController extends GetxController
 
   Future<bool> addItem(GlobalKey<FormState> formKey) async {
     isProcessing.value = true;
+
     try {
       if (formKey.currentState!.validate()) {
         if (itemNameController.text.isEmpty) {
@@ -344,11 +348,14 @@ class AddItemController extends GetxController
         if (salesPriceController.text.isEmpty) {
           throw Exception('Sales price is required');
         }
-        if (selectedTaxType.value == null) {
+        if (selectedTaxType.value.isEmpty) {
           throw Exception('Tax type is required');
         }
-        if (taxRateController.text.isEmpty) {
+        if (selectedTaxRate.value == null) {
           throw Exception('Tax rate is required');
+        }
+        if (openingStockController.text.isEmpty) {
+          throw Exception('Opening Stock is required');
         }
         if (storeDropdownController.selectedStoreId.value == null) {
           throw Exception('Warehouse is required');
@@ -356,7 +363,7 @@ class AddItemController extends GetxController
 
         final purchasePrice = double.tryParse(purchasePriceController.text);
         final salesPrice = double.tryParse(salesPriceController.text);
-        final taxRate = double.tryParse(taxRateController.text);
+        final taxRate = taxMap[selectedTaxRate.value];
         final wholeSalePrice = double.tryParse(wholesalePriceController.text);
         final discount = double.tryParse(discountController.text);
         final alertQuantity = int.tryParse(alertQuantityController.text);
@@ -368,9 +375,7 @@ class AddItemController extends GetxController
         if (salesPrice == null || salesPrice <= 0) {
           throw Exception('Invalid sales price');
         }
-        if (taxRate == null || taxRate < 0) {
-          throw Exception('Invalid tax rate');
-        }
+
         if (discount != null && discount < 0) {
           throw Exception('Discount cannot be negative');
         }
@@ -392,13 +397,13 @@ class AddItemController extends GetxController
           'HSN_code': hsnCodeController.text,
           'Item_code': itemCodeController.text,
           'Barcode': barcodeController.text,
-          'unit_id': selectedUnit.value?.id ?? 0,
+          'unit_id': selectedUnit.value!.id.toString(),
           'subunit_id': isShowSubUnit.value
               ? (selectedSubUnit.value?.id ?? 0)
               : null,
           'subunit_value': isShowSubUnit.value ? subUnitController.text : null,
           'Purchase_price': purchasePrice.toString(),
-          'Tax_type': selectedTaxType.value!,
+          'Tax_type': selectedTaxType.value,
           'Tax_rate': taxRate.toString(),
           'Sales_Price': salesPrice.toString(),
           'MRP': mrpController.text,

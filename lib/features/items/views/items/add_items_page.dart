@@ -619,21 +619,100 @@ class AddItemsPage extends GetView<AddItemController> {
                         Row(
                           children: [
                             Expanded(
-                              child: _buildDropdownField(
-                                label: "Tax Type",
-                                items: controller.taxList,
-                                prefixIcon: Icons.receipt_long,
-                                controller: controller,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: DropdownButtonFormField<String>(
+                                  value:
+                                      controller.selectedTaxType.value.isEmpty
+                                      ? null
+                                      : controller.selectedTaxType.value,
+                                  onChanged: (value) {
+                                    controller.selectedTaxType.value =
+                                        value ?? '';
+                                  },
+                                  hint: const Text('Tax Type'),
+                                  icon: const Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 20,
+                                  ),
+                                  iconEnabledColor: accentColor.withOpacity(
+                                    0.7,
+                                  ),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: textPrimaryColor,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: "Tax Type",
+                                    labelStyle: TextStyle(
+                                      color: Colors.grey.shade700,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14,
+                                    ),
+                                    prefixIcon: Container(
+                                      margin: const EdgeInsets.only(right: 8),
+                                      child: Icon(
+                                        Icons.receipt_long,
+                                        color: accentColor.withOpacity(0.7),
+                                        size: 20,
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 16,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey.shade300,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey.shade300,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: accentColor,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  dropdownColor: Colors.white,
+                                  isExpanded: true,
+                                  items: controller.taxTypeList
+                                      .map(
+                                        (item) => DropdownMenuItem(
+                                          value: item,
+                                          child: Text(
+                                            item,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              color: textPrimaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: _buildInputField(
+                              child: _buildDropdownField(
                                 label: "Tax Rate (%)",
-                                hint: "0.00",
+                                items: controller.taxRateList,
                                 prefixIcon: Icons.percent,
-                                controller: controller.taxRateController,
-                                keyboardType: TextInputType.number,
+                                controller: controller,
                               ),
                             ),
                           ],
@@ -763,12 +842,26 @@ class AddItemsPage extends GetView<AddItemController> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
-                        "Profit Calculation",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: textPrimaryColor,
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            const TextSpan(
+                              text: "💡 Profit Calculation ",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: textPrimaryColor,
+                              ),
+                            ),
+                            TextSpan(
+                              text: "(for your reference only)",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -1257,17 +1350,15 @@ class AddItemsPage extends GetView<AddItemController> {
     return Obx(() {
       String? selectedValue;
       void Function(String?) onChanged;
-
+     
       switch (label) {
-        case "Tax Type":
-          selectedValue = controller.selectedTaxType.value;
+        case "Tax Rate (%)":
+          selectedValue = controller.selectedTaxRate.value;
           onChanged = (value) {
-            print(value);
-            print(controller.taxMap[value]?.toString());
-            controller.selectedTaxType.value = value;
+            controller.selectedTaxRate.value = value;
             if (value != null) {
-              controller.taxRateController.text =
-                  controller.taxMap[value]?.toString() ?? "0";
+              // controller.taxRateController.text =
+              //     controller.taxMap[value]?.toString() ?? "0";
             }
           };
           break;
