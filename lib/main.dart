@@ -71,21 +71,19 @@ import 'package:greenbiller/features/sale/view/sales_returns_view_page.dart';
 import 'package:greenbiller/features/sale/view/sales_view_page.dart';
 import 'package:greenbiller/features/settings/controller/bussiness_profile_controller.dart';
 import 'package:greenbiller/features/settings/controller/invoice_settings_controller.dart';
+import 'package:greenbiller/features/settings/controller/store_settings_controller.dart';
 import 'package:greenbiller/features/settings/view/account_setttings_page.dart';
 import 'package:greenbiller/features/settings/controller/account_settings_controller.dart';
 import 'package:greenbiller/features/settings/controller/store_user_creation_controller.dart';
 import 'package:greenbiller/features/settings/view/business_profile_page.dart';
 import 'package:greenbiller/features/settings/view/invoice_settings_page.dart';
+import 'package:greenbiller/features/settings/view/store_settings_page.dart';
 import 'package:greenbiller/features/settings/view/store_users.dart';
 import 'package:greenbiller/features/stock/controller/stock_controller.dart';
 import 'package:greenbiller/features/stock/view/stock_adjustment_item_page.dart';
 import 'package:greenbiller/features/stock/view/stock_transfer_item_page.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
-import 'package:greenbiller/features/store/controller/store_warehouse_details_controller.dart';
-import 'package:greenbiller/features/store/view/edit_store_page.dart';
-import 'package:greenbiller/features/store/view/store_detail_page.dart';
 import 'package:greenbiller/features/store/view/store_page.dart';
-import 'package:greenbiller/features/store/view/warehouse_detail_page.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 import 'package:greenbiller/entry_point/dashboards.dart';
 import 'package:greenbiller/entry_point/store_admin/store_admin_entry_point.dart';
@@ -446,6 +444,13 @@ class MyApp extends StatelessWidget {
           page: () => ItemsDashboardPage(),
           binding: BindingsBuilder(() {
             Get.put(ItemsDashboardController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.storesSettings,
+          page: () => StoreSettingsPage(),
+          binding: BindingsBuilder(() {
+            Get.put(StoreSettingsController());
           }),
         ),
       ],

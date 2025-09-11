@@ -276,8 +276,34 @@ class BusinessProfileController extends GetxController {
       );
       return;
     }
+
     try {
       isSaving.value = true;
+
+      final existingProfile = hiveService.getBusinessProfile();
+      final bool isUpdate =
+          existingProfile != null && existingProfile.id != null;
+
+      if (!isUpdate) {
+        // On create → must have both logo + signature
+        if (logoImage.value == null) {
+          Get.snackbar(
+            'Error',
+            'Logo image is required',
+            backgroundColor: Colors.red,
+          );
+          return;
+        }
+        if (signatureImage.value == null) {
+          Get.snackbar(
+            'Error',
+            'Signature image is required',
+            backgroundColor: Colors.red,
+          );
+          return;
+        }
+      }
+
       final data = {
         'business_name': name.value.trim(),
         'mobile': phone.value.trim(),
@@ -290,19 +316,20 @@ class BusinessProfileController extends GetxController {
         if (category.value != null) 'category': category.value,
         if (state.value != null) 'state': state.value,
       };
-      final existingProfile = hiveService.getBusinessProfile();
-      final bool isUpdate =
-          existingProfile != null && existingProfile.id != null;
+
       final response = await _createOrUpdateProfile(
         data: data,
-        profileImage: logoImage.value,
-        signatureImage: signatureImage.value,
+        profileImage: logoImage.value, // only attach if selected
+        signatureImage: signatureImage.value, // only attach if selected
         isUpdate: isUpdate,
         profileId: existingProfile?.id.toString(),
       );
+
       final profile = BusinessProfile.fromJson(response['data']);
       await hiveService.saveBusinessProfile(profile);
+
       hasChanges.value = false;
+
       Get.snackbar(
         'Success',
         isUpdate
@@ -310,7 +337,6 @@ class BusinessProfileController extends GetxController {
             : 'Profile created successfully',
         backgroundColor: Colors.green,
       );
-      logger.i('Saved business profile: ${profile.name}');
     } catch (e, stackTrace) {
       logger.e('Error saving business profile: $e', e, stackTrace);
       Get.snackbar(

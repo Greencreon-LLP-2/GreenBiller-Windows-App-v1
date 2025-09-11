@@ -3,42 +3,86 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
+import 'package:greenbiller/features/store/model/single_store_model.dart';
+import 'package:dio/dio.dart' as dio;
 
-class EditStoreController extends GetxController
+class StoreSettingsController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final DioClient dioClient = Get.find<DioClient>();
+  final DioClient dioClient = DioClient();
   final AuthController authController = Get.find<AuthController>();
   late TabController tabController;
 
   final RxBool isLoading = true.obs;
   final RxInt storeId = 0.obs;
   final RxString userId = ''.obs;
-  final RxBool showSignature = false.obs;
+  SingleStoreDetailedModel? originalStore;
 
-  // Text controllers for additional fields
-  final emailController = TextEditingController();
+  // Boolean fields (int in model, 0 or 1)
+  final RxBool showSignature = false.obs;
+  final RxBool ifGst = false.obs;
+  final RxBool ifVat = false.obs;
+  final RxBool smsStatus = false.obs;
+  final RxBool smtpStatus = false.obs;
+  final RxBool ifMsg91 = false.obs;
+  final RxBool ifOtp = false.obs;
+  final RxBool ifCod = false.obs;
+  final RxBool ifPickupAtStore = false.obs;
+  final RxBool ifFixedDelivery = false.obs;
+  final RxBool ifHandlingCharge = false.obs;
+  final RxBool tAndCStatus = false.obs;
+  final RxBool tAndCStatusPos = false.obs;
+  final RxBool numberToWords = false.obs;
+  final RxBool ifExecutiveApp = false.obs;
+  final RxBool ifCustomerApp = false.obs;
+  final RxBool ifDeliveryApp = false.obs;
+  final RxBool ifOneSignal = false.obs;
+  final RxBool ifModelNo = false.obs;
+  final RxBool ifSerialNo = false.obs;
+  final RxBool ifExpiry = false.obs;
+  final RxBool ifBatchNo = false.obs;
+  final RxBool previousBalanceBit = false.obs;
+
+  // Text controllers for string and numeric fields
   final mobileController = TextEditingController();
-  final phoneController = TextEditingController();
   final gstController = TextEditingController();
   final panController = TextEditingController();
   final vatController = TextEditingController();
-  final websiteController = TextEditingController();
   final bankDetailsController = TextEditingController();
-  final addressController = TextEditingController();
-  final cityController = TextEditingController();
-  final stateController = TextEditingController();
-  final postcodeController = TextEditingController();
-  final countryController = TextEditingController();
   final signatureController = TextEditingController();
-  final storeLogoController = TextEditingController();
-  final timezoneController = TextEditingController();
-  final currencyController = TextEditingController();
   final decimalsController = TextEditingController();
   final decimalsQtyController = TextEditingController();
-  final languageController = TextEditingController();
   final defaultAccountController = TextEditingController();
   final salesInvoiceFormatController = TextEditingController();
   final posInvoiceFormatController = TextEditingController();
+  final slugController = TextEditingController();
+  final upiIdController = TextEditingController();
+  final upiCodeController = TextEditingController();
+  final cidController = TextEditingController();
+  final defaultSalesDiscountController = TextEditingController();
+  final currencywsymbolIdController = TextEditingController();
+  final regnoKeyController = TextEditingController();
+  final favIconController = TextEditingController();
+  final purchaseCodeController = TextEditingController();
+  final changeReturnController = TextEditingController();
+  final salesInvoiceFooterTextController = TextEditingController();
+  final roundOffController = TextEditingController();
+  final smtpHostController = TextEditingController();
+  final smtpPortController = TextEditingController();
+  final smtpUserController = TextEditingController();
+  final smtpPassController = TextEditingController();
+  final smsUrlController = TextEditingController();
+  final msg91ApikeyController = TextEditingController();
+  final smsSenderidController = TextEditingController();
+  final smsDltidController = TextEditingController();
+  final smsMsgController = TextEditingController();
+  final deliveryChargeController = TextEditingController();
+  final handlingChargeController = TextEditingController();
+  final onesignalIdController = TextEditingController();
+  final onesignalKeyController = TextEditingController();
+  final currentSubscriptionIdController = TextEditingController();
+  final statusController = TextEditingController();
+  final createdByController = TextEditingController();
+  final defaultPrinterController = TextEditingController();
 
   // Prefix controllers
   final Map<String, TextEditingController> prefixControllers = {
@@ -74,29 +118,46 @@ class EditStoreController extends GetxController
   @override
   void onClose() {
     tabController.dispose();
-    emailController.dispose();
     mobileController.dispose();
-    phoneController.dispose();
     gstController.dispose();
     panController.dispose();
     vatController.dispose();
-    websiteController.dispose();
     bankDetailsController.dispose();
-    addressController.dispose();
-    cityController.dispose();
-    stateController.dispose();
-    postcodeController.dispose();
-    countryController.dispose();
     signatureController.dispose();
-    storeLogoController.dispose();
-    timezoneController.dispose();
-    currencyController.dispose();
     decimalsController.dispose();
     decimalsQtyController.dispose();
-    languageController.dispose();
     defaultAccountController.dispose();
     salesInvoiceFormatController.dispose();
     posInvoiceFormatController.dispose();
+    slugController.dispose();
+    upiIdController.dispose();
+    upiCodeController.dispose();
+    cidController.dispose();
+    defaultSalesDiscountController.dispose();
+    currencywsymbolIdController.dispose();
+    regnoKeyController.dispose();
+    favIconController.dispose();
+    purchaseCodeController.dispose();
+    changeReturnController.dispose();
+    salesInvoiceFooterTextController.dispose();
+    roundOffController.dispose();
+    smtpHostController.dispose();
+    smtpPortController.dispose();
+    smtpUserController.dispose();
+    smtpPassController.dispose();
+    smsUrlController.dispose();
+    msg91ApikeyController.dispose();
+    smsSenderidController.dispose();
+    smsDltidController.dispose();
+    smsMsgController.dispose();
+    deliveryChargeController.dispose();
+    handlingChargeController.dispose();
+    onesignalIdController.dispose();
+    onesignalKeyController.dispose();
+    currentSubscriptionIdController.dispose();
+    statusController.dispose();
+    createdByController.dispose();
+    defaultPrinterController.dispose();
     prefixControllers.forEach((_, controller) => controller.dispose());
     super.onClose();
   }
@@ -106,75 +167,133 @@ class EditStoreController extends GetxController
       isLoading.value = true;
       final response = await dioClient.dio.get(
         '$viewStoreUrl/${storeId.value}',
+        options: dio.Options(
+          headers: {
+            'Authorization':
+                'Bearer ${authController.user.value?.accessToken ?? ''}',
+            'Content-Type': 'application/json',
+          },
+        ),
       );
 
-      if (response.statusCode == 200 &&
-          response.data['data'] != null &&
-          response.data['data'].isNotEmpty) {
-        final store = StoreModelById.fromJson(response.data['data'][0]);
-        emailController.text = store.email ?? '0';
-        mobileController.text = store.mobile ?? '0';
-        phoneController.text = store.phone ?? '0';
-        gstController.text = store.gstNo ?? '0';
-        panController.text = store.panNo ?? '0';
-        vatController.text = store.vatNo ?? '0';
-        websiteController.text = store.storeWebsite ?? '0';
-        bankDetailsController.text = store.bankDetails ?? '0';
-        addressController.text = store.address ?? '0';
-        cityController.text = store.city ?? '0';
-        stateController.text = store.state?.toString() ?? '0';
-        postcodeController.text = store.postcode?.toString() ?? '0';
-        countryController.text = store.country ?? '0';
-        signatureController.text = store.signature ?? '0';
-        storeLogoController.text = store.storeLogo ?? '0';
-        showSignature.value = store.showSignature == 1;
-        timezoneController.text = store.timezone ?? 'UTC';
-        currencyController.text = store.currencyId?.toString() ?? '1';
-        decimalsController.text = store.decimals?.toString() ?? '2';
-        decimalsQtyController.text = store.qtyDecimals?.toString() ?? '2';
-        languageController.text = store.languageId?.toString() ?? '1';
-        defaultAccountController.text =
-            store.defaultAccountId?.toString() ?? '1';
-        salesInvoiceFormatController.text =
-            store.salesInvoiceFormatId?.toString() ?? '1';
-        posInvoiceFormatController.text =
-            store.posInvoiceFormatId?.toString() ?? '1';
-
-        prefixControllers['Category']!.text = store.categoryInit ?? '0';
-        prefixControllers['Item']!.text = store.itemInit ?? '0';
-        prefixControllers['Supplier']!.text = store.supplierInit ?? '0';
-        prefixControllers['Purchase']!.text = store.purchaseInit ?? '0';
-        prefixControllers['Purchase Return']!.text =
-            store.purchaseReturnInit ?? '0';
-        prefixControllers['Customer']!.text = store.customerInit ?? '0';
-        prefixControllers['Sales']!.text = store.salesInit ?? '0';
-        prefixControllers['Sales Return']!.text = store.salesReturnInit ?? '0';
-        prefixControllers['Expense']!.text = store.expenseInit ?? '0';
-        prefixControllers['Accounts']!.text = store.accountsInit ?? '0';
-        prefixControllers['Quotation']!.text = store.quotationInit ?? '0';
-        prefixControllers['Money Transfer']!.text =
-            store.moneyTransferInit ?? '0';
-        prefixControllers['Sales Payment']!.text =
-            store.salesPaymentInit ?? '0';
-        prefixControllers['Sales Return Payment']!.text =
-            store.salesReturnPaymentInit ?? '0';
-        prefixControllers['Purchase Payment']!.text =
-            store.purchasePaymentInit ?? '0';
-        prefixControllers['Purchase Return Payment']!.text =
-            store.purchaseReturnPaymentInit ?? '0';
-        prefixControllers['Expense Payment']!.text =
-            store.expensePaymentInit ?? '0';
-        prefixControllers['Customers Advance Payments']!.text =
-            store.custAdvanceInit ?? '0';
-      } else {
-        Get.snackbar(
-          'Error',
-          'No store found for id ${storeId.value}',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+      if (response.statusCode != 200 || response.data['data'] == null) {
+        throw Exception('No data returned for store ${storeId.value}');
       }
-    } catch (e) {
+
+      final store = originalStore = SingleStoreDetailedModel.fromJson(
+        response.data,
+      );
+
+      // Set boolean fields
+      showSignature.value = store.showSignature == 1;
+      ifGst.value = store.ifGst == 1;
+      ifVat.value = store.ifVat == 1;
+      smsStatus.value = store.smsStatus == 1;
+      smtpStatus.value = store.smtpStatus == 1;
+      ifMsg91.value = store.ifMsg91 == 1;
+      ifOtp.value = store.ifOtp == 1;
+      ifCod.value = store.ifCod == 1;
+      ifPickupAtStore.value = store.ifPickupAtStore == 1;
+      ifFixedDelivery.value = store.ifFixedDelivery == 1;
+      ifHandlingCharge.value = store.ifHandlingCharge == 1;
+      tAndCStatus.value = store.tAndCStatus == 1;
+      tAndCStatusPos.value = store.tAndCStatusPos == 1;
+      numberToWords.value = store.numberToWords == 1;
+      ifExecutiveApp.value = store.ifExecutiveApp == 1;
+      ifCustomerApp.value = store.ifCustomerApp == 1;
+      ifDeliveryApp.value = store.ifDeliveryApp == 1;
+      ifOneSignal.value = store.ifOneSignal == 1;
+      ifModelNo.value = store.ifModelNo == 1;
+      ifSerialNo.value = store.ifSerialNo == 1;
+      ifExpiry.value = store.ifExpiry == 1;
+      ifBatchNo.value = store.ifBatchNo == 1;
+      previousBalanceBit.value = store.previousBalanceBit == 1;
+
+      // Set text controllers
+      void set(
+        TextEditingController controller,
+        dynamic value, {
+        String fallback = '0',
+      }) {
+        controller.text = (value?.toString().isNotEmpty ?? false)
+            ? value.toString()
+            : fallback;
+      }
+
+      set(mobileController, store.mobile);
+      set(gstController, store.gstNo);
+      set(panController, store.panNo);
+      set(vatController, store.vatNo);
+      set(bankDetailsController, store.bankDetails);
+      set(signatureController, store.signature);
+      set(decimalsController, store.decimals, fallback: '2');
+      set(decimalsQtyController, store.qtyDecimals, fallback: '2');
+      set(defaultAccountController, store.defaultAccountId, fallback: '1');
+      set(
+        salesInvoiceFormatController,
+        store.salesInvoiceFormatId,
+        fallback: '1',
+      );
+      set(posInvoiceFormatController, store.posInvoiceFormatId, fallback: '1');
+      set(slugController, store.slug);
+      set(upiIdController, store.upiId);
+      set(upiCodeController, store.upiCode);
+      set(cidController, store.cid, fallback: '1');
+      set(defaultSalesDiscountController, store.defaultSalesDiscount);
+      set(currencywsymbolIdController, store.currencyWithSymbolId);
+      set(regnoKeyController, store.regnoKey);
+      set(favIconController, store.favIcon);
+      set(purchaseCodeController, store.purchaseCode);
+      set(changeReturnController, store.changeReturn);
+      set(salesInvoiceFooterTextController, store.salesInvoiceFooterText);
+      set(roundOffController, store.roundOff);
+      set(smtpHostController, store.smtpHost);
+      set(smtpPortController, store.smtpPort);
+      set(smtpUserController, store.smtpUser);
+      set(smtpPassController, store.smtpPass);
+      set(smsUrlController, store.smsUrl);
+      set(msg91ApikeyController, store.msg91ApiKey);
+      set(smsSenderidController, store.smsSenderId);
+      set(smsDltidController, store.smsDltId);
+      set(smsMsgController, store.smsMsg);
+      set(deliveryChargeController, store.deliveryCharge);
+      set(handlingChargeController, store.handlingCharge);
+      set(onesignalIdController, store.oneSignalId);
+      set(onesignalKeyController, store.oneSignalKey);
+      set(
+        currentSubscriptionIdController,
+        store.currentSubscriptionId,
+        fallback: '1',
+      );
+      set(statusController, store.status, fallback: 'active');
+      set(createdByController, store.createdBy);
+      set(defaultPrinterController, store.defaultPrinter);
+
+      // Set prefix controllers
+      final prefixFields = {
+        'Category': store.categoryInit,
+        'Item': store.itemInit,
+        'Supplier': store.supplierInit,
+        'Purchase': store.purchaseInit,
+        'Purchase Return': store.purchaseReturnInit,
+        'Customer': store.customerInit,
+        'Sales': store.salesInit,
+        'Sales Return': store.salesReturnInit,
+        'Expense': store.expenseInit,
+        'Accounts': store.accountsInit,
+        'Quotation': store.quotationInit,
+        'Money Transfer': store.moneyTransferInit,
+        'Sales Payment': store.salesPaymentInit,
+        'Sales Return Payment': store.salesReturnPaymentInit,
+        'Purchase Payment': store.purchasePaymentInit,
+        'Purchase Return Payment': store.purchaseReturnPaymentInit,
+        'Expense Payment': store.expensePaymentInit,
+        'Customers Advance Payments': store.custAdvanceInit,
+      };
+      prefixFields.forEach((key, value) => set(prefixControllers[key]!, value));
+    } catch (e, stack) {
+      print(e);
+      print(stack);
       Get.snackbar(
         'Error',
         'Failed to load store data: $e',
@@ -188,174 +307,260 @@ class EditStoreController extends GetxController
 
   Future<void> saveChanges() async {
     try {
-      final payload = {
-        'user_id': userId.value,
-        'email': emailController.text.isEmpty ? '0' : emailController.text,
-        'mobile': mobileController.text.isEmpty ? '0' : mobileController.text,
-        'phone': phoneController.text.isEmpty ? '0' : phoneController.text,
-        'gst_no': gstController.text.isEmpty ? '0' : gstController.text,
-        'pan_no': panController.text.isEmpty ? '0' : panController.text,
-        'vat_no': vatController.text.isEmpty ? '0' : vatController.text,
-        'store_website': websiteController.text.isEmpty
-            ? '0'
-            : websiteController.text,
-        'bank_details': bankDetailsController.text.isEmpty
-            ? '0'
-            : bankDetailsController.text,
-        'address': addressController.text.isEmpty
-            ? '0'
-            : addressController.text,
-        'city': cityController.text.isEmpty ? '0' : cityController.text,
-        'state': stateController.text.isEmpty ? '0' : stateController.text,
-        'postcode': postcodeController.text.isEmpty
-            ? '0'
-            : postcodeController.text,
-        'country': countryController.text.isEmpty
-            ? '0'
-            : countryController.text,
-        'signature': signatureController.text.isEmpty
-            ? '0'
-            : signatureController.text,
-        'store_logo': storeLogoController.text.isEmpty
-            ? '0'
-            : storeLogoController.text,
-        'show_signature': showSignature.value ? '1' : '0',
-        'timezone': timezoneController.text.isEmpty
-            ? 'UTC'
-            : timezoneController.text,
-        'currency_id': currencyController.text.isEmpty
-            ? '1'
-            : currencyController.text,
-        'decimals': decimalsController.text.isEmpty
-            ? '2'
-            : decimalsController.text,
-        'qty_decimals': decimalsQtyController.text.isEmpty
-            ? '2'
-            : decimalsQtyController.text,
-        'language_id': languageController.text.isEmpty
-            ? '1'
-            : languageController.text,
-        'default_account_id': defaultAccountController.text.isEmpty
-            ? '1'
-            : defaultAccountController.text,
-        'sales_invoice_format_id': salesInvoiceFormatController.text.isEmpty
-            ? '1'
-            : salesInvoiceFormatController.text,
-        'pos_invoice_format_id': posInvoiceFormatController.text.isEmpty
-            ? '1'
-            : posInvoiceFormatController.text,
-        'category_init': prefixControllers['Category']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Category']!.text,
-        'item_init': prefixControllers['Item']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Item']!.text,
-        'supplier_init': prefixControllers['Supplier']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Supplier']!.text,
-        'purchase_init': prefixControllers['Purchase']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Purchase']!.text,
-        'purchase_return_init':
-            prefixControllers['Purchase Return']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Purchase Return']!.text,
-        'customer_init': prefixControllers['Customer']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Customer']!.text,
-        'sales_init': prefixControllers['Sales']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Sales']!.text,
-        'sales_return_init': prefixControllers['Sales Return']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Sales Return']!.text,
-        'expense_init': prefixControllers['Expense']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Expense']!.text,
-        'accounts_init': prefixControllers['Accounts']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Accounts']!.text,
-        'quotation_init': prefixControllers['Quotation']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Quotation']!.text,
-        'money_transfer_init': prefixControllers['Money Transfer']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Money Transfer']!.text,
-        'sales_payment_init': prefixControllers['Sales Payment']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Sales Payment']!.text,
-        'sales_return_payment_init':
-            prefixControllers['Sales Return Payment']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Sales Return Payment']!.text,
-        'purchase_payment_init':
-            prefixControllers['Purchase Payment']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Purchase Payment']!.text,
-        'purchase_return_payment_init':
-            prefixControllers['Purchase Return Payment']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Purchase Return Payment']!.text,
-        'expense_payment_init':
-            prefixControllers['Expense Payment']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Expense Payment']!.text,
-        'cust_advance_init':
-            prefixControllers['Customers Advance Payments']!.text.isEmpty
-            ? '0'
-            : prefixControllers['Customers Advance Payments']!.text,
-        'journal_init': '0',
-        'upi_id': '0',
-        'upi_code': '0',
-        'cid': '1',
-        'sms_status': '0',
-        'currency_placement': 'before',
-        'date_format': 'Y-m-d',
-        'time_format': 'H:i',
-        'default_sales_discount': '0',
-        'currencywsymbol_id': '0',
-        'regno_key': '0',
-        'fav_icon': '0',
-        'purchase_code': '0',
-        'change_return': '0',
-        'sales_invoice_footer_text': '0',
-        'round_off': '0',
-        'smtp_host': '0',
-        'smtp_port': '0',
-        'smtp_user': '0',
-        'smtp_pass': '0',
-        'smtp_status': '0',
-        'sms_url': '0',
-        'if_msg91': '0',
-        'msg91_apikey': '0',
-        'sms_senderid': '0',
-        'sms_dltid': '0',
-        'sms_msg': '0',
-        'if_model_no': '1',
-        'if_serialno': '1',
-        'if_cod': '0',
-        'if_pickupatestore': '0',
-        'if_fixeddelivery': '0',
-        'delivery_charge': '0',
-        'if_handlingcharge': '0',
-        'handling_charge': '0',
-        't_and_c_status': '0',
-        't_and_c_status_pos': '0',
-        'number_to_words': '0',
-        'if_customerapp': '1',
-        'if_deliveryapp': '1',
-        'if_onesignal': '1',
-        'onesignal_id': '0',
-        'onesignal_key': '0',
-        'if_otp': '0',
-        'current_subscription_id': '1',
-        'invoice_view': '0',
-        'previous_balancebit': '0',
-      };
+      if (originalStore == null) {
+        Get.snackbar(
+          'Error',
+          'No store data available to update',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      final payload = {'user_id': userId.value};
+
+      // Compare and add changed boolean fields
+      if (showSignature.value != (originalStore!.showSignature == 1))
+        payload['show_signature'] = showSignature.value ? '1' : '0';
+      if (ifGst.value != (originalStore!.ifGst == 1))
+        payload['if_gst'] = ifGst.value ? '1' : '0';
+      if (ifVat.value != (originalStore!.ifVat == 1))
+        payload['if_vat'] = ifVat.value ? '1' : '0';
+      if (smsStatus.value != (originalStore!.smsStatus == 1))
+        payload['sms_status'] = smsStatus.value ? '1' : '0';
+      if (smtpStatus.value != (originalStore!.smtpStatus == 1))
+        payload['smtp_status'] = smtpStatus.value ? '1' : '0';
+      if (ifMsg91.value != (originalStore!.ifMsg91 == 1))
+        payload['if_msg91'] = ifMsg91.value ? '1' : '0';
+      if (ifOtp.value != (originalStore!.ifOtp == 1))
+        payload['if_otp'] = ifOtp.value ? '1' : '0';
+      if (ifCod.value != (originalStore!.ifCod == 1))
+        payload['if_cod'] = ifCod.value ? '1' : '0';
+      if (ifPickupAtStore.value != (originalStore!.ifPickupAtStore == 1))
+        payload['if_pickupatestore'] = ifPickupAtStore.value ? '1' : '0';
+      if (ifFixedDelivery.value != (originalStore!.ifFixedDelivery == 1))
+        payload['if_fixeddelivery'] = ifFixedDelivery.value ? '1' : '0';
+      if (ifHandlingCharge.value != (originalStore!.ifHandlingCharge == 1))
+        payload['if_handlingcharge'] = ifHandlingCharge.value ? '1' : '0';
+      if (tAndCStatus.value != (originalStore!.tAndCStatus == 1))
+        payload['t_and_c_status'] = tAndCStatus.value ? '1' : '0';
+      if (tAndCStatusPos.value != (originalStore!.tAndCStatusPos == 1))
+        payload['t_and_c_status_pos'] = tAndCStatusPos.value ? '1' : '0';
+      if (numberToWords.value != (originalStore!.numberToWords == 1))
+        payload['number_to_words'] = numberToWords.value ? '1' : '0';
+      if (ifExecutiveApp.value != (originalStore!.ifExecutiveApp == 1))
+        payload['if_executiveapp'] = ifExecutiveApp.value ? '1' : '0';
+      if (ifCustomerApp.value != (originalStore!.ifCustomerApp == 1))
+        payload['if_customerapp'] = ifCustomerApp.value ? '1' : '0';
+      if (ifDeliveryApp.value != (originalStore!.ifDeliveryApp == 1))
+        payload['if_deliveryapp'] = ifDeliveryApp.value ? '1' : '0';
+      if (ifOneSignal.value != (originalStore!.ifOneSignal == 1))
+        payload['if_onesignal'] = ifOneSignal.value ? '1' : '0';
+      if (ifModelNo.value != (originalStore!.ifModelNo == 1))
+        payload['if_modelno'] = ifModelNo.value ? '1' : '0';
+      if (ifSerialNo.value != (originalStore!.ifSerialNo == 1))
+        payload['if_serialno'] = ifSerialNo.value ? '1' : '0';
+      if (ifExpiry.value != (originalStore!.ifExpiry == 1))
+        payload['if_expiry'] = ifExpiry.value ? '1' : '0';
+      if (ifBatchNo.value != (originalStore!.ifBatchNo == 1))
+        payload['if_batchno'] = ifBatchNo.value ? '1' : '0';
+      if (previousBalanceBit.value != (originalStore!.previousBalanceBit == 1))
+        payload['previous_balancebit'] = previousBalanceBit.value ? '1' : '0';
+
+      // Compare and add changed text fields
+      void addIfChanged(
+        TextEditingController controller,
+        String? original,
+        String key, {
+        String fallback = '0',
+      }) {
+        final value = controller.text.isEmpty ? fallback : controller.text;
+        if (value != (original ?? fallback)) payload[key] = value;
+      }
+
+      addIfChanged(mobileController, originalStore!.mobile, 'mobile');
+      addIfChanged(gstController, originalStore!.gstNo, 'gst_no');
+      addIfChanged(panController, originalStore!.panNo, 'pan_no');
+      addIfChanged(vatController, originalStore!.vatNo, 'vat_no');
+      addIfChanged(
+        bankDetailsController,
+        originalStore!.bankDetails,
+        'bank_details',
+      );
+      addIfChanged(signatureController, originalStore!.signature, 'signature');
+      addIfChanged(
+        decimalsController,
+        originalStore!.decimals?.toString(),
+        'decimals',
+        fallback: '2',
+      );
+      addIfChanged(
+        decimalsQtyController,
+        originalStore!.qtyDecimals?.toString(),
+        'qty_decimals',
+        fallback: '2',
+      );
+      addIfChanged(
+        defaultAccountController,
+        originalStore!.defaultAccountId?.toString(),
+        'default_account_id',
+        fallback: '1',
+      );
+      addIfChanged(
+        salesInvoiceFormatController,
+        originalStore!.salesInvoiceFormatId?.toString(),
+        'sales_invoice_format_id',
+        fallback: '1',
+      );
+      addIfChanged(
+        posInvoiceFormatController,
+        originalStore!.posInvoiceFormatId?.toString(),
+        'pos_invoice_format_id',
+        fallback: '1',
+      );
+      addIfChanged(slugController, originalStore!.slug, 'slug');
+      addIfChanged(upiIdController, originalStore!.upiId, 'upi_id');
+      addIfChanged(upiCodeController, originalStore!.upiCode, 'upi_code');
+      addIfChanged(cidController, originalStore!.cid, 'cid', fallback: '1');
+      addIfChanged(
+        defaultSalesDiscountController,
+        originalStore!.defaultSalesDiscount,
+        'default_sales_discount',
+      );
+      addIfChanged(
+        currencywsymbolIdController,
+        originalStore!.currencyWithSymbolId?.toString(),
+        'currencywsymbol_id',
+      );
+      addIfChanged(regnoKeyController, originalStore!.regnoKey, 'regno_key');
+      addIfChanged(favIconController, originalStore!.favIcon, 'fav_icon');
+      addIfChanged(
+        purchaseCodeController,
+        originalStore!.purchaseCode,
+        'purchase_code',
+      );
+      addIfChanged(
+        changeReturnController,
+        originalStore!.changeReturn?.toString(),
+        'change_return',
+      );
+      addIfChanged(
+        salesInvoiceFooterTextController,
+        originalStore!.salesInvoiceFooterText,
+        'sales_invoice_footer_text',
+      );
+      addIfChanged(
+        roundOffController,
+        originalStore!.roundOff?.toString(),
+        'round_off',
+      );
+      addIfChanged(smtpHostController, originalStore!.smtpHost, 'smtp_host');
+      addIfChanged(smtpPortController, originalStore!.smtpPort, 'smtp_port');
+      addIfChanged(smtpUserController, originalStore!.smtpUser, 'smtp_user');
+      addIfChanged(smtpPassController, originalStore!.smtpPass, 'smtp_pass');
+      addIfChanged(smsUrlController, originalStore!.smsUrl, 'sms_url');
+      addIfChanged(
+        msg91ApikeyController,
+        originalStore!.msg91ApiKey,
+        'msg91_apikey',
+      );
+      addIfChanged(
+        smsSenderidController,
+        originalStore!.smsSenderId,
+        'sms_senderid',
+      );
+      addIfChanged(smsDltidController, originalStore!.smsDltId, 'sms_dltid');
+      addIfChanged(smsMsgController, originalStore!.smsMsg, 'sms_msg');
+      addIfChanged(
+        deliveryChargeController,
+        originalStore!.deliveryCharge,
+        'delivery_charge',
+      );
+      addIfChanged(
+        handlingChargeController,
+        originalStore!.handlingCharge,
+        'handling_charge',
+      );
+      addIfChanged(
+        onesignalIdController,
+        originalStore!.oneSignalId,
+        'onesignal_id',
+      );
+      addIfChanged(
+        onesignalKeyController,
+        originalStore!.oneSignalKey,
+        'onesignal_key',
+      );
+      addIfChanged(
+        currentSubscriptionIdController,
+        originalStore!.currentSubscriptionId?.toString(),
+        'current_subscription_id',
+        fallback: '1',
+      );
+      addIfChanged(
+        statusController,
+        originalStore!.status,
+        'status',
+        fallback: 'active',
+      );
+      addIfChanged(createdByController, originalStore!.createdBy, 'created_by');
+      addIfChanged(
+        defaultPrinterController,
+        originalStore!.defaultPrinter,
+        'default_printer',
+      );
+
+      // Prefix fields
+      prefixControllers.forEach((key, controller) {
+        final original = {
+          'Category': originalStore!.categoryInit,
+          'Item': originalStore!.itemInit,
+          'Supplier': originalStore!.supplierInit,
+          'Purchase': originalStore!.purchaseInit,
+          'Purchase Return': originalStore!.purchaseReturnInit,
+          'Customer': originalStore!.customerInit,
+          'Sales': originalStore!.salesInit,
+          'Sales Return': originalStore!.salesReturnInit,
+          'Expense': originalStore!.expenseInit,
+          'Accounts': originalStore!.accountsInit,
+          'Quotation': originalStore!.quotationInit,
+          'Money Transfer': originalStore!.moneyTransferInit,
+          'Sales Payment': originalStore!.salesPaymentInit,
+          'Sales Return Payment': originalStore!.salesReturnPaymentInit,
+          'Purchase Payment': originalStore!.purchasePaymentInit,
+          'Purchase Return Payment': originalStore!.purchaseReturnPaymentInit,
+          'Expense Payment': originalStore!.expensePaymentInit,
+          'Customers Advance Payments': originalStore!.custAdvanceInit,
+        }[key];
+        addIfChanged(
+          controller,
+          original,
+          key.toLowerCase().replaceAll(' ', '_') + '_init',
+        );
+      });
+
+      payload['journal_init'] = '0'; // Static default
+
+      if (payload.length <= 1) {
+        Get.snackbar(
+          'No Changes',
+          'No fields were modified',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        return;
+      }
 
       final response = await dioClient.dio.put(
         '$editStoreUrl/${storeId.value}',
         data: payload,
+        options: dio.Options(
+          headers: {
+            'Authorization':
+                'Bearer ${authController.user.value?.accessToken ?? ''}',
+            'Content-Type': 'application/json',
+          },
+        ),
       );
 
       if (response.statusCode == 200) {
@@ -374,6 +579,13 @@ class EditStoreController extends GetxController
           colorText: Colors.white,
         );
       }
+    } on dio.DioException catch (e) {
+      Get.snackbar(
+        'Error',
+        e.response?.data['message'] ?? 'Failed to update store: ${e.message}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } catch (e) {
       Get.snackbar(
         'Error',

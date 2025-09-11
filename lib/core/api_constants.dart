@@ -30,6 +30,7 @@ const String deleteWarehouseUrl = "$baseUrl/warehouse-delete/";
 //*===================================store====================================*//
 const String addStoreUrl = "$baseUrl/store-create";
 const String viewStoreUrl = "$baseUrl/store-view";
+const String viewSignleStore = "$baseUrl/single-store/view";
 const String editStoreUrl = "$baseUrl/store-update";
 const String deleteStoreUrl = "$baseUrl/store-delete/";
 const String storeusersUrl = "$baseUrl/store-users";

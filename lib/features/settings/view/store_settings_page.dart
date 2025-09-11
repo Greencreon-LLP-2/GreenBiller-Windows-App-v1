@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
+import 'package:greenbiller/features/settings/controller/store_settings_controller.dart';
 
-class EditStorePage extends GetView<EditStoreController> {
-  const EditStorePage({super.key});
+class StoreSettingsPage extends GetView<StoreSettingsController> {
+  const StoreSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,27 +34,22 @@ class EditStorePage extends GetView<EditStoreController> {
                 children: [
                   _buildSection("General Settings", [
                     _buildField(
-                      "Email",
-                      controller.emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      icon: Icons.email,
-                    ),
-                    _buildField(
                       "Mobile",
                       controller.mobileController,
                       keyboardType: TextInputType.phone,
                       icon: Icons.phone_android,
                     ),
-                    _buildField(
-                      "Phone",
-                      controller.phoneController,
-                      keyboardType: TextInputType.phone,
-                      icon: Icons.phone,
-                    ),
+                    _buildToggle("GST Enabled", controller.ifGst),
                     _buildField(
                       "GST Number",
                       controller.gstController,
                       icon: Icons.confirmation_number,
+                    ),
+                    _buildToggle("VAT Enabled", controller.ifVat),
+                    _buildField(
+                      "VAT Number",
+                      controller.vatController,
+                      icon: Icons.receipt_long,
                     ),
                     _buildField(
                       "PAN Number",
@@ -61,14 +57,14 @@ class EditStorePage extends GetView<EditStoreController> {
                       icon: Icons.credit_card,
                     ),
                     _buildField(
-                      "VAT Number",
-                      controller.vatController,
-                      icon: Icons.receipt_long,
+                      "UPI ID",
+                      controller.upiIdController,
+                      icon: Icons.payment,
                     ),
                     _buildField(
-                      "Store Website",
-                      controller.websiteController,
-                      icon: Icons.web,
+                      "UPI Code",
+                      controller.upiCodeController,
+                      icon: Icons.qr_code,
                     ),
                     _buildField(
                       "Bank Details",
@@ -76,39 +72,9 @@ class EditStorePage extends GetView<EditStoreController> {
                       maxLines: 2,
                       icon: Icons.account_balance,
                     ),
-                    _buildField(
-                      "Address",
-                      controller.addressController,
-                      maxLines: 2,
-                      icon: Icons.location_on,
-                    ),
-                    _buildField(
-                      "City",
-                      controller.cityController,
-                      icon: Icons.location_city,
-                    ),
-                    _buildField(
-                      "State",
-                      controller.stateController,
-                      icon: Icons.map,
-                    ),
-                    _buildField(
-                      "Postcode",
-                      controller.postcodeController,
-                      icon: Icons.markunread_mailbox,
-                    ),
-                    _buildField(
-                      "Country",
-                      controller.countryController,
-                      icon: Icons.public,
-                    ),
-                    Obx(
-                      () => SwitchListTile(
-                        title: const Text("Show Signature on Invoice"),
-                        value: controller.showSignature.value,
-                        onChanged: (v) => controller.showSignature.value = v,
-                        activeColor: accentColor,
-                      ),
+                    _buildToggle(
+                      "Show Signature on Invoice",
+                      controller.showSignature,
                     ),
                     Obx(
                       () => controller.showSignature.value
@@ -121,22 +87,32 @@ class EditStorePage extends GetView<EditStoreController> {
                           : const SizedBox.shrink(),
                     ),
                     _buildField(
-                      "Store Logo",
-                      controller.storeLogoController,
-                      icon: Icons.image,
+                      "Slug",
+                      controller.slugController,
+                      icon: Icons.link,
+                    ),
+                    _buildField(
+                      "CID",
+                      controller.cidController,
+                      icon: Icons.perm_identity,
+                    ),
+                    _buildField(
+                      "Status",
+                      controller.statusController,
+                      icon: Icons.info,
+                    ),
+                    _buildField(
+                      "Created By",
+                      controller.createdByController,
+                      icon: Icons.person,
+                    ),
+                    _buildField(
+                      "Default Printer",
+                      controller.defaultPrinterController,
+                      icon: Icons.print,
                     ),
                   ], icon: Icons.settings),
                   _buildSection("System Settings", [
-                    _buildField(
-                      "Timezone",
-                      controller.timezoneController,
-                      icon: Icons.access_time,
-                    ),
-                    _buildField(
-                      "Currency",
-                      controller.currencyController,
-                      icon: Icons.attach_money,
-                    ),
                     _buildField(
                       "Decimals",
                       controller.decimalsController,
@@ -150,26 +126,190 @@ class EditStorePage extends GetView<EditStoreController> {
                       icon: Icons.numbers,
                     ),
                     _buildField(
-                      "Language",
-                      controller.languageController,
-                      icon: Icons.language,
+                      "Default Account",
+                      controller.defaultAccountController,
+                      keyboardType: TextInputType.number,
+                      icon: Icons.account_balance_wallet,
+                    ),
+                    _buildToggle("SMS Status", controller.smsStatus),
+                    _buildToggle("SMTP Status", controller.smtpStatus),
+                    _buildToggle("MSG91 Enabled", controller.ifMsg91),
+                    _buildToggle("OTP Enabled", controller.ifOtp),
+                    _buildField(
+                      "SMTP Host",
+                      controller.smtpHostController,
+                      icon: Icons.dns,
+                    ),
+                    _buildField(
+                      "SMTP Port",
+                      controller.smtpPortController,
+                      keyboardType: TextInputType.number,
+                      icon: Icons.network_check,
+                    ),
+                    _buildField(
+                      "SMTP User",
+                      controller.smtpUserController,
+                      icon: Icons.person,
+                    ),
+                    _buildField(
+                      "SMTP Password",
+                      controller.smtpPassController,
+                      icon: Icons.lock,
+                    ),
+                    _buildField(
+                      "SMS URL",
+                      controller.smsUrlController,
+                      icon: Icons.sms,
+                    ),
+                    _buildField(
+                      "MSG91 API Key",
+                      controller.msg91ApikeyController,
+                      icon: Icons.vpn_key,
+                    ),
+                    _buildField(
+                      "SMS Sender ID",
+                      controller.smsSenderidController,
+                      icon: Icons.send,
+                    ),
+                    _buildField(
+                      "SMS DLT ID",
+                      controller.smsDltidController,
+                      icon: Icons.sms,
+                    ),
+                    _buildField(
+                      "SMS Message",
+                      controller.smsMsgController,
+                      maxLines: 2,
+                      icon: Icons.message,
+                    ),
+                    _buildToggle("Model Number Enabled", controller.ifModelNo),
+                    _buildToggle(
+                      "Serial Number Enabled",
+                      controller.ifSerialNo,
+                    ),
+                    _buildToggle("Expiry Enabled", controller.ifExpiry),
+                    _buildToggle("Batch Number Enabled", controller.ifBatchNo),
+                    _buildToggle("OneSignal Enabled", controller.ifOneSignal),
+                    _buildField(
+                      "OneSignal ID",
+                      controller.onesignalIdController,
+                      icon: Icons.notifications,
+                    ),
+                    _buildField(
+                      "OneSignal Key",
+                      controller.onesignalKeyController,
+                      icon: Icons.vpn_key,
+                    ),
+                    _buildToggle(
+                      "Customer App Enabled",
+                      controller.ifCustomerApp,
+                    ),
+                    _buildToggle(
+                      "Delivery App Enabled",
+                      controller.ifDeliveryApp,
+                    ),
+                    _buildToggle(
+                      "Executive App Enabled",
+                      controller.ifExecutiveApp,
+                    ),
+                    _buildField(
+                      "Currency Symbol ID",
+                      controller.currencywsymbolIdController,
+                      keyboardType: TextInputType.number,
+                      icon: Icons.currency_exchange,
+                    ),
+                    _buildField(
+                      "Current Subscription ID",
+                      controller.currentSubscriptionIdController,
+                      keyboardType: TextInputType.number,
+                      icon: Icons.subscriptions,
                     ),
                   ], icon: Icons.language),
                   _buildSection("Sales Settings", [
                     _buildField(
-                      "Default Account",
-                      controller.defaultAccountController,
-                      icon: Icons.account_balance_wallet,
-                    ),
-                    _buildField(
-                      "Sales Invoice Formats",
+                      "Sales Invoice Format ID",
                       controller.salesInvoiceFormatController,
+                      keyboardType: TextInputType.number,
                       icon: Icons.receipt,
                     ),
                     _buildField(
-                      "POS Invoice Formats",
+                      "POS Invoice Format ID",
                       controller.posInvoiceFormatController,
+                      keyboardType: TextInputType.number,
                       icon: Icons.point_of_sale,
+                    ),
+                    _buildField(
+                      "Default Sales Discount",
+                      controller.defaultSalesDiscountController,
+                      icon: Icons.discount,
+                    ),
+                    _buildField(
+                      "Round Off",
+                      controller.roundOffController,
+                      keyboardType: TextInputType.number,
+                      icon: Icons.roundabout_right,
+                    ),
+                    _buildField(
+                      "Change Return",
+                      controller.changeReturnController,
+                      keyboardType: TextInputType.number,
+                      icon: Icons.money,
+                    ),
+                    _buildField(
+                      "Sales Invoice Footer Text",
+                      controller.salesInvoiceFooterTextController,
+                      maxLines: 2,
+                      icon: Icons.text_fields,
+                    ),
+                    _buildToggle("COD Enabled", controller.ifCod),
+                    _buildToggle(
+                      "Pickup at Store Enabled",
+                      controller.ifPickupAtStore,
+                    ),
+                    _buildToggle(
+                      "Fixed Delivery Enabled",
+                      controller.ifFixedDelivery,
+                    ),
+                    _buildField(
+                      "Delivery Charge",
+                      controller.deliveryChargeController,
+                      keyboardType: TextInputType.number,
+                      icon: Icons.local_shipping,
+                    ),
+                    _buildToggle(
+                      "Handling Charge Enabled",
+                      controller.ifHandlingCharge,
+                    ),
+                    _buildField(
+                      "Handling Charge",
+                      controller.handlingChargeController,
+                      keyboardType: TextInputType.number,
+                      icon: Icons.work,
+                    ),
+                    _buildToggle("T&C Status", controller.tAndCStatus),
+                    _buildToggle(
+                      "T&C Status for POS",
+                      controller.tAndCStatusPos,
+                    ),
+                    _buildToggle("Number to Words", controller.numberToWords),
+                    _buildToggle(
+                      "Previous Balance Bit",
+                      controller.previousBalanceBit,
+                    ),
+                    _buildField(
+                      "Registration Key",
+                      controller.regnoKeyController,
+                      icon: Icons.key,
+                    ),
+                    _buildField(
+                      "Favicon",
+                      controller.favIconController,
+                      icon: Icons.image,
+                    ),
+                    _buildField(
+                      "Purchase Code",
+                      controller.purchaseCodeController,
+                      icon: Icons.code,
                     ),
                   ], icon: Icons.point_of_sale),
                   _buildSection(
@@ -333,6 +473,24 @@ class EditStorePage extends GetView<EditStoreController> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildToggle(String label, RxBool value) {
+    return Obx(
+      () => SwitchListTile(
+        title: Text(
+          label,
+          style: const TextStyle(
+            color: accentColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
+        ),
+        value: value.value,
+        onChanged: (v) => value.value = v,
+        activeColor: accentColor,
       ),
     );
   }
