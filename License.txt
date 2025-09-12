@@ -1,0 +1,49 @@
+============================
+GreenCreon.com Software Commercial License Agreement
+============================
+
+Version 1.0 | Effective Date: 2025-09-12
+
+This GreenCreon.com Software Commercial License Agreement ("Agreement") is a legal agreement between you ("Licensee") and GreenCreon.com ("Licensor").
+
+PLEASE READ CAREFULLY BEFORE INSTALLING OR USING THE SOFTWARE.  
+BY INSTALLING OR USING THE SOFTWARE, YOU AGREE TO BE BOUND BY THIS AGREEMENT.
+
+1. License Grant
+Licensor grants the Licensee a non-exclusive, non-transferable, revocable, limited license to use the GreenCreon.com software ("Software") for commercial purposes, under the terms of this Agreement.
+
+2. License Fee
+Use of the Software is subject to payment of the applicable license fee agreed upon by the parties.
+
+3. Scope of Use
+Licensee may install and use the Software on a specified number of devices as per the purchased license. The Licensee may use the Software to manage business operations in accordance with provided documentation.
+
+4. Restrictions
+- Licensee may not reverse engineer, decompile, disassemble, or attempt to derive the source code.
+- Licensee may not sublicense, distribute, rent, lease, or share the Software to any third party.
+- Licensee may not modify or create derivative works of the Software without prior written consent.
+
+5. Ownership
+All intellectual property rights, title, and interest in the Software remain the exclusive property of GreenCreon.com.
+
+6. Updates and Support
+Licensor may provide periodic updates or patches, which are subject to the terms of this Agreement. Support services may be provided per a separate support contract.
+
+7. No Warranty
+The Software is provided "AS IS" without any express or implied warranties, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.
+
+8. Limitation of Liability
+Licensor shall not be liable for any direct, indirect, incidental, consequential, or punitive damages resulting from the use or inability to use the Software.
+
+9. Termination
+This Agreement is effective until terminated. Licensee’s rights under this Agreement terminate immediately without notice if Licensee fails to comply with any terms. Upon termination, Licensee must cease using the Software and remove all copies.
+
+10. Governing Law
+This Agreement is governed by and construed under the laws of India.
+
+11. Entire Agreement
+This Agreement constitutes the entire agreement between the parties with respect to the subject matter and supersedes any prior understandings.
+
+If you do not agree to these terms, do not install or use the Software.
+
+© 2025 GreenCreon.com. All Rights Reserved.
