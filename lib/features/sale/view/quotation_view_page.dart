@@ -28,10 +28,10 @@ class QuotationViewPage extends GetView<QuotationController> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: accentColor,
         elevation: 0,
         title: Text(
-          'Quotation #${index + 1}',
+          'Quotation #${quotation.quoteNumber}',
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -64,7 +64,7 @@ class QuotationViewPage extends GetView<QuotationController> {
                         Text(
                           'Quotation Details',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: Colors.blue.shade800,
+                                color: accentColor,
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
@@ -98,7 +98,7 @@ class QuotationViewPage extends GetView<QuotationController> {
                         Text(
                           'Items',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: Colors.blue.shade800,
+                                color: accentColor,
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
