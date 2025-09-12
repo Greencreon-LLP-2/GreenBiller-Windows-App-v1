@@ -70,7 +70,6 @@ class AppRoutes {
   static const String purcahseSummaryByItem = '/reports/purchase-item-report';
   static const String purcahseSummaryByCustomer =
       '/reports/purchase-supplier-base-summary';
-
   //stock
   static const String stockAdjustment = '/stock/adjustment';
   static const String stockTransfer = '/stock/transfer';
@@ -79,4 +78,5 @@ class AppRoutes {
   static const String overview = '/overview';
   static const String parties = '/parties';
   static const String plans = '/plans';
+  static const String nullroute = '';
 }

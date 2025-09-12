@@ -4,12 +4,12 @@
 //!======================================================================================================
 //!======================================================================================================
 
-// const String baseUrl = "http://127.0.0.1:8000/api";
-// const String publicUrl = "http://127.0.0.1:8000";
+const String baseUrl = "http://127.0.0.1:8000/api";
+const String publicUrl = "http://127.0.0.1:8000";
 
 // const String onesignal = "rfpuvfb7pfgr3pvi2ns4izmlhugjfq7fpfcel7nmsrhch5jxtgca5r2hgnwo3z7cdionapma4ukgkrx7qyzvi6tl7rpxkg7plmhx3wa";
-const String baseUrl = "https://greenbiller.in/api";
-const String publicUrl = "https://greenbiller.in";
+// const String baseUrl = "https://greenbiller.in/api";
+// const String publicUrl = "https://greenbiller.in";
 //!===================================auth====================================&//
 
 const String loginUrl = "$baseUrl/login";
@@ -21,7 +21,7 @@ const String userSessionCheckUrl = "$baseUrl/check-session";
 const String passwordResetUrl = "$baseUrl/reset-password";
 //&===================================Insights================================&//
 const String dashboardUrl = "$baseUrl/dashboard";
-//&===================================warehouse================================&//
+//&===================================warehouse=========================R=======&//
 const String addWarehouseUrl = "$baseUrl/warehouse-create";
 const String viewWarehouseUrl = "$baseUrl/warehouse-view";
 const String viewSingleWarehouseUrl = "$baseUrl/warehouse/ind-view";

@@ -385,7 +385,7 @@ class AddItemController extends GetxController
         if (profitMargin != null && profitMargin < 0) {
           throw Exception('Profit margin cannot be negative');
         }
-
+          print(selectedUnit.value!.id.toString());
         final formData = dio.FormData.fromMap({
           'store_id': storeDropdownController.selectedStoreId.value.toString(),
           'user_id': userId.value.toString(),
