@@ -150,7 +150,7 @@ class SalesController extends GetxController {
     try {
       await fetchTaxes();
       await fetchStores();
-      await loadSavedState();
+      // await loadSavedState();
       generateBillNumber();
     } catch (e) {
       Get.snackbar(
@@ -310,54 +310,54 @@ class SalesController extends GetxController {
     }
   }
 
-  // Load saved state from Hive
-  Future<void> loadSavedState() async {
-    try {
-      final savedStoreId = _settingsBox?.get('storeId') as String?;
-      final savedCustomerId = _settingsBox?.get('customerId') as String?;
-      final savedWarehouseId = _settingsBox?.get('warehouseId') as String?;
-      final savedBillNo = _settingsBox?.get('billNo') as String?;
+  // // Load saved state from Hive
+  // Future<void> loadSavedState() async {
+  //   try {
+  //     final savedStoreId = _settingsBox?.get('storeId') as String?;
+  //     final savedCustomerId = _settingsBox?.get('customerId') as String?;
+  //     final savedWarehouseId = _settingsBox?.get('warehouseId') as String?;
+  //     final savedBillNo = _settingsBox?.get('billNo') as String?;
 
-      saleBillConrtoller.text = savedBillNo ?? '';
+  //     saleBillConrtoller.text = savedBillNo ?? '';
 
-      if (savedStoreId != null && storeMap.containsValue(savedStoreId)) {
-        storeId.value = storeMap.entries
-            .firstWhere(
-              (entry) => entry.value == savedStoreId,
-              orElse: () => MapEntry('', ''),
-            )
-            .key;
-      }
+  //     if (savedStoreId != null && storeMap.containsValue(savedStoreId)) {
+  //       storeId.value = storeMap.entries
+  //           .firstWhere(
+  //             (entry) => entry.value == savedStoreId,
+  //             orElse: () => MapEntry('', ''),
+  //           )
+  //           .key;
+  //     }
 
-      if (savedWarehouseId != null &&
-          warehouseMap.containsValue(savedWarehouseId)) {
-        selectedWarehouse.value = warehouseMap.entries
-            .firstWhere(
-              (entry) => entry.value == savedWarehouseId,
-              orElse: () => MapEntry('', ''),
-            )
-            .key;
-        selectedWarehouseId.value = savedWarehouseId;
-      }
+  //     if (savedWarehouseId != null &&
+  //         warehouseMap.containsValue(savedWarehouseId)) {
+  //       selectedWarehouse.value = warehouseMap.entries
+  //           .firstWhere(
+  //             (entry) => entry.value == savedWarehouseId,
+  //             orElse: () => MapEntry('', ''),
+  //           )
+  //           .key;
+  //       selectedWarehouseId.value = savedWarehouseId;
+  //     }
 
-      if (savedCustomerId != null) {
-        if (savedCustomerId == "Walk-in Customer") {
-          customerId.value = "Walk-in Customer";
-          selectedCustomerId.value = "Walk-in Customer";
-        } else if (customerMap.containsValue(savedCustomerId)) {
-          customerId.value = customerMap.entries
-              .firstWhere(
-                (entry) => entry.value == savedCustomerId,
-                orElse: () => MapEntry('', ''),
-              )
-              .key;
-          selectedCustomerId.value = savedCustomerId;
-        }
-      }
-    } catch (e) {
-      debugPrint('Error loading state from Hive: $e');
-    }
-  }
+  //     if (savedCustomerId != null) {
+  //       if (savedCustomerId == "Walk-in Customer") {
+  //         customerId.value = "Walk-in Customer";
+  //         selectedCustomerId.value = "Walk-in Customer";
+  //       } else if (customerMap.containsValue(savedCustomerId)) {
+  //         customerId.value = customerMap.entries
+  //             .firstWhere(
+  //               (entry) => entry.value == savedCustomerId,
+  //               orElse: () => MapEntry('', ''),
+  //             )
+  //             .key;
+  //         selectedCustomerId.value = savedCustomerId;
+  //       }
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Error loading state from Hive: $e');
+  //   }
+  // }
 
   // Save current state to Hive
   Future<void> saveCurrentState() async {
@@ -913,7 +913,7 @@ class SalesController extends GetxController {
       }
 
       await _processItemSales(saleId);
-      await clear(saleId);
+      await _processPayment(saleId);
       await saveCurrentState();
 
       // Show success message before clearing fields

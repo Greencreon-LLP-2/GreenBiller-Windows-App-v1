@@ -685,7 +685,7 @@ class NewPurchaseController extends GetxController {
   void clearForm() {
     storeController.clear();
     warehouseController.clear();
-    billNumberController.clear();
+  
     supplierController.clear();
     billDateController.text = DateTime.now().toString().split(' ')[0];
     noteController.clear();
