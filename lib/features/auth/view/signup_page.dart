@@ -209,23 +209,22 @@ class _SignUpFormContentState extends State<SignUpFormContent> {
             keyboardType: TextInputType.emailAddress,
             validator: EmailValidator.validate,
             inputFormatters: [
-                  LengthLimitingTextInputFormatter(254),
-                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                ],
+              LengthLimitingTextInputFormatter(254),
+              FilteringTextInputFormatter.deny(RegExp(r'\s')),
+            ],
           ),
-          const SizedBox(height: 16), 
+          const SizedBox(height: 16),
           TextFormField(
             decoration: InputDecoration(
-            hintText: 'Phone Number',
-            labelText: 'Phone Number',
-            prefixIcon: Icon(Icons.phone_android),
+              hintText: 'Phone Number',
+              labelText: 'Phone Number',
+              prefixIcon: Icon(Icons.phone_android),
             ),
-            
+
             readOnly: true,
             enabled: false,
             controller: _phoneController,
             keyboardType: TextInputType.phone,
-            
           ),
           const SizedBox(height: 16),
           ValueListenableBuilder<bool>(

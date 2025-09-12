@@ -113,6 +113,12 @@ class LogoHeaderWidget extends StatelessWidget {
           'Manage your business with ease',
           style: AppTextStyles.bodyLarge.copyWith(color: textSecondaryColor),
         ),
+        const SizedBox(height: 12),
+
+        Text(
+          'App Version 1.1.1 Beta',
+          style: TextStyle(color: textSecondaryColor, fontSize: 14),
+        ),
       ],
     );
   }
