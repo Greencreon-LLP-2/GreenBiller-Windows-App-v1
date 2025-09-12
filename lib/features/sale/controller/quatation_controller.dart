@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
@@ -6,10 +5,11 @@ import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
-import 'package:greenbiller/features/items/model/item_model.dart';
 import 'package:greenbiller/features/sale/model/quotation_model.dart';
-import 'package:greenbiller/features/sale/model/temp_purchase_item.dart';
 import 'package:hive/hive.dart';
+import 'package:greenbiller/features/items/model/item_model.dart';
+
+import 'package:greenbiller/features/sale/model/temp_purchase_item.dart';
 
 class QuotationController extends GetxController {
   // Authentication and dependencies
@@ -54,9 +54,7 @@ class QuotationController extends GetxController {
   // Input controllers
   final quantityControllers = <int, TextEditingController>{}.obs;
   final priceControllers = <int, TextEditingController>{}.obs;
-  final itemInputControllers = <int, TextEditingController>{}.obs;
   final unitControllers = <int, TextEditingController>{}.obs;
-  final itemInputFocusNodes = <int, FocusNode>{}.obs;
 
   // Quotation data for orders page
   final quotationsData = Rxn<QuotationListModel>();
@@ -110,20 +108,16 @@ class QuotationController extends GetxController {
     }
   }
 
-  // Dispose all controllers and focus nodes
+  // Dispose all controllers
   void _disposeControllers() {
     customerController.dispose();
     storeController.dispose();
     quantityControllers.forEach((_, controller) => controller.dispose());
     priceControllers.forEach((_, controller) => controller.dispose());
-    itemInputControllers.forEach((_, controller) => controller.dispose());
     unitControllers.forEach((_, controller) => controller.dispose());
-    itemInputFocusNodes.forEach((_, node) => node.dispose());
     quantityControllers.clear();
     priceControllers.clear();
-    itemInputControllers.clear();
     unitControllers.clear();
-    itemInputFocusNodes.clear();
   }
 
   // Fetch initial data for quotation setup
@@ -259,21 +253,11 @@ class QuotationController extends GetxController {
         text: rowFields[index]?['price'] ?? '0',
       );
     }
-    if (!itemInputControllers.containsKey(index)) {
-      itemInputControllers[index] = TextEditingController(
-        text: rowFields[index]?['itemName'] ?? '',
-      );
-    }
     if (!unitControllers.containsKey(index)) {
       unitControllers[index] = TextEditingController(
         text: rowFields[index]?['unit'] ?? '',
       );
     }
-    if (!itemInputFocusNodes.containsKey(index)) {
-      itemInputFocusNodes[index] = FocusNode();
-    }
-
-    // Ensure rowFields is initialized
     rowFields[index] = {
       ...?rowFields[index],
       'quantity': rowFields[index]?['quantity'] ?? '1.0',
@@ -321,7 +305,6 @@ class QuotationController extends GetxController {
       final price = double.tryParse(item.salesPrice) ?? 0;
       final subtotal = quantity * price;
 
-      // Update rowFields reactively
       rowFields[rowIndex] = {
         'itemName': item.itemName,
         'barcode': item.barcode,
@@ -332,13 +315,10 @@ class QuotationController extends GetxController {
         'itemId': item.id.toString(),
       };
 
-      // Update controllers
       quantityControllers[rowIndex]?.text = quantity.toString();
       priceControllers[rowIndex]?.text = item.salesPrice;
-      itemInputControllers[rowIndex]?.text = item.itemName;
       unitControllers[rowIndex]?.text = item.unitId ?? '';
 
-      // Update tempPurchaseItems for the current row
       ensureTempPurchaseItemsSize(rowIndex);
       tempPurchaseItems[rowIndex] = TempPurchaseItem(
         customerId: selectedCustomerId.value,
@@ -362,17 +342,11 @@ class QuotationController extends GetxController {
 
       recalculateSubTotal();
 
-      // Add new row reactively only if the current row has valid data
       if (rowIndex < 9 &&
           rowIndex == rowCount.value - 1 &&
           rowHasData(rowIndex)) {
         rowCount.value++;
         initControllers(rowIndex + 1);
-
-        // Focus the next input field
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          itemInputFocusNodes[rowIndex + 1]?.requestFocus();
-        });
       }
     } catch (e, stack) {
       debugPrint('Error in onItemSelected: $e');
@@ -432,56 +406,38 @@ class QuotationController extends GetxController {
   }
 
   void clearFieldsAfterSave() {
-    // Prepare new controllers and row data
-    final newControllers = {
-      'quantity': TextEditingController(text: '1.0'),
-      'price': TextEditingController(text: '0'),
-      'item': TextEditingController(text: ''),
-      'unit': TextEditingController(text: ''),
-    };
-    final newFocusNode = FocusNode();
-    final newRowFields = <int, Map<String, String>>{
-      0: {
-        'quantity': '1.0',
-        'price': '0',
-        'subtotal': '0.00',
-        'itemName': '',
-        'unit': '',
-        'itemId': '',
-        'barcode': '',
-      },
-    };
-
-    // Dispose old controllers
-    quantityControllers.forEach((_, controller) => controller.dispose());
-    priceControllers.forEach((_, controller) => controller.dispose());
-    itemInputControllers.forEach((_, controller) => controller.dispose());
-    unitControllers.forEach((_, controller) => controller.dispose());
-    itemInputFocusNodes.forEach((_, node) => node.dispose());
-
     // Clear reactive collections
     tempPurchaseItems.clear();
     rowFields.clear();
     showDropdownRows.clear();
     quantityControllers.clear();
     priceControllers.clear();
-    itemInputControllers.clear();
     unitControllers.clear();
-    itemInputFocusNodes.clear();
-
-    // Assign new controllers
-    quantityControllers[0] = newControllers['quantity']!;
-    priceControllers[0] = newControllers['price']!;
-    itemInputControllers[0] = newControllers['item']!;
-    unitControllers[0] = newControllers['unit']!;
-    itemInputFocusNodes[0] = newFocusNode;
-    rowFields.addAll(newRowFields);
-    rowCount.value = 1;
-    selectedItem.value = null;
     tempSubTotal.value = 0.0;
+
+    // Reset dropdowns
     customerController.text = '';
+    storeController.text = '';
     selectedCustomerId.value = '';
+    selectedStoreId.value = '';
     customerId.value = null;
+    selectedItem.value = null;
+
+    // Reset row count
+    rowCount.value = 1;
+
+    // Initialize new empty row
+    rowFields[0] = {
+      'itemName': '',
+      'itemId': '',
+      'quantity': '1.0',
+      'price': '0',
+      'subtotal': '0',
+      'unit': '',
+      'barcode': '',
+    };
+    initControllers(0);
+    fetchStores();
   }
 
   // Validate required fields
@@ -625,6 +581,15 @@ class QuotationController extends GetxController {
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
+
+      generateQuoteNumber();
+      selectedStoreId.value = '';
+      selectedCustomerId.value = '';
+      try {
+        clearFieldsAfterSave();
+      } catch (e) {
+        print(e);
+      }
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -634,15 +599,6 @@ class QuotationController extends GetxController {
       );
     } finally {
       isLoadingSave.value = false;
-    }
-
-    // Cleanup after save
-    try {
-      clearFieldsAfterSave();
-      generateQuoteNumber();
-    } catch (e, stack) {
-      debugPrint('Error during field clearing: $e');
-      debugPrint(stack.toString());
     }
   }
 
@@ -673,9 +629,7 @@ class QuotationController extends GetxController {
   // Filtered quotations getter
   List<Quotation> get filteredQuotations {
     final data = quotationsData.value?.data ?? [];
-
     return data.where((quotation) {
-      // Filter by status
       if (selectedQuotationFilter.value != 'All') {
         if (selectedQuotationFilter.value == 'Pending' &&
             quotation.status != 'pending') {
@@ -686,8 +640,6 @@ class QuotationController extends GetxController {
           return false;
         }
       }
-
-      // Search filter
       if (quotationSearchText.value.isNotEmpty) {
         final term = quotationSearchText.value.toLowerCase();
         final matchQuoteNo = quotation.quoteNumber.toLowerCase().contains(term);
@@ -699,12 +651,10 @@ class QuotationController extends GetxController {
         final matchItems = quotation.items.any(
           (i) => i.itemName.toLowerCase().contains(term),
         );
-
         if (!matchQuoteNo && !matchCustomer && !matchItems) {
           return false;
         }
       }
-
       return true;
     }).toList();
   }

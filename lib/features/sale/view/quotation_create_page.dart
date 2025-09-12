@@ -10,117 +10,479 @@ import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+class HeaderRowWidget extends StatelessWidget {
+  final Map<String, double> columnWidths;
+
+  const HeaderRowWidget({super.key, required this.columnWidths});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: accentColor.withOpacity(0.1),
+        border: Border(
+          bottom: BorderSide(color: accentColor.withOpacity(0.1)),
+          left: BorderSide(color: accentColor.withOpacity(0.1)),
+          right: BorderSide(color: accentColor.withOpacity(0.1)),
+        ),
+      ),
+      child: Table(
+        columnWidths: {
+          for (int i = 0; i < columnWidths.length; i++)
+            i: FixedColumnWidth(columnWidths.values.elementAt(i)),
+        },
+        children: [
+          TableRow(
+            children: [
+              DataCellWidget(
+                width: columnWidths['#']!,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  child: Center(
+                    child: Text(
+                      '#',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              DataCellWidget(
+                width: columnWidths['Item']!,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  child: Text(
+                    'Item',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              DataCellWidget(
+                width: columnWidths['Qty']!,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  child: Center(
+                    child: Text(
+                      'Qty',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              DataCellWidget(
+                width: columnWidths['Unit']!,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  child: Center(
+                    child: Text(
+                      'Unit',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              DataCellWidget(
+                width: columnWidths['Price/Unit']!,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  child: Center(
+                    child: Text(
+                      'Price/Unit',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              DataCellWidget(
+                width: columnWidths['Subtotal']!,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  child: Center(
+                    child: Text(
+                      'Subtotal',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DataCellWidget extends StatelessWidget {
+  final double width;
+  final Widget child;
+
+  const DataCellWidget({super.key, required this.width, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      decoration: BoxDecoration(
+        border: Border(right: BorderSide(color: accentColor.withOpacity(0.1))),
+      ),
+      child: child,
+    );
+  }
+}
+
+class DataRowWidget extends StatelessWidget {
+  final int index;
+  final Map<String, double> columnWidths;
+  final QuotationController controller;
+  final Widget inputWidget;
+
+  const DataRowWidget({
+    super.key,
+    required this.index,
+    required this.columnWidths,
+    required this.controller,
+    required this.inputWidget,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    print(columnWidths['Item']);
+    final itemName = '';
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: accentColor.withOpacity(0.1)),
+          left: BorderSide(color: accentColor.withOpacity(0.1)),
+          right: BorderSide(color: accentColor.withOpacity(0.1)),
+        ),
+      ),
+      child: Table(
+        columnWidths: {
+          for (int i = 0; i < columnWidths.length; i++)
+            i: FixedColumnWidth(columnWidths.values.elementAt(i)),
+        },
+        children: [
+          TableRow(
+            children: [
+              DataCellWidget(
+                width: columnWidths['#']!,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 12,
+                  ),
+                  child: Center(child: Text("${index + 1}")),
+                ),
+              ),
+              DataCellWidget(
+                width: columnWidths['Item']!,
+                child: itemName.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 12,
+                        ),
+                        child: Text(
+                          itemName,
+                          style: const TextStyle(fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      )
+                    : inputWidget,
+              ),
+              DataCellWidget(
+                width: columnWidths['Qty']!,
+                child: TextField(
+                  controller: controller.quantityControllers[index],
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(fontSize: 14),
+                  textAlign: TextAlign.center,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 12,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (value) {
+                    final quantity = double.tryParse(value) ?? 0;
+                    final price =
+                        double.tryParse(
+                          controller.priceControllers[index]?.text ?? '0',
+                        ) ??
+                        0;
+                    final subtotal = quantity * price;
+                    controller.rowFields[index] = {
+                      ...?controller.rowFields[index],
+                      'quantity': value,
+                      'subtotal': subtotal.toStringAsFixed(2),
+                    };
+                    controller.ensureTempPurchaseItemsSize(index);
+                    controller.tempPurchaseItems[index] = TempPurchaseItem(
+                      customerId: controller.customerId.value ?? '',
+                      purchaseId: '',
+                      itemId: controller.rowFields[index]?['itemId'] ?? '',
+                      itemName: controller.rowFields[index]?['itemName'] ?? '',
+                      purchaseQty: value,
+                      pricePerUnit:
+                          controller.rowFields[index]?['price'] ?? '0',
+                      taxName: '',
+                      taxId: '',
+                      taxAmount: '0',
+                      discountType: '',
+                      discountAmount: '0',
+                      totalCost: subtotal.toStringAsFixed(2),
+                      unit: controller.rowFields[index]?['unit'] ?? '',
+                      taxRate: '0',
+                      batchNo: controller.rowFields[index]?['barcode'] ?? '',
+                      barcode: controller.rowFields[index]?['barcode'] ?? '',
+                      serialNumbers: '',
+                    );
+                    controller.recalculateSubTotal();
+                  },
+                ),
+              ),
+              DataCellWidget(
+                width: columnWidths['Unit']!,
+                child: TextField(
+                  controller: controller.unitControllers[index],
+                  style: const TextStyle(fontSize: 14),
+                  textAlign: TextAlign.center,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 12,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (value) {
+                    controller.rowFields[index] = {
+                      ...?controller.rowFields[index],
+                      'unit': value,
+                    };
+                    controller.ensureTempPurchaseItemsSize(index);
+                    controller.tempPurchaseItems[index] = TempPurchaseItem(
+                      customerId: controller.customerId.value ?? '',
+                      purchaseId: '',
+                      itemId: controller.rowFields[index]?['itemId'] ?? '',
+                      itemName: controller.rowFields[index]?['itemName'] ?? '',
+                      purchaseQty:
+                          controller.rowFields[index]?['quantity'] ?? '0',
+                      pricePerUnit:
+                          controller.rowFields[index]?['price'] ?? '0',
+                      taxName: '',
+                      taxId: '',
+                      taxAmount: '0',
+                      discountType: '',
+                      discountAmount: '0',
+                      totalCost:
+                          controller.rowFields[index]?['subtotal'] ?? '0',
+                      unit: value,
+                      taxRate: '0',
+                      batchNo: controller.rowFields[index]?['barcode'] ?? '',
+                      barcode: controller.rowFields[index]?['barcode'] ?? '',
+                      serialNumbers: '',
+                    );
+                  },
+                ),
+              ),
+              DataCellWidget(
+                width: columnWidths['Price/Unit']!,
+                child: TextField(
+                  controller: controller.priceControllers[index],
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(fontSize: 14),
+                  textAlign: TextAlign.center,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 12,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (value) {
+                    final price = double.tryParse(value) ?? 0;
+                    final quantity =
+                        double.tryParse(
+                          controller.quantityControllers[index]?.text ?? '0',
+                        ) ??
+                        0;
+                    final subtotal = quantity * price;
+                    controller.rowFields[index] = {
+                      ...?controller.rowFields[index],
+                      'price': value,
+                      'subtotal': subtotal.toStringAsFixed(2),
+                    };
+                    controller.ensureTempPurchaseItemsSize(index);
+                    controller.tempPurchaseItems[index] = TempPurchaseItem(
+                      customerId: controller.customerId.value ?? '',
+                      purchaseId: '',
+                      itemId: controller.rowFields[index]?['itemId'] ?? '',
+                      itemName: controller.rowFields[index]?['itemName'] ?? '',
+                      purchaseQty:
+                          controller.rowFields[index]?['quantity'] ?? '0',
+                      pricePerUnit: value,
+                      taxName: '',
+                      taxId: '',
+                      taxAmount: '0',
+                      discountType: '',
+                      discountAmount: '0',
+                      totalCost: subtotal.toStringAsFixed(2),
+                      unit: controller.rowFields[index]?['unit'] ?? '',
+                      taxRate: '0',
+                      batchNo: controller.rowFields[index]?['barcode'] ?? '',
+                      barcode: controller.rowFields[index]?['barcode'] ?? '',
+                      serialNumbers: '',
+                    );
+                    controller.recalculateSubTotal();
+                  },
+                ),
+              ),
+              DataCellWidget(
+                width: columnWidths['Subtotal']!,
+                child: Text(
+                  controller.rowFields[index]?['subtotal'] ?? '0.00',
+                  style: const TextStyle(fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class QuotationCreatePage extends GetView<QuotationController> {
   const QuotationCreatePage({super.key});
+
+  TextEditingController controllerForRow(int rowIndex) {
+    if (!controller.quantityControllers.containsKey(rowIndex)) {
+      controller.quantityControllers[rowIndex] = TextEditingController(
+        text: controller.rowFields[rowIndex]?['itemName'] ?? '',
+      );
+    }
+    return controller.quantityControllers[rowIndex]!;
+  }
+
+  Widget input({required int rowIndex}) {
+    return Obx(() {
+      // Show a loading indicator if items are being fetched
+      if (controller.isLoadingItems.value) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          child: Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      return Autocomplete<Item>(
+        optionsBuilder: (TextEditingValue textEditingValue) {
+          if (textEditingValue.text.isEmpty || controller.itemsList.isEmpty) {
+            return const Iterable<Item>.empty();
+          }
+          final query = textEditingValue.text.toLowerCase();
+          return controller.itemsList
+              .where((item) {
+                final itemName =
+                    item['item_name']?.toString().toLowerCase() ?? '';
+                final barcode = item['Barcode']?.toString().toLowerCase() ?? '';
+                final sku = item['SKU']?.toString().toLowerCase() ?? '';
+                return itemName.contains(query) ||
+                    barcode.contains(query) ||
+                    sku.contains(query);
+              })
+              .map((item) => Item.fromJson(item));
+        },
+        optionsViewBuilder: (context, onSelected, options) {
+          return Align(
+            alignment: Alignment.topLeft,
+            child: Material(
+              elevation: 4.0,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.5,
+                  maxHeight: 200,
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: options.length,
+                  itemBuilder: (context, index) {
+                    final Item item = options.elementAt(index);
+                    return ListTile(
+                      title: Text(item.itemName),
+                      subtitle: Text(
+                        'Price: ${item.salesPrice ?? 'N/A'}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      onTap: () => onSelected(item),
+                    );
+                  },
+                ),
+              ),
+            ),
+          );
+        },
+        displayStringForOption: (Item item) => item.itemName,
+        onSelected: (Item item) {
+          controller.onItemSelected(item, rowIndex);
+        },
+        fieldViewBuilder:
+            (context, textEditingController, focusNode, onFieldSubmitted) {
+              return TextField(
+                controller: textEditingController,
+                focusNode: focusNode,
+                style: const TextStyle(fontSize: 14),
+                decoration: const InputDecoration(
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 12,
+                  ),
+                  border: InputBorder.none,
+                  hintText: 'Enter item name or scan barcode',
+                ),
+                onChanged: (value) {
+                  controller.rowFields[rowIndex] = {
+                    ...?controller.rowFields[rowIndex],
+                    'itemName': value,
+                  };
+                },
+                onSubmitted: (value) {
+                  /* keep your onSubmitted logic */
+                },
+              );
+            },
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // Input widget for item selection
-   Widget input({required int rowIndex}) {
-    controller.initControllers(rowIndex);
-    return Autocomplete<Item>(
-      optionsBuilder: (TextEditingValue textEditingValue) {
-        if (textEditingValue.text.isEmpty) {
-          return const Iterable<Item>.empty();
-        }
-        final query = textEditingValue.text.toLowerCase();
-        return controller.itemsList
-            .where((item) {
-              final itemName =
-                  item['item_name']?.toString().toLowerCase() ?? '';
-              final barcode =
-                  item['Barcode']?.toString().toLowerCase() ?? '';
-              final sku = item['SKU']?.toString().toLowerCase() ?? '';
-              return itemName.contains(query) ||
-                  barcode.contains(query) ||
-                  sku.contains(query);
-            })
-            .map((item) => Item.fromJson(item));
-      },
-      optionsViewBuilder: (context, onSelected, options) {
-        return Align(
-          alignment: Alignment.topLeft,
-          child: Material(
-            elevation: 4.0,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.5,
-                maxHeight: 200,
-              ),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: options.length,
-                itemBuilder: (context, index) {
-                  final Item item = options.elementAt(index);
-                  return ListTile(
-                    title: Text(item.itemName),
-                    subtitle: Text(
-                      'Price: ${item.salesPrice ?? 'N/A'}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    onTap: () => onSelected(item),
-                  );
-                },
-              ),
-            ),
-          ),
-        );
-      },
-      displayStringForOption: (Item item) => item.itemName,
-      onSelected: (Item item) {
-        // Update itemController after selection
-        final itemController = controller.itemInputControllers[rowIndex] ??
-            TextEditingController();
-        itemController.text = item.itemName;
-        controller.onItemSelected(item, rowIndex);
-      },
-      fieldViewBuilder:
-          (context, textEditingController, focusNode, onFieldSubmitted) {
-            // Initialize the controller from QuotationController
-            final itemController = controller.itemInputControllers[rowIndex] ??
-                TextEditingController();
-            // Sync initial text
-            textEditingController.text = itemController.text;
-            controller.itemInputFocusNodes[rowIndex] = focusNode;
-            return TextField(
-              controller: textEditingController,
-              focusNode: focusNode,
-              style: const TextStyle(fontSize: 14),
-              decoration: const InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 12,
-                ),
-                border: InputBorder.none,
-                hintText: 'Enter item name or scan barcode',
-              ),
-              onSubmitted: (value) {
-                final exactMatches = controller.itemsList
-                    .where((item) {
-                      final itemName =
-                          item['item_name']?.toString().toLowerCase() ?? '';
-                      final barcode =
-                          item['Barcode']?.toString().toLowerCase() ?? '';
-                      return barcode.toLowerCase() == value.toLowerCase() ||
-                          itemName.toLowerCase() == value.toLowerCase();
-                    })
-                    .map((item) => Item.fromJson(item))
-                    .toList();
-                if (exactMatches.isNotEmpty) {
-                  // Update itemController on submission
-                  itemController.text = exactMatches.first.itemName;
-                  controller.onItemSelected(exactMatches.first, rowIndex);
-                }
-              },
-            );
-          },
-    );
-  }
       return Stack(
         children: [
           Scaffold(
@@ -167,6 +529,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
               ),
               child: SingleChildScrollView(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     QuotationTopSectionWidget(
@@ -196,7 +559,6 @@ class QuotationCreatePage extends GetView<QuotationController> {
                       width: double.infinity,
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          // Define fixed column widths
                           final columnWidths = {
                             '#': 40.0,
                             'Item': 300.0,
@@ -208,7 +570,6 @@ class QuotationCreatePage extends GetView<QuotationController> {
                           final totalTableWidth = columnWidths.values.reduce(
                             (a, b) => a + b,
                           );
-
                           return SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: SizedBox(
@@ -216,15 +577,12 @@ class QuotationCreatePage extends GetView<QuotationController> {
                               child: Column(
                                 children: [
                                   HeaderRowWidget(columnWidths: columnWidths),
+
                                   Obx(() {
-                                    return SizedBox(
-                                      height: controller.rowCount.value * 60,
-                                      width: totalTableWidth,
-                                      child: ListView.builder(
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemCount: controller.rowCount.value,
-                                        itemBuilder: (context, index) {
+                                    return Column(
+                                      children: List.generate(
+                                        controller.rowCount.value,
+                                        (index) {
                                           controller.initControllers(index);
                                           return DataRowWidget(
                                             index: index,
@@ -287,7 +645,6 @@ class QuotationCreatePage extends GetView<QuotationController> {
                                       controller.selectedStoreId.value,
                                   orElse: () => null,
                                 );
-
                             final selectedCustomer = controller
                                 .actualCustomerData
                                 .firstWhere(
@@ -296,11 +653,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
                                       controller.selectedCustomerId.value,
                                   orElse: () => null,
                                 );
-
-                            // Call saveQuotation to store data in the backend
                             await controller.saveQuotation(context: context);
-
-                            // Print the quotation if save was successful
                             if (!controller.isLoadingSave.value &&
                                 context.mounted) {
                               await printQuotation(
@@ -376,7 +729,6 @@ class QuotationCreatePage extends GetView<QuotationController> {
     final defaultPrinter = storeData?['default_printer'] ?? 'a4';
     final isA4 = defaultPrinter == 'a4';
 
-    // Helper function to get store data with fallback
     String getStoreValue(String key, {String fallback = 'N/A'}) {
       if (key == 'currency_symbol') {
         return storeData?[key]?.toString().isNotEmpty ?? false
@@ -388,7 +740,6 @@ class QuotationCreatePage extends GetView<QuotationController> {
           : fallback;
     }
 
-    // Table header
     final tableHeader = pw.TableRow(
       children: [
         pw.Padding(
@@ -460,7 +811,6 @@ class QuotationCreatePage extends GetView<QuotationController> {
       ],
     );
 
-    // Table data rows
     final tableRows = controller.rowFields.entries
         .where((entry) => (entry.value['itemName'] ?? '').isNotEmpty)
         .map((entry) {
@@ -540,7 +890,6 @@ class QuotationCreatePage extends GetView<QuotationController> {
         })
         .toList();
 
-    // Totals section
     final totalsSection = [
       pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -566,7 +915,6 @@ class QuotationCreatePage extends GetView<QuotationController> {
               ? pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    // A4 Header
                     pw.Row(
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -647,8 +995,6 @@ class QuotationCreatePage extends GetView<QuotationController> {
                     ),
                     pw.SizedBox(height: 20),
                     pw.Divider(thickness: 1),
-
-                    // A4 Itemized List
                     pw.Text(
                       'Items',
                       style: pw.TextStyle(
@@ -660,27 +1006,23 @@ class QuotationCreatePage extends GetView<QuotationController> {
                     pw.Table(
                       border: pw.TableBorder.all(width: 1),
                       columnWidths: {
-                        0: const pw.FixedColumnWidth(30), // #
-                        1: const pw.FlexColumnWidth(3), // Item
-                        2: const pw.FixedColumnWidth(50), // Qty
-                        3: const pw.FixedColumnWidth(60), // Unit
-                        4: const pw.FixedColumnWidth(60), // Price
-                        5: const pw.FixedColumnWidth(80), // Subtotal
+                        0: const pw.FixedColumnWidth(30),
+                        1: const pw.FlexColumnWidth(3),
+                        2: const pw.FixedColumnWidth(50),
+                        3: const pw.FixedColumnWidth(60),
+                        4: const pw.FixedColumnWidth(60),
+                        5: const pw.FixedColumnWidth(80),
                       },
                       children: [tableHeader, ...tableRows],
                     ),
                     pw.SizedBox(height: 20),
                     pw.Divider(thickness: 1),
-
-                    // A4 Totals
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: totalsSection,
                     ),
                     pw.SizedBox(height: 20),
                     pw.Divider(thickness: 1),
-
-                    // A4 Footer
                     pw.Text(
                       'Thank you for your inquiry!',
                       style: const pw.TextStyle(fontSize: 12),
@@ -697,7 +1039,6 @@ class QuotationCreatePage extends GetView<QuotationController> {
               : pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    // Thermal Header
                     pw.Text(
                       controller.storeController.text.isNotEmpty
                           ? controller.storeController.text
@@ -722,8 +1063,6 @@ class QuotationCreatePage extends GetView<QuotationController> {
                     ),
                     pw.SizedBox(height: 5),
                     pw.Divider(thickness: 0.5),
-
-                    // Thermal Itemized List
                     pw.Text(
                       'Items',
                       style: pw.TextStyle(
@@ -735,24 +1074,20 @@ class QuotationCreatePage extends GetView<QuotationController> {
                     pw.Table(
                       border: pw.TableBorder.all(width: 0.5),
                       columnWidths: {
-                        0: const pw.FixedColumnWidth(12), // #
-                        1: const pw.FixedColumnWidth(60), // Item
-                        2: const pw.FixedColumnWidth(18), // Qty
-                        3: const pw.FixedColumnWidth(25), // Unit
-                        4: const pw.FixedColumnWidth(25), // Price
-                        5: const pw.FixedColumnWidth(30), // Subtotal
+                        0: const pw.FixedColumnWidth(12),
+                        1: const pw.FixedColumnWidth(60),
+                        2: const pw.FixedColumnWidth(18),
+                        3: const pw.FixedColumnWidth(25),
+                        4: const pw.FixedColumnWidth(25),
+                        5: const pw.FixedColumnWidth(30),
                       },
                       children: [tableHeader, ...tableRows],
                     ),
                     pw.SizedBox(height: 5),
                     pw.Divider(thickness: 0.5),
-
-                    // Thermal Totals
                     ...totalsSection,
                     pw.SizedBox(height: 5),
                     pw.Divider(thickness: 0.5),
-
-                    // Thermal Footer
                     pw.Text(
                       'Thank you for your inquiry!',
                       style: const pw.TextStyle(fontSize: 8),
@@ -764,330 +1099,15 @@ class QuotationCreatePage extends GetView<QuotationController> {
       ),
     );
 
-    // Sanitize quote number to ensure valid file name
     final quoteNumber = controller.quotationNumber.value.isNotEmpty
-        ? controller.quotationNumber.value.replaceAll(
-            RegExp(r'[^\w\-]'),
-            '_',
-          )
+        ? controller.quotationNumber.value.replaceAll(RegExp(r'[^\w\-]'), '_')
         : 'quotation';
     final fileName = 'Quote_$quoteNumber.pdf';
 
-    // Open print dialog with customized file name
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => pdf.save(),
       name: fileName,
       format: isA4 ? PdfPageFormat.a4 : PdfPageFormat.roll80,
     );
-  }
-}
-
-class HeaderCellWidget extends StatelessWidget {
-  final String text;
-  final double width;
-
-  const HeaderCellWidget({super.key, required this.text, required this.width});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-        child: Text(
-          text,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-        ),
-      ),
-    );
-  }
-}
-
-class DataCellWidget extends StatelessWidget {
-  final double width;
-  final Widget child;
-
-  const DataCellWidget({super.key, required this.width, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(width: width, child: child);
-  }
-}
-
-class HeaderRowWidget extends StatelessWidget {
-  final Map<String, double> columnWidths;
-
-  const HeaderRowWidget({super.key, required this.columnWidths});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: accentColor.withOpacity(0.2),
-      child: Table(
-        columnWidths: {
-          for (int i = 0; i < columnWidths.length; i++)
-            i: FixedColumnWidth(columnWidths.values.elementAt(i)),
-        },
-        children: [
-          TableRow(
-            children: [
-              HeaderCellWidget(text: "#", width: columnWidths['#']!),
-              HeaderCellWidget(text: "Item", width: columnWidths['Item']!),
-              HeaderCellWidget(text: "Qty", width: columnWidths['Qty']!),
-              HeaderCellWidget(text: "Unit", width: columnWidths['Unit']!),
-              HeaderCellWidget(
-                text: "Price/Unit",
-                width: columnWidths['Price/Unit']!,
-              ),
-              HeaderCellWidget(
-                text: "Subtotal",
-                width: columnWidths['Subtotal']!,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class DataRowWidget extends StatelessWidget {
-  final int index;
-  final Map<String, double> columnWidths;
-  final QuotationController controller;
-  final Widget inputWidget;
-
-  const DataRowWidget({
-    super.key,
-    required this.index,
-    required this.columnWidths,
-    required this.controller,
-    required this.inputWidget,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Ensure controllers are initialized
-    controller.initControllers(index);
-    return Obx(() {
-      final itemName = controller.rowFields[index]?['itemName'] ?? '';
-      return Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            bottom: BorderSide(color: accentColor.withOpacity(0.1)),
-            left: BorderSide(color: accentColor.withOpacity(0.1)),
-            right: BorderSide(color: accentColor.withOpacity(0.1)),
-          ),
-        ),
-        child: Table(
-          columnWidths: {
-            for (int i = 0; i < columnWidths.length; i++)
-              i: FixedColumnWidth(columnWidths.values.elementAt(i)),
-          },
-          children: [
-            TableRow(
-              children: [
-                DataCellWidget(
-                  width: columnWidths['#']!,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 12,
-                    ),
-                    child: Center(child: Text("${index + 1}")),
-                  ),
-                ),
-                DataCellWidget(
-                  width: columnWidths['Item']!,
-                  child: itemName.isNotEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 12,
-                          ),
-                          child: Text(
-                            itemName,
-                            style: const TextStyle(fontSize: 14),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        )
-                      : inputWidget,
-                ),
-                DataCellWidget(
-                  width: columnWidths['Qty']!,
-                  child: TextField(
-                    controller: controller.quantityControllers[index] ??
-                        TextEditingController(text: '1.0'),
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(fontSize: 14),
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 12,
-                      ),
-                      border: InputBorder.none,
-                    ),
-                    onChanged: (value) {
-                      final quantity = double.tryParse(value) ?? 0;
-                      final price =
-                          double.tryParse(
-                            controller.priceControllers[index]?.text ?? '0',
-                          ) ??
-                          0;
-                      final subtotal = quantity * price;
-                      controller.rowFields[index] = {
-                        ...?controller.rowFields[index],
-                        'quantity': value,
-                        'subtotal': subtotal.toStringAsFixed(2),
-                      };
-                      controller.ensureTempPurchaseItemsSize(index);
-                      controller.tempPurchaseItems[index] = TempPurchaseItem(
-                        customerId: controller.customerId.value ?? '',
-                        purchaseId: '',
-                        itemId: controller.rowFields[index]?['itemId'] ?? '',
-                        itemName:
-                            controller.rowFields[index]?['itemName'] ?? '',
-                        purchaseQty: value,
-                        pricePerUnit:
-                            controller.rowFields[index]?['price'] ?? '0',
-                        taxName: '',
-                        taxId: '',
-                        taxAmount: '0',
-                        discountType: '',
-                        discountAmount: '0',
-                        totalCost: subtotal.toStringAsFixed(2),
-                        unit: controller.rowFields[index]?['unit'] ?? '',
-                        taxRate: '0',
-                        batchNo: controller.rowFields[index]?['barcode'] ?? '',
-                        barcode: controller.rowFields[index]?['barcode'] ?? '',
-                        serialNumbers: '',
-                      );
-                      controller.recalculateSubTotal();
-                    },
-                  ),
-                ),
-                DataCellWidget(
-                  width: columnWidths['Unit']!,
-                  child: TextField(
-                    controller: controller.unitControllers[index] ??
-                        TextEditingController(text: ''),
-                    style: const TextStyle(fontSize: 14),
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 12,
-                      ),
-                      border: InputBorder.none,
-                    ),
-                    onChanged: (value) {
-                      controller.rowFields[index] = {
-                        ...?controller.rowFields[index],
-                        'unit': value,
-                      };
-                      controller.ensureTempPurchaseItemsSize(index);
-                      controller.tempPurchaseItems[index] = TempPurchaseItem(
-                        customerId: controller.customerId.value ?? '',
-                        purchaseId: '',
-                        itemId: controller.rowFields[index]?['itemId'] ?? '',
-                        itemName:
-                            controller.rowFields[index]?['itemName'] ?? '',
-                        purchaseQty:
-                            controller.rowFields[index]?['quantity'] ?? '0',
-                        pricePerUnit:
-                            controller.rowFields[index]?['price'] ?? '0',
-                        taxName: '',
-                        taxId: '',
-                        taxAmount: '0',
-                        discountType: '',
-                        discountAmount: '0',
-                        totalCost:
-                            controller.rowFields[index]?['subtotal'] ?? '0',
-                        unit: value,
-                        taxRate: '0',
-                        batchNo: controller.rowFields[index]?['barcode'] ?? '',
-                        barcode: controller.rowFields[index]?['barcode'] ?? '',
-                        serialNumbers: '',
-                      );
-                    },
-                  ),
-                ),
-                DataCellWidget(
-                  width: columnWidths['Price/Unit']!,
-                  child: TextField(
-                    controller: controller.priceControllers[index] ??
-                        TextEditingController(text: '0'),
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(fontSize: 14),
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 12,
-                      ),
-                      border: InputBorder.none,
-                    ),
-                    onChanged: (value) {
-                      final price = double.tryParse(value) ?? 0;
-                      final quantity =
-                          double.tryParse(
-                            controller.quantityControllers[index]?.text ?? '0',
-                          ) ??
-                          0;
-                      final subtotal = quantity * price;
-                      controller.rowFields[index] = {
-                        ...?controller.rowFields[index],
-                        'price': value,
-                        'subtotal': subtotal.toStringAsFixed(2),
-                      };
-                      controller.ensureTempPurchaseItemsSize(index);
-                      controller.tempPurchaseItems[index] = TempPurchaseItem(
-                        customerId: controller.customerId.value ?? '',
-                        purchaseId: '',
-                        itemId: controller.rowFields[index]?['itemId'] ?? '',
-                        itemName:
-                            controller.rowFields[index]?['itemName'] ?? '',
-                        purchaseQty:
-                            controller.rowFields[index]?['quantity'] ?? '0',
-                        pricePerUnit: value,
-                        taxName: '',
-                        taxId: '',
-                        taxAmount: '0',
-                        discountType: '',
-                        discountAmount: '0',
-                        totalCost: subtotal.toStringAsFixed(2),
-                        unit: controller.rowFields[index]?['unit'] ?? '',
-                        taxRate: '0',
-                        batchNo: controller.rowFields[index]?['barcode'] ?? '',
-                        barcode: controller.rowFields[index]?['barcode'] ?? '',
-                        serialNumbers: '',
-                      );
-                      controller.recalculateSubTotal();
-                    },
-                  ),
-                ),
-                DataCellWidget(
-                  width: columnWidths['Subtotal']!,
-                  child: Text(
-                    controller.rowFields[index]?['subtotal'] ?? '0.00',
-                    style: const TextStyle(fontSize: 14),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    });
   }
 }
