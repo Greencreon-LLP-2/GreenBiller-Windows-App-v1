@@ -306,7 +306,6 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             controller: controller.billNumberController,
                             style: const TextStyle(fontSize: 14),
                             decoration: InputDecoration(
-                              enabled: false,
                               hintText: "Enter bill no.",
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               isDense: true,
@@ -323,7 +322,6 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                             ),
                           ),
                         ),
-                       
                       ],
                     ),
                   ],
@@ -372,8 +370,10 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                   children: [
                     const Text("Bill Date"),
                     const SizedBox(height: 6),
-                    GestureDetector(
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12),
                       onTap: () async {
+                        print("works");
                         DateTime? date = await showDatePicker(
                           context: context,
                           initialDate: DateTime.now(),
@@ -398,6 +398,22 @@ class NewPurchasePage extends GetView<NewPurchaseController> {
                           controller: controller.billDateController,
                           readOnly: true,
                           style: const TextStyle(fontSize: 14),
+                          onTap: () async {
+                            // Same behavior inside the field itself
+                            DateTime? date = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime.now().subtract(
+                                const Duration(days: 365),
+                              ),
+                              lastDate: DateTime.now().add(
+                                const Duration(days: 365),
+                              ),
+                            );
+                            if (date != null) {
+                              controller.setBillDate(date);
+                            }
+                          },
                           decoration: InputDecoration(
                             hintText: "Select date",
                             hintStyle: TextStyle(color: Colors.grey.shade500),

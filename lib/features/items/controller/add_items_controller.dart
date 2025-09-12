@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
+import 'package:greenbiller/core/gloabl_widgets/alerts/app_snackbar.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 import 'package:greenbiller/features/items/model/unit_model.dart';
 import 'package:image_picker/image_picker.dart';
@@ -194,29 +195,29 @@ class AddItemController extends GetxController
           );
         } else {
           _logger.w('File does not exist at path: $filePath');
-          Get.snackbar(
-            'Error',
-            'Selected file does not exist',
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
+          AppSnackbar.show(
+            title: 'Error',
+            message: 'Selected file does not exist',
+            color: Colors.red,
+            icon: Icons.error_outline,
           );
         }
       } else {
         _logger.w('No file selected');
-        Get.snackbar(
-          'Error',
-          'No file selected',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        AppSnackbar.show(
+          title: 'Error',
+          message: 'No file selected',
+          color: Colors.red,
+          icon: Icons.error_outline,
         );
       }
     } catch (e, stackTrace) {
       _logger.e('Error picking file: $e', stackTrace);
-      Get.snackbar(
-        'Error',
-        'Error selecting file: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Error selecting file: $e',
+        color: Colors.red,
+        icon: Icons.error_outline,
       );
     }
   }
@@ -234,11 +235,11 @@ class AddItemController extends GetxController
           final result = await OpenFile.open(filePath);
           if (result.type != ResultType.done) {
             _logger.w('Failed to open file: ${result.message}');
-            Get.snackbar(
-              'Error',
-              'Failed to open file: ${result.message}',
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
+            AppSnackbar.show(
+              title: 'Error',
+              message: 'Failed to open file: ${result.message}',
+              color: Colors.red,
+              icon: Icons.error_outline,
             );
           } else {
             _logger.i(
@@ -247,31 +248,36 @@ class AddItemController extends GetxController
           }
         } else {
           _logger.w('File does not exist at path: $filePath');
-          Get.snackbar(
-            'Error',
-            'File does not exist',
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
+          AppSnackbar.show(
+            title: 'Error',
+            message: 'File does not exist',
+            color: Colors.red,
+            icon: Icons.error_outline,
           );
         }
       } catch (e, stackTrace) {
         _logger.e('Error opening file: $e', stackTrace);
-        Get.snackbar(
-          'Error',
-          'Error opening file: $e',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        AppSnackbar.show(
+          title: 'Error',
+          message: 'Error opening file: $e',
+          color: Colors.red,
+          icon: Icons.error_outline,
         );
       }
     } else {
       _logger.w('No file to open');
-      Get.snackbar(
-        'Error',
-        'No file selected to open',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'No file selected to open',
+        color: Colors.red,
+        icon: Icons.error_outline,
       );
     }
+  }
+
+  void genereateItemCode(val) {
+    final unixTime = DateTime.now().millisecondsSinceEpoch;
+    itemCodeController.text = "ST-$val-Item-$unixTime";
   }
 
   Future<bool> addItem(GlobalKey<FormState> formKey) async {
@@ -279,52 +285,48 @@ class AddItemController extends GetxController
 
     try {
       if (formKey.currentState!.validate()) {
-        if (itemNameController.text.isEmpty) {
-          throw Exception('Item name is required');
+        if (storeDropdownController.selectedCategoryId.value.toString() ==
+            'null') {
+          throw Exception('Category  is required');
+        }
+        if (storeDropdownController.selectedBrandId.value.toString()=='null') {
+          throw Exception('Brand  is required');
+        }
+        if (skuController.text.isNotEmpty) {
+          if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(skuController.text)) {
+            throw Exception(
+              'SKU must be alphanumeric (letters, numbers, _ or -)',
+            );
+          }
         }
 
-        // ✅ SKU validation
-        if (skuController.text.isEmpty) {
-          throw Exception('SKU is required');
-        }
-        if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(skuController.text)) {
-          throw Exception(
-            'SKU must be alphanumeric (letters, numbers, _ or -)',
-          );
+        if (hsnCodeController.text.isNotEmpty) {
+          if (!RegExp(r'^\d{4,8}$').hasMatch(hsnCodeController.text)) {
+            throw Exception('HSN code must be 4–8 digits');
+          }
         }
 
-        // ✅ HSN validation
-        if (hsnCodeController.text.isEmpty) {
-          throw Exception('HSN code is required');
-        }
-        if (!RegExp(r'^\d{4,8}$').hasMatch(hsnCodeController.text)) {
-          throw Exception('HSN code must be 4–8 digits');
+        if (itemCodeController.text.isNotEmpty) {
+          if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(itemCodeController.text)) {
+            throw Exception(
+              'Item code must be alphanumeric (letters, numbers, _ or -)',
+            );
+          }
         }
 
-        // ✅ Item Code validation
+        if (barcodeController.text.isNotEmpty) {
+          if (barcodeController.text.length < 6) {
+            throw Exception('Barcode must be at least 6 characters');
+          }
+          if (!barcodeController.text.runes.every((c) => c >= 0 && c <= 127)) {
+            throw Exception(
+              'Barcode must contain only ASCII characters (Code128)',
+            );
+          }
+        }
         if (itemCodeController.text.isEmpty) {
-          throw Exception('Item code is required');
+          throw Exception('Item-Code is required');
         }
-        if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(itemCodeController.text)) {
-          throw Exception(
-            'Item code must be alphanumeric (letters, numbers, _ or -)',
-          );
-        }
-
-        // ✅ Barcode validation → Code128 (ASCII, min 6 chars)
-        if (barcodeController.text.isEmpty) {
-          throw Exception('Barcode is required');
-        }
-        if (barcodeController.text.length < 6) {
-          throw Exception('Barcode must be at least 6 characters');
-        }
-        if (!barcodeController.text.runes.every((c) => c >= 0 && c <= 127)) {
-          throw Exception(
-            'Barcode must contain only ASCII characters (Code128)',
-          );
-        }
-
-        // ✅ Unit & Subunit validation
         if (selectedUnit.value == null) {
           throw Exception('Unit is required');
         }
@@ -342,16 +344,14 @@ class AddItemController extends GetxController
         if (purchasePriceController.text.isEmpty) {
           throw Exception('Purchase price is required');
         }
-        if (wholesalePriceController.text.isEmpty) {
-          throw Exception('Wholesale price is required');
-        }
+
         if (salesPriceController.text.isEmpty) {
           throw Exception('Sales price is required');
         }
         if (selectedTaxType.value.isEmpty) {
           throw Exception('Tax type is required');
         }
-        if (selectedTaxRate.value == null) {
+        if (selectedTaxRate.value == null || selectedTaxRate.value!.isEmpty) {
           throw Exception('Tax rate is required');
         }
         if (openingStockController.text.isEmpty) {
@@ -359,6 +359,9 @@ class AddItemController extends GetxController
         }
         if (storeDropdownController.selectedStoreId.value == null) {
           throw Exception('Warehouse is required');
+        }
+        if (itemNameController.text.isEmpty) {
+          throw Exception('Item name is required');
         }
 
         final purchasePrice = double.tryParse(purchasePriceController.text);
@@ -385,7 +388,7 @@ class AddItemController extends GetxController
         if (profitMargin != null && profitMargin < 0) {
           throw Exception('Profit margin cannot be negative');
         }
-          print(selectedUnit.value!.id.toString());
+        print(selectedUnit.value!.id.toString());
         final formData = dio.FormData.fromMap({
           'store_id': storeDropdownController.selectedStoreId.value.toString(),
           'user_id': userId.value.toString(),
@@ -429,12 +432,11 @@ class AddItemController extends GetxController
         final response = await dioClient.dio.post(addItemUrl, data: formData);
 
         if (response.statusCode == 201) {
-          Get.snackbar(
-            'Success',
-            response.data['message'] ?? 'Item added successfully',
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-            snackPosition: SnackPosition.BOTTOM,
+          AppSnackbar.show(
+            title: 'Success',
+            message: response.data['message'] ?? 'Item added successfully',
+            color: Colors.green,
+            icon: Icons.error_outline,
           );
           Future.delayed(const Duration(seconds: 2), () {
             Get.back();
@@ -449,11 +451,11 @@ class AddItemController extends GetxController
       }
     } catch (e, stackTrace) {
       _logger.e('Error adding item: $e');
-      Get.snackbar(
-        'Error',
-        'Error: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Error: $e',
+        color: Colors.red,
+        icon: Icons.error_outline,
       );
       return false;
     } finally {
@@ -469,18 +471,20 @@ class AddItemController extends GetxController
       calculatedProfit.value = salesPrice - purchasePrice;
       final profitMargin = (calculatedProfit.value / purchasePrice) * 100;
       profitMarginController.text = profitMargin.toStringAsFixed(2);
-      Get.snackbar(
-        'Profit Calculated',
-        'Profit: ₹${calculatedProfit.value.toStringAsFixed(2)}',
-        backgroundColor: calculatedProfit.value < 0 ? errorColor : accentColor,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Profit Calculated',
+        message: 'Profit: ₹${calculatedProfit.value.toStringAsFixed(2)}',
+        color: calculatedProfit.value < 0 ? errorColor : accentColor,
+        icon: calculatedProfit.value < 0
+            ? Icons.error_outline
+            : Icons.analytics,
       );
     } else {
-      Get.snackbar(
-        'Error',
-        'Please enter valid purchase and sales prices',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Please enter valid purchase and sales prices',
+        color: Colors.red,
+        icon: Icons.error_outline,
       );
     }
   }

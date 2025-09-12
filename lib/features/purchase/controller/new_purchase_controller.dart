@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/hive_service.dart';
+import 'package:greenbiller/core/colors.dart';
+import 'package:greenbiller/core/gloabl_widgets/alerts/app_snackbar.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/settings/controller/account_settings_controller.dart';
@@ -305,16 +307,23 @@ class NewPurchaseController extends GetxController {
     try {
       final response = await commonApi.fetchAllItems(storeId);
       if (response.isEmpty) {
-        Get.snackbar('Error', 'Please add items first, empty store');
+        AppSnackbar.show(
+          title: 'Error',
+          message: 'Please add items first, empty store',
+          color: errorColor,
+          icon: Icons.error_outline,
+        );
+        return;
       }
       itemsList.value = response
           .map((e) => Map<String, dynamic>.from(e as Map))
           .toList();
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to fetch items: $e',
-        backgroundColor: Colors.redAccent,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to fetch items: $e',
+        color: errorColor,
+        icon: Icons.error_outline,
       );
     } finally {
       isLoadingItems.value = false;
@@ -324,7 +333,7 @@ class NewPurchaseController extends GetxController {
   Future<void> fetchTaxes() async {
     isLoadingTaxes.value = true;
     try {
-      final response = await dioClient.dio.get('$baseUrl/tax-view');
+      final response = await dioClient.dio.get(viewTaxUrl);
       if (response.statusCode == 200) {
         taxList.value = List<Map<String, dynamic>>.from(response.data['data']);
       }
@@ -393,53 +402,104 @@ class NewPurchaseController extends GetxController {
 
   bool validateForm() {
     if (selectedStoreId.value.isEmpty) {
-      Get.snackbar('Error', 'Please select a store');
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Please select a store',
+        color: errorColor,
+        icon: Icons.error_outline,
+      );
       return false;
     }
     if (selectedSupplierId.value.isEmpty) {
-      Get.snackbar('Error', 'Please select a supplier');
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Please select a supplier',
+        color: errorColor,
+        icon: Icons.error_outline,
+      );
       return false;
     }
     if (selectedWarehouseId.value.isEmpty) {
-      Get.snackbar('Error', 'Please select a warehouse');
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Please select a warehouse',
+        color: errorColor,
+        icon: Icons.error_outline,
+      );
       return false;
     }
     if (billNumberController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter bill number');
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Please enter bill number',
+        color: errorColor,
+        icon: Icons.error_outline,
+      );
       return false;
     }
     if (items.isEmpty) {
-      Get.snackbar('Error', 'Please add at least one item');
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Please add at least one item',
+        color: errorColor,
+        icon: Icons.error_outline,
+      );
       return false;
     }
+
     for (int i = 0; i < items.length; i++) {
       if (items[i].item.text.isEmpty) {
-        Get.snackbar('Error', 'Please enter item name for row ${i + 1}');
+        AppSnackbar.show(
+          title: 'Error',
+          message: 'Please enter item name for row ${i + 1}',
+          color: errorColor,
+          icon: Icons.error_outline,
+        );
         return false;
       }
       if (items[i].qty.text.isEmpty ||
           double.tryParse(items[i].qty.text) == 0) {
-        Get.snackbar('Error', 'Please enter valid quantity for row ${i + 1}');
+        AppSnackbar.show(
+          title: 'Error',
+          message: 'Please enter valid quantity for row ${i + 1}',
+          color: errorColor,
+          icon: Icons.error_outline,
+        );
         return false;
       }
       if (items[i].pricePerUnit.text.isEmpty ||
           double.tryParse(items[i].pricePerUnit.text) == 0) {
-        Get.snackbar('Error', 'Please enter valid price for row ${i + 1}');
+        AppSnackbar.show(
+          title: 'Error',
+          message: 'Please enter valid price for row ${i + 1}',
+          color: errorColor,
+          icon: Icons.error_outline,
+        );
         return false;
       }
       if (items[i].serials.isNotEmpty &&
           items[i].serials.length != double.tryParse(items[i].qty.text)) {
-        Get.snackbar(
-          'Error',
-          'Serial numbers count does not match quantity for row ${i + 1}',
+        AppSnackbar.show(
+          title: 'Error',
+          message:
+              'Serial numbers count does not match quantity for row ${i + 1}',
+          color: errorColor,
+          icon: Icons.error_outline,
         );
         return false;
       }
     }
+
     if (paymentType.value.isEmpty) {
-      Get.snackbar('Error', 'Please select a payment type');
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Please select a payment type',
+        color: errorColor,
+        icon: Icons.error_outline,
+      );
       return false;
     }
+
     return true;
   }
 
@@ -449,11 +509,11 @@ class NewPurchaseController extends GetxController {
   }) async {
     if (!validateForm()) return;
     if (selectedAccountId.value.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Please select an account before proceeding.',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Please select an account before proceeding.',
+        color: errorColor,
+        icon: Icons.error_outline,
       );
       return;
     }
@@ -685,7 +745,7 @@ class NewPurchaseController extends GetxController {
   void clearForm() {
     storeController.clear();
     warehouseController.clear();
-  
+
     supplierController.clear();
     billDateController.text = DateTime.now().toString().split(' ')[0];
     noteController.clear();
@@ -1056,4 +1116,3 @@ class NewPurchaseController extends GetxController {
     );
   }
 }
-

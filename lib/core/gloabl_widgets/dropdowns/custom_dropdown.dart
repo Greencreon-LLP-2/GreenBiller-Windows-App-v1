@@ -22,11 +22,46 @@ class AppDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      print(
-        "🔽 Building $label dropdown -> options: ${options.length}, selected: ${selectedValue.value}",
-      );
+      int? currentValue = selectedValue.value;
+
+      // Reset invalid selection if not in options
+      if (currentValue != null && !options.values.contains(currentValue)) {
+        currentValue = null;
+        selectedValue.value = null;
+      }
+
+      late final List<DropdownMenuItem<int>> items;
+
+      if (options.isEmpty) {
+        // Show "No data found" when empty
+        items = const [
+          DropdownMenuItem<int>(
+            value: -1, // 👈 unique dummy value
+            enabled: false,
+            child: Text(
+              "No data found",
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+        ];
+        currentValue = -1; // 👈 force match so text is visible
+      } else {
+        items = [
+          DropdownMenuItem<int>(
+            value: null,
+            child: Text(placeHolderText ?? 'Select Store'),
+          ),
+          ...options.entries.map((entry) {
+            return DropdownMenuItem<int>(
+              value: entry.value,
+              child: Text(entry.key),
+            );
+          }),
+        ];
+      }
+
       return DropdownButtonFormField<int>(
-        value: selectedValue.value,
+        value: currentValue,
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -36,23 +71,10 @@ class AppDropdown extends StatelessWidget {
           ),
         ),
         isExpanded: true,
-        items: [
-          DropdownMenuItem<int>(
-            value: null,
-            child: Text(placeHolderText ?? 'Select Store'),
-          ),
-          ...options.entries.map((entry) {
-            print("  ➕ Option: ${entry.key} => ${entry.value}");
-            return DropdownMenuItem<int>(
-              value: entry.value,
-              child: Text(entry.key),
-            );
-          }),
-        ],
-        onChanged: isLoading.value
-            ? null
+        items: items,
+        onChanged: (options.isEmpty || isLoading.value)
+            ? null // disable when loading or no data
             : (val) {
-                print("🟢 Changed $label -> $val");
                 selectedValue.value = val;
                 onChanged?.call(val);
               },

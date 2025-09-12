@@ -431,6 +431,7 @@ class AddItemsPage extends GetView<AddItemController> {
                                 .isLoadingStores,
                             onChanged: (val) async {
                               if (val != null) {
+                                controller.genereateItemCode(val);
                                 await controller.storeDropdownController
                                     .loadBrands(val);
                                 await controller.storeDropdownController
@@ -763,7 +764,7 @@ class AddItemsPage extends GetView<AddItemController> {
                         ),
                         const SizedBox(height: 20),
                         _buildInputField(
-                          label: "Selling Price",
+                          label: "WholeSale Price",
                           hint: "0.00",
                           prefixIcon: Icons.currency_rupee,
                           controller: controller.wholesalePriceController,
@@ -1350,7 +1351,7 @@ class AddItemsPage extends GetView<AddItemController> {
     return Obx(() {
       String? selectedValue;
       void Function(String?) onChanged;
-     
+
       switch (label) {
         case "Tax Rate (%)":
           selectedValue = controller.selectedTaxRate.value;

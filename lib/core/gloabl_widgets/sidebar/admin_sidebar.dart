@@ -509,7 +509,7 @@ class AdminSidebar extends StatelessWidget {
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
                         AppRoutes.nullroute,
-                      
+                        AppRoutes.nullroute,
                       ].contains(currentRoute),
                       children: [
                         _buildNavTile(
