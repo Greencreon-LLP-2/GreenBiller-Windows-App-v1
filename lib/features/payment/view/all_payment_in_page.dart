@@ -11,7 +11,6 @@ class AllPaymentInPage extends GetView<PaymentController> {
 
   @override
   Widget build(BuildContext context) {
-
     // fetch when opened
     controller.switchPaymentType('in');
     controller.fetchPaymentsIn();
@@ -122,8 +121,9 @@ class AllPaymentInPage extends GetView<PaymentController> {
                       ),
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
                     ),
                     onChanged: (query) {
                       controller.searchPayments(query, type: 'in');
@@ -139,24 +139,29 @@ class AllPaymentInPage extends GetView<PaymentController> {
                       lastDate: DateTime.now(),
                     );
                     if (selected != null) {
-                      controller.paymentsIn.value =
-                          controller.filterPaymentsByDate(
-                        selected.start,
-                        selected.end,
-                        type: 'in',
-                      );
+                      controller.paymentsIn.value = controller
+                          .filterPaymentsByDate(
+                            selected.start,
+                            selected.end,
+                            type: 'in',
+                          );
                     }
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: accentColor,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.calendar_today, color: Colors.white),
+                    child: const Icon(
+                      Icons.calendar_today,
+                      color: Colors.white,
+                    ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -189,42 +194,99 @@ class AllPaymentInPage extends GetView<PaymentController> {
               return RefreshIndicator(
                 onRefresh: () => controller.refreshCurrentPayments(),
                 child: ListView.builder(
+                  shrinkWrap: true,
                   itemCount: controller.paymentsIn.length,
                   itemBuilder: (context, index) {
                     final payment = controller.paymentsIn[index];
                     return Card(
                       color: Colors.white,
                       margin: const EdgeInsets.symmetric(
-                          vertical: 6, horizontal: 10),
+                        vertical: 6,
+                        horizontal: 10,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      elevation: 5,
-                      child: ListTile(
-                        leading:
-                            const Icon(Icons.payments, color: Colors.green),
-                        title: Text(
-                          "Payment Code: ${payment['payment_code'] ?? 'N/A'}",
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Customer: ${payment['customer_name'] ?? ''}"),
-                            Text("Store ID: ${payment['store_id'] ?? ''}"),
-                            Text("Sale ID: ${payment['sales_id'] ?? ''}"),
-                            Text("Type: ${payment['payment_type'] ?? ''}"),
-                            Text("Amount: ${payment['payment'] ?? ''}"),
-                            Text("Note: ${payment['payment_note'] ?? ''}"),
-                            Text("Account ID: ${payment['account_id'] ?? ''}"),
-                            Text("Status: ${payment['status'] ?? ''}"),
-                          ],
-                        ),
-                        trailing: Text(
-                          payment['payment_date'] ?? '',
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.grey),
-                        ),
+                      elevation: 2,
+                      shadowColor: Colors.black,
+                      child: Column(
+                        children: [
+                          Row(
+                            // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              commonListTile(
+                                icon: Icons.receipt_long,
+                                iconColor: Colors.blueAccent,
+                                title: 'Payment Code',
+                                subtitle: '${payment['payment_code'] ?? 'N/A'}',
+                              ),
+                              // Spacer(),
+                              commonListTile(
+                                icon: Icons.calendar_today,
+                                iconColor: Colors.blueGrey,
+                                title: 'Payment Date',
+                                subtitle: '${payment['payment_date'] ?? 'N/A'}',
+                              ),
+                            ],
+                          ),
+                          Divider(),
+                          Row(
+                            children: [
+                              commonListTile(
+                                icon: Icons.person,
+                                iconColor: Colors.teal,
+                                title: 'Customer',
+                                subtitle: '${payment['customer_name']}',
+                              ),
+                              commonListTile(
+                                icon: Icons.store,
+                                iconColor: Colors.blue,
+                                title: 'Store ID',
+                                subtitle: '${payment['store_id']}',
+                              ),
+                              commonListTile(
+                                icon: Icons.receipt,
+                                iconColor: Colors.black,
+                                title: 'Sale ID',
+                                subtitle: '${payment['sales_id'] ?? ''}',
+                              ),
+                              commonListTile(
+                                icon: Icons.credit_card,
+                                iconColor: Colors.blue.shade700,
+                                title: 'Type',
+                                subtitle: '${payment['payment_type'] ?? ''}',
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              commonListTile(
+                                icon: Icons.currency_rupee_sharp,
+                                iconColor: Colors.black,
+                                title: 'Amount',
+                                subtitle: '${payment['payment']}',
+                              ),
+                              commonListTile(
+                                icon: Icons.notes,
+                                iconColor: Colors.blueGrey,
+                                title: 'Note',
+                                subtitle: '${payment['payment_note']}',
+                              ),
+                              commonListTile(
+                                icon: Icons.account_balance,
+                                iconColor: Colors.green,
+                                title: 'Account ID',
+                                subtitle: '${payment['account_id'] ?? ''}',
+                              ),
+                              commonListTile(
+                                icon: Icons.done,
+                                iconColor: Colors.grey,
+                                title: 'Status',
+                                subtitle: '${payment['status'] ?? ''}',
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     );
                   },
@@ -294,4 +356,24 @@ class AllPaymentInPage extends GetView<PaymentController> {
       ),
     );
   }
+}
+
+Widget commonListTile({
+  required IconData icon,
+  required Color iconColor,
+  required String title,
+  required String subtitle,
+  TextStyle titleStyle = const TextStyle(
+    fontSize: 13,
+    fontWeight: FontWeight.w100,
+  ),
+  TextStyle subtitleStyle = const TextStyle(fontWeight: FontWeight.w600),
+}) {
+  return Expanded(
+    child: ListTile(
+      leading: Icon(icon, color: iconColor),
+      title: Text(title, style: titleStyle),
+      subtitle: Text(subtitle, style: subtitleStyle),
+    ),
+  );
 }

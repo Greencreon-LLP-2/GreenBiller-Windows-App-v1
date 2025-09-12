@@ -192,6 +192,7 @@ class AllPaymentOutPage extends GetView<PaymentController> {
               return RefreshIndicator(
                 onRefresh: () => controller.refreshCurrentPayments(),
                 child: ListView.builder(
+                  shrinkWrap: true,
                   itemCount: controller.paymentsOut.length,
                   itemBuilder: (context, index) {
                     final payment = controller.paymentsOut[index];
@@ -204,64 +205,304 @@ class AllPaymentOutPage extends GetView<PaymentController> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      elevation: 5,
-                      child: ListTile(
-                        leading: const Icon(
-                          Icons.payments,
-                          color: Colors.orange,
-                        ),
-                        title: Text(
-                          "Payment Code: ${payment['payment_code'] ?? 'N/A'}",
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Purcahse ID: ${payment['purchase_id'] ?? ''}"),
-                            Text("Supplier: ${payment['supplier_name'] ?? ''}"),
-                            Text("Store ID: ${payment['store_id'] ?? ''}"),
-                            Text(
-                              "Purchase Ref: ${payment['purchase_ref'] ?? ''}",
-                            ),
-                              
-                            Text("Type: ${payment['payment_type'] ?? ''}"),
-                            Text("Amount: ₹${payment['payment'] ?? ''}"),
-                            Text("Note: ${payment['payment_note'] ?? ''}"),
-                            Text("Account ID: ${payment['account_id'] ?? ''}"),
-                            Text("Status: ${payment['status'] ?? ''}"),
-                            if (payment['supplier_mobile'] != null)
-                              Text("Mobile: ${payment['supplier_mobile']}"),
-                            if (payment['supplier_phone'] != null)
-                              Text("Phone: ${payment['supplier_phone']}"),
-                            if (payment['supplier_email'] != null)
-                              Text("Email: ${payment['supplier_email']}"),
-                          ],
-                        ),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              "₹${payment['payment']?.toString() ?? '0.00'}",
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red,
+                      elevation: 1,
+
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.receipt_long,
+                                    color: Colors.blueAccent,
+                                  ),
+                                  title: Text(
+                                    "Payment Code: ${payment['payment_code'] ?? 'N/A'}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "Purcahse ID: ${payment['purchase_id'] ?? ''}",
+                                  ),
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              payment['payment_date']?.toString().split(
-                                    ' ',
-                                  )[0] ??
-                                  '',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
+                              Column(
+                                children: [
+                                  Text(
+                                    "₹${payment['payment']?.toString() ?? '0.00'}",
+                                    style: const TextStyle(
+                                      fontSize: 30,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    payment['payment_date']?.toString().split(
+                                          ' ',
+                                        )[0] ??
+                                        '',
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                          Divider(),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.storefront,
+                                    color: Colors.grey,
+                                  ),
+                                  title: Text(
+                                    'Supplier',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "${payment['supplier_name'] ?? ''}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.list_rounded,
+                                    color: Colors.black,
+                                  ),
+                                  title: Text(
+                                    'Purchase ref',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "${payment['purchase_ref'] ?? ''}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: ListTile(
+                                  leading: Icon(Icons.done, color: Colors.grey),
+                                  title: Text(
+                                    'Status',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "${payment['status'] ?? ''}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.account_balance,
+                                    color: Colors.green,
+                                  ),
+                                  title: Text(
+                                    'Account ID',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "${payment['account_id'] ?? ''}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.store,
+                                    color: Colors.blue[900],
+                                  ),
+                                  title: Text(
+                                    'Store Id',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "${payment['store_id'] ?? ''}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.credit_card,
+                                    color: Colors.black,
+                                  ),
+                                  title: Text(
+                                    'Payment type',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "${payment['payment_type'] ?? ''}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.notes,
+                                    color: Colors.grey,
+                                  ),
+                                  title: Text(
+                                    'Note',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "${payment['payment_note'] ?? ''}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.currency_rupee_sharp,
+                                    color: Colors.black,
+                                  ),
+                                  title: Text(
+                                    'Amount',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "₹${payment['payment'] ?? ''}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.phone,
+                                    color: Colors.grey,
+                                  ),
+                                  title: Text(
+                                    'Phone',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "${payment['supplier_phone']}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.smartphone,
+                                    color: Colors.grey,
+                                  ),
+                                  title: Text(
+                                    'Mobile',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "${payment['supplier_mobile']}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.email_outlined,
+                                    color: Colors.grey,
+                                  ),
+                                  title: Text(
+                                    'Email',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w100,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "${payment['supplier_email']}",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: Get.width * 0.246),
+                            ],
+                          ),
+
+                          // if (payment['supplier_mobile'] != null)
+                          //   Text("Mobile: ${payment['supplier_mobile']}"),
+                          // if (payment['supplier_phone'] != null)
+                          //   Text("Phone: ${payment['supplier_phone']}"),
+                          // if (payment['supplier_email'] != null)
+                          //   Text("Email: ${payment['supplier_email']}"),
+                        ],
                       ),
                     );
                   },
