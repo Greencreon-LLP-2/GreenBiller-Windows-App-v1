@@ -205,7 +205,8 @@ class AllPaymentOutPage extends GetView<PaymentController> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      elevation: 5,
+                      elevation: 1,
+
                       child: Column(
                         children: [
                           Row(
