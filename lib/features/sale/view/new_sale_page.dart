@@ -205,7 +205,7 @@ class NewSalePage extends GetView<SalesController> {
                           final totalTableWidth = columnWidths.values.reduce(
                             (a, b) => a + b,
                           );
-
+                          print(totalTableWidth);
                           return SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: SizedBox(
@@ -944,7 +944,6 @@ class NewSalePage extends GetView<SalesController> {
       ),
     );
 
-    
     // Sanitize bill number to ensure valid file name
     final billNumber = controller.saleBillConrtoller.text.isNotEmpty
         ? controller.saleBillConrtoller.text.replaceAll(RegExp(r'[^\w\-]'), '_')
@@ -1012,30 +1011,48 @@ class HeaderRowWidget extends StatelessWidget {
         children: [
           TableRow(
             children: [
-              HeaderCellWidget(text: "#", width: columnWidths['#']!),
-              HeaderCellWidget(text: "Item", width: columnWidths['Item']!),
-              HeaderCellWidget(text: "SKUs", width: columnWidths['SKUs']!),
-              HeaderCellWidget(text: "Qty", width: columnWidths['Qty']!),
-              HeaderCellWidget(text: "Unit", width: columnWidths['Unit']!),
+              HeaderCellWidget(text: "#", width: columnWidths['#'] ?? 50),
+              HeaderCellWidget(
+                text: "Item",
+                width: columnWidths['Item'] ?? 150,
+              ),
+              HeaderCellWidget(
+                text: "Serial No",
+                width: columnWidths['SKUs'] ?? 150,
+              ),
+              HeaderCellWidget(text: "Qty", width: columnWidths['Qty'] ?? 150),
+              HeaderCellWidget(
+                text: "Unit",
+                width: columnWidths['Unit'] ?? 150,
+              ),
               HeaderCellWidget(
                 text: "Price/Unit",
-                width: columnWidths['Price/Unit']!,
+                width: columnWidths['Price/Unit'] ?? 150,
               ),
               HeaderCellWidget(
                 text: "Sale Price",
-                width: columnWidths['Sale Price']!,
+                width: columnWidths['Sale Price'] ?? 150,
               ),
-              HeaderCellWidget(text: "Disc %", width: columnWidths['Disc %']!),
+              HeaderCellWidget(
+                text: "Disc %",
+                width: columnWidths['Disc %'] ?? 150,
+              ),
               HeaderCellWidget(
                 text: "Disc Amt",
-                width: columnWidths['Disc Amt']!,
+                width: columnWidths['Disc Amt'] ?? 150,
               ),
-              HeaderCellWidget(text: "Tax %", width: columnWidths['Tax %']!),
+              HeaderCellWidget(
+                text: "Tax %",
+                width: columnWidths['Tax %'] ?? 150,
+              ),
               HeaderCellWidget(
                 text: "Tax Amt",
-                width: columnWidths['Tax Amt']!,
+                width: columnWidths['Tax Amt'] ?? 150,
               ),
-              HeaderCellWidget(text: "Amount", width: columnWidths['Amount']!),
+              HeaderCellWidget(
+                text: "Amount",
+                width: columnWidths['Amount'] ?? 150,
+              ),
             ],
           ),
         ],
@@ -1062,7 +1079,7 @@ class DataRowWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final itemName = controller.rowFields[index]?['itemName'] ?? '';
-      print('DataRowWidget[$index]: itemName=$itemName');
+
       return Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -1081,7 +1098,7 @@ class DataRowWidget extends StatelessWidget {
             TableRow(
               children: [
                 DataCellWidget(
-                  width: columnWidths['#']!,
+                  width: columnWidths['#'] ?? 150,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -1091,7 +1108,7 @@ class DataRowWidget extends StatelessWidget {
                   ),
                 ),
                 DataCellWidget(
-                  width: columnWidths['Item']!,
+                  width: columnWidths['Item'] ?? 150,
                   child: itemName.isNotEmpty
                       ? Padding(
                           padding: const EdgeInsets.symmetric(
@@ -1108,7 +1125,7 @@ class DataRowWidget extends StatelessWidget {
                       : inputWidget,
                 ),
                 DataCellWidget(
-                  width: columnWidths['SKUs']!,
+                  width: columnWidths['Serial No'] ?? 150,
                   child: ElevatedButton(
                     onPressed: () {
                       controller.ensureTempPurchaseItemsSize(index);
@@ -1159,14 +1176,14 @@ class DataRowWidget extends StatelessWidget {
                           .where((s) => s.trim().isNotEmpty)
                           .length;
                       return Text(
-                        '$skuCount SKU${skuCount == 1 ? '' : 's'}',
+                        '$skuCount Serial No${skuCount == 1 ? '' : 's'}',
                         overflow: TextOverflow.ellipsis,
                       );
                     }),
                   ),
                 ),
                 DataCellWidget(
-                  width: columnWidths['Qty']!,
+                  width: columnWidths['Qty'] ?? 150,
                   child: TextField(
                     controller: controller.quantityControllers[index],
                     keyboardType: TextInputType.number,
@@ -1251,7 +1268,7 @@ class DataRowWidget extends StatelessWidget {
                   ),
                 ),
                 DataCellWidget(
-                  width: columnWidths['Unit']!,
+                  width: columnWidths['Unit'] ?? 150,
                   child: TextField(
                     controller: controller.unitControllers[index],
                     style: const TextStyle(fontSize: 14),
@@ -1302,7 +1319,7 @@ class DataRowWidget extends StatelessWidget {
                   ),
                 ),
                 DataCellWidget(
-                  width: columnWidths['Price/Unit']!,
+                  width: columnWidths['Price/Unit'] ?? 150,
                   child: Focus(
                     onFocusChange: (hasFocus) async {
                       if (!hasFocus &&
@@ -1403,7 +1420,7 @@ class DataRowWidget extends StatelessWidget {
                   ),
                 ),
                 DataCellWidget(
-                  width: columnWidths['Sale Price']!,
+                  width: columnWidths['Sale Price'] ?? 150,
                   child: TextField(
                     controller: controller.salesPriceControllers[index],
                     keyboardType: TextInputType.number,
@@ -1421,7 +1438,7 @@ class DataRowWidget extends StatelessWidget {
                   ),
                 ),
                 DataCellWidget(
-                  width: columnWidths['Disc %']!,
+                  width: columnWidths['Disc %'] ?? 150,
                   child: TextField(
                     controller: controller.discountPercentControllers[index],
                     keyboardType: TextInputType.number,
@@ -1492,7 +1509,7 @@ class DataRowWidget extends StatelessWidget {
                   ),
                 ),
                 DataCellWidget(
-                  width: columnWidths['Disc Amt']!,
+                  width: columnWidths['Disc Amt'] ?? 150,
                   child: TextField(
                     controller: controller.discountAmountControllers[index],
                     keyboardType: TextInputType.number,

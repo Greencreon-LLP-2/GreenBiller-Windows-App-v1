@@ -913,7 +913,7 @@ class SalesController extends GetxController {
       }
 
       await _processItemSales(saleId);
-      await _processPayment(saleId);
+      await clear(saleId);
       await saveCurrentState();
 
       // Show success message before clearing fields
@@ -936,11 +936,10 @@ class SalesController extends GetxController {
     } finally {
       isLoadingFlag.value = false;
     }
-
+    generateBillNumber();
     // Clear fields and generate new bill number in a separate try-catch
     try {
       clearFieldsAfterSave();
-      generateBillNumber();
       await saveCurrentState();
     } catch (e) {
       debugPrint('Error during field clearing: $e');
@@ -1065,7 +1064,9 @@ class SalesController extends GetxController {
           ? 'Walk-in Customer'
           : customerMap[customerId.value]!,
       paymentMethod: salesType.value,
-      paymentAmount: paidAmountController.text,
+      paymentAmount: paidAmountController.text.isNotEmpty
+          ? paidAmountController.text
+          : '0',
       paymentDate: getCurrentDateFormatted(),
       paymentNote: salesNoteController.text,
       accountId: "",

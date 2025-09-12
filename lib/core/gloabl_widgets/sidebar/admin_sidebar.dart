@@ -432,6 +432,7 @@ class AdminSidebar extends StatelessWidget {
                         AppRoutes.viewAllsalesOrders,
                         AppRoutes.viewAllsalesReturns,
                         AppRoutes.allPaymentInView,
+                        AppRoutes.viewQuotation,
                       ].contains(currentRoute),
                       children: [
                         _buildNavTile(
@@ -458,6 +459,14 @@ class AdminSidebar extends StatelessWidget {
                           currentRoute: currentRoute,
                           onTap: () =>
                               Get.toNamed(AppRoutes.viewAllsalesReturns),
+                          indent: 16,
+                        ),
+                        _buildNavTile(
+                          title: "Quotations",
+                          icon: Icons.payments_outlined,
+                          route: AppRoutes.viewQuotation,
+                          currentRoute: currentRoute,
+                          onTap: () => Get.toNamed(AppRoutes.viewQuotation),
                           indent: 16,
                         ),
                         _buildNavTile(

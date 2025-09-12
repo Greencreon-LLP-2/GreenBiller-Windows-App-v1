@@ -11,6 +11,7 @@
         "barcode_widget",
         "csv",
         "dio",
+        "editable",
         "file_picker",
         "fl_chart",
         "flutter",
@@ -128,6 +129,13 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "editable",
+      "version": "2.0.0",
+      "dependencies": [
+        "flutter"
       ]
     },
     {

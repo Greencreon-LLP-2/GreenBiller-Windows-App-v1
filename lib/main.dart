@@ -60,12 +60,15 @@ import 'package:greenbiller/features/reports/view/report_page.dart';
 import 'package:greenbiller/features/reports/view/sale_by_item_report_page.dart';
 import 'package:greenbiller/features/reports/view/sales_by_customer_page.dart';
 import 'package:greenbiller/features/reports/view/sales_summary_page.dart';
+import 'package:greenbiller/features/sale/controller/quatation_controller.dart';
 import 'package:greenbiller/features/sale/controller/sales_create_controller.dart';
 import 'package:greenbiller/features/sale/controller/sales_manage_controller.dart';
 import 'package:greenbiller/features/sale/controller/sales_order_controller.dart';
 import 'package:greenbiller/features/sale/view/add_sales_order_page.dart';
 import 'package:greenbiller/features/sale/view/credit_note_page.dart';
 import 'package:greenbiller/features/sale/view/new_sale_page.dart';
+import 'package:greenbiller/features/sale/view/quotation_create_page.dart';
+import 'package:greenbiller/features/sale/view/quotation_orders_page.dart';
 import 'package:greenbiller/features/sale/view/sales_order_page.dart';
 import 'package:greenbiller/features/sale/view/sales_returns_view_page.dart';
 import 'package:greenbiller/features/sale/view/sales_view_page.dart';
@@ -451,6 +454,20 @@ class MyApp extends StatelessWidget {
           page: () => StoreSettingsPage(),
           binding: BindingsBuilder(() {
             Get.put(StoreSettingsController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.viewQuotation,
+          page: () => QuotationOrdersPage(),
+          binding: BindingsBuilder(() {
+            Get.put(QuotationController());
+          }),
+        ),
+        GetPage(
+          name: AppRoutes.createQuotation,
+          page: () => QuotationCreatePage(),
+          binding: BindingsBuilder(() {
+            Get.put(QuotationController());
           }),
         ),
       ],
