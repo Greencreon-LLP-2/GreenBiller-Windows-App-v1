@@ -208,7 +208,7 @@ class StoreController extends GetxController
     try {
       final formData = dio.FormData.fromMap({
         "user_id": userId.value.toString(),
-        "store_code": "store-${DateTime.now().millisecondsSinceEpoch}",
+        "store_code": "ST-${DateTime.now().millisecondsSinceEpoch}",
         "store_name": storeNameController.text,
         "website": storeWebsiteController.text,
         "slug": generateSlug(storeNameController.text),
@@ -539,13 +539,7 @@ class StoreController extends GetxController
       final response = await dioClient.dio.put(
         "$editWarehouseUrl/$warehouseId",
         data: payload,
-        options: dio.Options(
-          headers: {
-            'Authorization':
-                'Bearer ${authController.user.value?.accessToken ?? ''}',
-            'Content-Type': 'application/json',
-          },
-        ),
+        
       );
 
       if (response.statusCode == 200) {

@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:greenbiller/core/api_constants.dart';
+import 'package:greenbiller/core/utils/subscription_util.dart';
 import 'package:greenbiller/features/items/model/item_model.dart';
 import 'package:greenbiller/features/sale/controller/sales_create_controller.dart';
 import 'package:greenbiller/features/sale/model/temp_purchase_item.dart';
@@ -8,6 +12,7 @@ import 'package:greenbiller/features/sale/view/widgets/sales_top_section_widget.
 import 'package:greenbiller/features/sale/view/widgets/sku_edit_dialog.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/widgets.dart' as pw;
 
 class NewSalePage extends GetView<SalesController> {
@@ -205,7 +210,7 @@ class NewSalePage extends GetView<SalesController> {
                           final totalTableWidth = columnWidths.values.reduce(
                             (a, b) => a + b,
                           );
-                          print(totalTableWidth);
+
                           return SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: SizedBox(
@@ -421,14 +426,34 @@ class NewSalePage extends GetView<SalesController> {
     });
   }
 
+  Future<pw.Font> loadFont() async {
+    final fontData = await rootBundle.load(systemWideFontPath);
+
+    return pw.Font.ttf(fontData);
+  }
+
   Future<void> printBill(
     BuildContext context,
     dynamic storeData,
     dynamic customerData,
   ) async {
+    final font = await loadFont();
     final pdf = pw.Document();
     final defaultPrinter = storeData?['default_printer'] ?? 'a4';
     final isA4 = defaultPrinter == 'a4';
+
+    final user = controller.authController.user.value;
+    final isFreeVersion = !SubscriptionUtil.hasValidSubscription(user);
+
+    // Load logo for free version
+    final logoImage = isFreeVersion
+        ? pw.Container(
+            height: 60,
+            child: controller.appLogoBytes.value != null
+                ? pw.Image(pw.MemoryImage(controller.appLogoBytes.value!))
+                : null,
+          )
+        : null;
 
     // Helper function to get store data with fallback
     String getStoreValue(String key, {String fallback = 'N/A'}) {
@@ -450,6 +475,7 @@ class NewSalePage extends GetView<SalesController> {
           child: pw.Text(
             '#',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -461,6 +487,7 @@ class NewSalePage extends GetView<SalesController> {
           child: pw.Text(
             'Item',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -472,6 +499,7 @@ class NewSalePage extends GetView<SalesController> {
           child: pw.Text(
             'SKU',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -483,6 +511,7 @@ class NewSalePage extends GetView<SalesController> {
           child: pw.Text(
             'Qty',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -494,6 +523,7 @@ class NewSalePage extends GetView<SalesController> {
           child: pw.Text(
             'Price',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -505,6 +535,7 @@ class NewSalePage extends GetView<SalesController> {
           child: pw.Text(
             'Disc',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -516,6 +547,7 @@ class NewSalePage extends GetView<SalesController> {
           child: pw.Text(
             'Tax',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -527,6 +559,7 @@ class NewSalePage extends GetView<SalesController> {
           child: pw.Text(
             'Total',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -552,7 +585,7 @@ class NewSalePage extends GetView<SalesController> {
                 child: pw.Text(
                   index.toString(),
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                 ),
               ),
               pw.Padding(
@@ -563,7 +596,7 @@ class NewSalePage extends GetView<SalesController> {
                 child: pw.Text(
                   row['itemName']?.toString() ?? 'Unknown Item',
                   textAlign: pw.TextAlign.left,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                   maxLines: 2,
                 ),
               ),
@@ -575,7 +608,7 @@ class NewSalePage extends GetView<SalesController> {
                 child: pw.Text(
                   row['batchNo']?.toString() ?? '-',
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                 ),
               ),
               pw.Padding(
@@ -586,7 +619,7 @@ class NewSalePage extends GetView<SalesController> {
                 child: pw.Text(
                   row['quantity']?.toString() ?? '0',
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                 ),
               ),
               pw.Padding(
@@ -597,7 +630,7 @@ class NewSalePage extends GetView<SalesController> {
                 child: pw.Text(
                   '${getStoreValue('currency_symbol')}${double.tryParse(row['price']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                 ),
               ),
               pw.Padding(
@@ -608,7 +641,7 @@ class NewSalePage extends GetView<SalesController> {
                 child: pw.Text(
                   '${getStoreValue('currency_symbol')}${double.tryParse(row['discountAmount']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                 ),
               ),
               pw.Padding(
@@ -619,7 +652,7 @@ class NewSalePage extends GetView<SalesController> {
                 child: pw.Text(
                   '${getStoreValue('currency_symbol')}${double.tryParse(row['taxAmount']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                 ),
               ),
               pw.Padding(
@@ -630,7 +663,7 @@ class NewSalePage extends GetView<SalesController> {
                 child: pw.Text(
                   '${getStoreValue('currency_symbol')}${double.tryParse(row['amount']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                 ),
               ),
             ],
@@ -643,10 +676,13 @@ class NewSalePage extends GetView<SalesController> {
       pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text('Subtotal:', style: pw.TextStyle(fontSize: isA4 ? 12 : 7)),
+          pw.Text(
+            'Subtotal:',
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
+          ),
           pw.Text(
             '${getStoreValue('currency_symbol')}${controller.tempSubTotal.value.toStringAsFixed(2)}',
-            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
           ),
         ],
       ),
@@ -654,10 +690,13 @@ class NewSalePage extends GetView<SalesController> {
       pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text('Total Tax:', style: pw.TextStyle(fontSize: isA4 ? 12 : 7)),
+          pw.Text(
+            'Total Tax:',
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
+          ),
           pw.Text(
             '${getStoreValue('currency_symbol')}${controller.tempTotalTax.value.toStringAsFixed(2)}',
-            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
           ),
         ],
       ),
@@ -667,11 +706,11 @@ class NewSalePage extends GetView<SalesController> {
         children: [
           pw.Text(
             'Total Discount:',
-            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
           ),
           pw.Text(
             '${getStoreValue('currency_symbol')}${controller.tempTotalDiscount.value.toStringAsFixed(2)}',
-            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
           ),
         ],
       ),
@@ -681,11 +720,11 @@ class NewSalePage extends GetView<SalesController> {
         children: [
           pw.Text(
             'Other Charges:',
-            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
           ),
           pw.Text(
             '${getStoreValue('currency_symbol')}${controller.otherChargesController.text.isNotEmpty ? double.tryParse(controller.otherChargesController.text)?.toStringAsFixed(2) ?? '0.00' : '0.00'}',
-            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
           ),
         ],
       ),
@@ -696,6 +735,7 @@ class NewSalePage extends GetView<SalesController> {
           pw.Text(
             'Grand Total:',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -703,6 +743,7 @@ class NewSalePage extends GetView<SalesController> {
           pw.Text(
             '${getStoreValue('currency_symbol')}${controller.grandTotal.value.toStringAsFixed(2)}',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -713,10 +754,13 @@ class NewSalePage extends GetView<SalesController> {
       pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text('Paid Amount:', style: pw.TextStyle(fontSize: isA4 ? 12 : 7)),
+          pw.Text(
+            'Paid Amount:',
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
+          ),
           pw.Text(
             '${getStoreValue('currency_symbol')}${controller.paidAmountController.text.isNotEmpty ? double.tryParse(controller.paidAmountController.text)?.toStringAsFixed(2) ?? '0.00' : '0.00'}',
-            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
           ),
         ],
       ),
@@ -724,14 +768,107 @@ class NewSalePage extends GetView<SalesController> {
       pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text('Balance:', style: pw.TextStyle(fontSize: isA4 ? 12 : 7)),
+          pw.Text(
+            'Balance:',
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
+          ),
           pw.Text(
             '${getStoreValue('currency_symbol')}${controller.balance.value.toStringAsFixed(2)}',
-            style: pw.TextStyle(fontSize: isA4 ? 12 : 7),
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
           ),
         ],
       ),
     ];
+
+    // Free version footer content
+    pw.Widget buildFreeVersionFooter() {
+      return pw.Column(
+        children: [
+          if (isA4) ...[
+            pw.SizedBox(height: 20),
+            pw.Divider(thickness: 1),
+            pw.SizedBox(height: 10),
+          ] else ...[
+            pw.SizedBox(height: 5),
+            pw.Divider(thickness: 0.5),
+            pw.SizedBox(height: 3),
+          ],
+          if (isFreeVersion) ...[
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                if (logoImage != null)
+                  pw.Container(
+                    width: isA4 ? 80 : 40,
+                    height: isA4 ? 30 : 15,
+                    child: logoImage,
+                  ),
+                pw.Expanded(
+                  child: pw.Container(
+                    padding: pw.EdgeInsets.only(right: isA4 ? 10 : 5),
+                    child: pw.Text(
+                      'This bill is generated by greenbiller.in',
+                      style: pw.TextStyle(
+                        font: font,
+                        fontSize: isA4 ? 10 : 6,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.grey800,
+                        fontStyle: pw.FontStyle.italic,
+                      ),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          pw.SizedBox(height: isA4 ? 10 : 5),
+          pw.Container(
+            width: double.infinity,
+            child: pw.Text(
+              'Thank you for your purchase!',
+              style: pw.TextStyle(
+                font: font,
+                fontSize: isA4 ? 12 : 8,
+                fontWeight: pw.FontWeight.bold,
+              ),
+              textAlign: pw.TextAlign.center,
+            ),
+          ),
+          if (isA4) ...[
+            pw.SizedBox(height: 10),
+            pw.Container(
+              width: double.infinity,
+              child: pw.Text(
+                'Terms & Conditions: Payment is due upon receipt. Please contact us at ${getStoreValue('store_email')} for any inquiries.',
+                style: pw.TextStyle(font: font, fontSize: 10),
+                textAlign: pw.TextAlign.center,
+              ),
+            ),
+            if (isFreeVersion) ...[
+              pw.SizedBox(height: 5),
+              pw.Container(
+                width: double.infinity,
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.grey400, width: 1),
+                ),
+                padding: const pw.EdgeInsets.all(4),
+                child: pw.Text(
+                  'Upgrade to Pro for custom branding and remove this footer!',
+                  style: pw.TextStyle(
+                    font: font,
+                    fontSize: 8,
+                    color: PdfColors.grey600,
+                    fontStyle: pw.FontStyle.italic,
+                  ),
+                  textAlign: pw.TextAlign.center,
+                ),
+              ),
+            ],
+          ],
+        ],
+      );
+    }
 
     pdf.addPage(
       pw.Page(
@@ -759,6 +896,7 @@ class NewSalePage extends GetView<SalesController> {
                                     : 'Your Store Name',
                               ),
                               style: pw.TextStyle(
+                                font: font,
                                 fontSize: 20,
                                 fontWeight: pw.FontWeight.bold,
                               ),
@@ -766,23 +904,23 @@ class NewSalePage extends GetView<SalesController> {
                             pw.SizedBox(height: 8),
                             pw.Text(
                               'Address: ${getStoreValue('store_address')}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               '${getStoreValue('store_city')}${getStoreValue('store_state').isNotEmpty ? ', ${getStoreValue('store_state')}' : ''}${getStoreValue('store_country').isNotEmpty ? ', ${getStoreValue('store_country')}' : ''}${getStoreValue('store_postal_code').isNotEmpty ? ' ${getStoreValue('store_postal_code')}' : ''}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               'Phone: ${getStoreValue('store_phone')}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               'Email: ${getStoreValue('store_email')}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               'Tax Number: ${getStoreValue('tax_number')}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                           ],
                         ),
@@ -792,6 +930,7 @@ class NewSalePage extends GetView<SalesController> {
                             pw.Text(
                               'Invoice',
                               style: pw.TextStyle(
+                                font: font,
                                 fontSize: 24,
                                 fontWeight: pw.FontWeight.bold,
                               ),
@@ -799,23 +938,25 @@ class NewSalePage extends GetView<SalesController> {
                             pw.SizedBox(height: 8),
                             pw.Text(
                               'Bill No: ${controller.saleBillConrtoller.text}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
-                              'Date: ${controller.getCurrentDateFormatted()}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              'Date: ${controller.saleDateController.text}',
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
-                              'Customer: ${controller.customerController.text.isNotEmpty ? controller.customerController.text : 'Walk-in Customer'}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              'Customer: ${controller.customerController.text.isNotEmpty ? controller.customerController.text : 'Walk-in Customer'} | '
+                              'Type: ${controller.selectedCustomerType.value.isNotEmpty ? controller.selectedCustomerType.value : 'None'} | '
+                              'GST: ${controller.gstController.text.isNotEmpty ? controller.gstController.text : 'N/A'}',
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               'Owner: ${getStoreValue('owner_name')}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               'Owner Email: ${getStoreValue('owner_email')}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                           ],
                         ),
@@ -823,11 +964,11 @@ class NewSalePage extends GetView<SalesController> {
                     ),
                     pw.SizedBox(height: 20),
                     pw.Divider(thickness: 1),
-
                     // A4 Itemized List
                     pw.Text(
                       'Items',
                       style: pw.TextStyle(
+                        font: font,
                         fontSize: 16,
                         fontWeight: pw.FontWeight.bold,
                       ),
@@ -849,27 +990,13 @@ class NewSalePage extends GetView<SalesController> {
                     ),
                     pw.SizedBox(height: 20),
                     pw.Divider(thickness: 1),
-
                     // A4 Totals
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: totalsSection,
                     ),
-                    pw.SizedBox(height: 20),
-                    pw.Divider(thickness: 1),
-
                     // A4 Footer
-                    pw.Text(
-                      'Thank you for your purchase!',
-                      style: const pw.TextStyle(fontSize: 12),
-                      textAlign: pw.TextAlign.center,
-                    ),
-                    pw.SizedBox(height: 10),
-                    pw.Text(
-                      'Terms & Conditions: Payment is due upon receipt. Please contact us at ${getStoreValue('store_email')} for any inquiries.',
-                      style: const pw.TextStyle(fontSize: 10),
-                      textAlign: pw.TextAlign.center,
-                    ),
+                    buildFreeVersionFooter(),
                   ],
                 )
               : pw.Column(
@@ -881,30 +1008,31 @@ class NewSalePage extends GetView<SalesController> {
                           ? controller.storeController.text
                           : 'Your Store Name',
                       style: pw.TextStyle(
+                        font: font,
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
                       ),
                     ),
                     pw.SizedBox(height: 2),
                     pw.Text(
-                      'Date: ${controller.getCurrentDateFormatted()}',
-                      style: const pw.TextStyle(fontSize: 7),
+                      'Date: ${controller.saleDateController.text}',
+                      style: pw.TextStyle(font: font, fontSize: 7),
                     ),
                     pw.Text(
                       'Customer: ${controller.customerController.text.isNotEmpty ? controller.customerController.text : 'Walk-in Customer'}',
-                      style: const pw.TextStyle(fontSize: 7),
+                      style: pw.TextStyle(font: font, fontSize: 7),
                     ),
                     pw.Text(
                       'Bill No: ${controller.saleBillConrtoller.text}',
-                      style: const pw.TextStyle(fontSize: 7),
+                      style: pw.TextStyle(font: font, fontSize: 7),
                     ),
                     pw.SizedBox(height: 5),
                     pw.Divider(thickness: 0.5),
-
                     // Thermal Itemized List
                     pw.Text(
                       'Items',
                       style: pw.TextStyle(
+                        font: font,
                         fontSize: 7,
                         fontWeight: pw.FontWeight.bold,
                       ),
@@ -926,18 +1054,10 @@ class NewSalePage extends GetView<SalesController> {
                     ),
                     pw.SizedBox(height: 5),
                     pw.Divider(thickness: 0.5),
-
                     // Thermal Totals
                     ...totalsSection,
-                    pw.SizedBox(height: 5),
-                    pw.Divider(thickness: 0.5),
-
                     // Thermal Footer
-                    pw.Text(
-                      'Thank you for your purchase!',
-                      style: const pw.TextStyle(fontSize: 8),
-                      textAlign: pw.TextAlign.center,
-                    ),
+                    buildFreeVersionFooter(),
                   ],
                 );
         },
@@ -1126,60 +1246,74 @@ class DataRowWidget extends StatelessWidget {
                 ),
                 DataCellWidget(
                   width: columnWidths['Serial No'] ?? 150,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      controller.ensureTempPurchaseItemsSize(index);
-                      Get.dialog(
-                        SkuEditDialog(
-                          item: controller.tempPurchaseItems[index],
-                          onSave: () {
-                            controller.rowFields[index] = {
-                              ...?controller.rowFields[index],
-                              'batchNo':
-                                  controller.tempPurchaseItems[index].batchNo,
-                              'quantity': controller
-                                  .tempPurchaseItems[index]
-                                  .purchaseQty,
-                              'serialNumbers': controller
-                                  .tempPurchaseItems[index]
-                                  .serialNumbers,
-                              'salesPrice':
-                                  controller.tempPurchaseItems[index].totalCost,
-                            };
-                            controller.batchNoControllers[index]?.text =
-                                controller.tempPurchaseItems[index].batchNo;
-                            controller.quantityControllers[index]?.text =
-                                controller.tempPurchaseItems[index].purchaseQty;
-                            controller.salesPriceControllers[index]?.text =
-                                controller.tempPurchaseItems[index].totalCost;
-                            controller.recalculateGrandTotal();
-                            controller.recalculateTotalDiscount();
-                            controller.rowFields.refresh();
-                          },
-                        ),
-                        barrierDismissible: true,
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
+                  child: Center(
+                    child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
                         vertical: 12,
                       ),
-                      minimumSize: const Size(0, 0),
-                      textStyle: const TextStyle(fontSize: 14),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          controller.ensureTempPurchaseItemsSize(index);
+                          Get.dialog(
+                            SkuEditDialog(
+                              item: controller.tempPurchaseItems[index],
+                              onSave: () {
+                                controller.rowFields[index] = {
+                                  ...?controller.rowFields[index],
+                                  'batchNo': controller
+                                      .tempPurchaseItems[index]
+                                      .batchNo,
+                                  'quantity': controller
+                                      .tempPurchaseItems[index]
+                                      .purchaseQty,
+                                  'serialNumbers': controller
+                                      .tempPurchaseItems[index]
+                                      .serialNumbers,
+                                  'salesPrice': controller
+                                      .tempPurchaseItems[index]
+                                      .totalCost,
+                                };
+                                controller.batchNoControllers[index]?.text =
+                                    controller.tempPurchaseItems[index].batchNo;
+                                controller.quantityControllers[index]?.text =
+                                    controller
+                                        .tempPurchaseItems[index]
+                                        .purchaseQty;
+                                controller.salesPriceControllers[index]?.text =
+                                    controller
+                                        .tempPurchaseItems[index]
+                                        .totalCost;
+                                controller.recalculateGrandTotal();
+                                controller.recalculateTotalDiscount();
+                                controller.rowFields.refresh();
+                              },
+                            ),
+                            barrierDismissible: true,
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 12,
+                          ),
+                          minimumSize: const Size(0, 0),
+                          textStyle: const TextStyle(fontSize: 14),
+                        ),
+                        child: Obx(() {
+                          final batchNo =
+                              controller.rowFields[index]?['batchNo'] ?? '';
+                          final skuCount = batchNo
+                              .split(',')
+                              .where((s) => s.trim().isNotEmpty)
+                              .length;
+                          return Text(
+                            '$skuCount Serial No${skuCount == 1 ? '' : 's'}',
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        }),
+                      ),
                     ),
-                    child: Obx(() {
-                      final batchNo =
-                          controller.rowFields[index]?['batchNo'] ?? '';
-                      final skuCount = batchNo
-                          .split(',')
-                          .where((s) => s.trim().isNotEmpty)
-                          .length;
-                      return Text(
-                        '$skuCount Serial No${skuCount == 1 ? '' : 's'}',
-                        overflow: TextOverflow.ellipsis,
-                      );
-                    }),
                   ),
                 ),
                 DataCellWidget(

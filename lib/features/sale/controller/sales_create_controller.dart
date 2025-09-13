@@ -1,8 +1,12 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
+import 'package:greenbiller/core/gloabl_widgets/alerts/app_snackbar.dart';
 import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
 import 'package:greenbiller/features/items/model/item_model.dart';
@@ -14,11 +18,11 @@ class SalesController extends GetxController {
   // Authentication and dependencies
   late final DioClient _dioClient;
   late final CommonApiFunctionsController _commonApi;
-  late final AuthController _authController;
+  late final AuthController authController;
   late final DropdownController storeDropdownController;
   final accessToken = RxnString();
   final userId = 0.obs;
-
+  final Rx<Uint8List?> appLogoBytes = Rx<Uint8List?>(null);
   // Loading states
   final isLoading = false.obs;
   final isLoadingStores = false.obs;
@@ -41,7 +45,7 @@ class SalesController extends GetxController {
   final balance = 0.0.obs;
   final rowCount = 1.obs;
   final taxModel = Rxn<TaxModel>();
-
+  final customerType = false.obs;
   // Data collections
   final selectedItem = Rxn<Item>();
   final tempPurchaseItems = <TempPurchaseItem>[].obs;
@@ -49,8 +53,11 @@ class SalesController extends GetxController {
   final rowFields = <int, Map<String, String>>{}.obs;
   final newSalesPrices = <int, String>{}.obs;
   final priceOldValues = <int, String>{}.obs;
-
+  final RxString selectedCustomerType = 'None'.obs; // "B2B", "B2C", "None"
+  final RxBool showGstField = false.obs;
+  final RxBool isGstFieldEditable = false.obs;
   // Dropdown Data
+
   final RxMap<String, String> storeMap = <String, String>{}.obs;
   final RxList<dynamic> actualStoreData = <dynamic>[].obs;
   final RxMap<String, String> warehouseMap = <String, String>{}.obs;
@@ -61,11 +68,13 @@ class SalesController extends GetxController {
   final RxString selectedStoreId = ''.obs;
   final RxString selectedWarehouseId = ''.obs;
   final RxString selectedCustomerId = ''.obs;
+
   late TextEditingController warehouseController = TextEditingController();
   late TextEditingController customerController = TextEditingController();
   late TextEditingController saleBillConrtoller = TextEditingController();
   late TextEditingController storeController = TextEditingController();
-
+  late TextEditingController saleDateController = TextEditingController();
+  late TextEditingController referenceNocontroller = TextEditingController();
   // Input controllers
   final quantityControllers = <int, TextEditingController>{}.obs;
   final priceControllers = <int, TextEditingController>{}.obs;
@@ -80,10 +89,14 @@ class SalesController extends GetxController {
   final otherChargesController = TextEditingController();
   final paidAmountController = TextEditingController();
   final salesNoteController = TextEditingController();
+  final gstController = TextEditingController();
+
   final serialNumbersControllers = <int, TextEditingController>{}.obs;
   final taxAmountControllers = <int, TextEditingController>{}.obs;
   final amountControllers = <int, TextEditingController>{}.obs;
-
+  final gstRegex = RegExp(
+    r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$',
+  );
   // Hive storage
   Box? _settingsBox;
 
@@ -113,18 +126,20 @@ class SalesController extends GetxController {
 
   void generateBillNumber() {
     String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+
     saleBillConrtoller.text =
-        'SALE${timestamp.substring(timestamp.length - 6)}';
+        'SALE-${timestamp.substring(timestamp.length - 8)}';
   }
 
   // Initialize dependencies
   void _initializeDependencies() {
     _dioClient = DioClient();
     _commonApi = CommonApiFunctionsController();
-    _authController = Get.find<AuthController>();
+    authController = Get.find<AuthController>();
     storeDropdownController = Get.find<DropdownController>();
-    userId.value = _authController.user.value?.userId ?? 0;
-    accessToken.value = _authController.user.value?.accessToken;
+    userId.value = authController.user.value?.userId ?? 0;
+    accessToken.value = authController.user.value?.accessToken;
+    _getAppLogo();
   }
 
   // Initialize Hive box
@@ -133,6 +148,24 @@ class SalesController extends GetxController {
       _settingsBox = await Hive.openBox('settings');
     } catch (e) {
       debugPrint('Error opening Hive box: $e');
+    }
+  }
+
+  Future<void> _getAppLogo() async {
+    try {
+      final response = await _dioClient.dio.get<List<int>>(
+        appUrl,
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        appLogoBytes.value = Uint8List.fromList(response.data!);
+      } else {
+        appLogoBytes.value = null; // fallback handling later
+      }
+    } catch (e) {
+      // log or handle error
+      appLogoBytes.value = null;
     }
   }
 
@@ -278,12 +311,16 @@ class SalesController extends GetxController {
   void onStoreSelected(String? storeName) async {
     if (storeName != null && storeMap.containsKey(storeName)) {
       selectedStoreId.value = storeMap[storeName]!;
+
       storeController.text = storeName;
       selectedWarehouseId.value = '';
       selectedCustomerId.value = '';
+      showGstField.value = false;
+      selectedCustomerType.value = 'None';
       warehouseMap.clear();
       customerMap.clear();
       itemsList.clear();
+      generateBillNumber();
       await fetchWarehouses(selectedStoreId.value);
       await fetchCustomers(selectedStoreId.value);
       await fetchItems(selectedStoreId.value);
@@ -298,7 +335,7 @@ class SalesController extends GetxController {
     }
   }
 
-  void onCustomerSelected(String? customerName) async {
+  void onCustomerSelected(String? customerName) {
     if (customerName != null && customerMap.containsKey(customerName)) {
       selectedCustomerId.value = customerMap[customerName]!;
       customerId.value = customerName;
@@ -308,74 +345,35 @@ class SalesController extends GetxController {
       customerId.value = customerName;
       customerController.text = customerName ?? '';
     }
+
+    // Find selected customer data
+    final selectedCustomer = actualCustomerData.firstWhereOrNull(
+      (c) => c['id'].toString() == selectedCustomerId.value,
+    );
+
+    // Check GST
+    if (selectedCustomer != null &&
+        selectedCustomer['gstin'] != null &&
+        (selectedCustomer['gstin'] as String).isNotEmpty) {
+      selectedCustomerType.value = 'B2B';
+      showGstField.value = true;
+      isGstFieldEditable.value = false;
+      gstController.text = selectedCustomer['gstin'];
+    } else {
+      selectedCustomerType.value = ''; // force user to pick
+      showGstField.value = false;
+      isGstFieldEditable.value = true;
+      gstController.clear();
+    }
   }
 
-  // // Load saved state from Hive
-  // Future<void> loadSavedState() async {
-  //   try {
-  //     final savedStoreId = _settingsBox?.get('storeId') as String?;
-  //     final savedCustomerId = _settingsBox?.get('customerId') as String?;
-  //     final savedWarehouseId = _settingsBox?.get('warehouseId') as String?;
-  //     final savedBillNo = _settingsBox?.get('billNo') as String?;
-
-  //     saleBillConrtoller.text = savedBillNo ?? '';
-
-  //     if (savedStoreId != null && storeMap.containsValue(savedStoreId)) {
-  //       storeId.value = storeMap.entries
-  //           .firstWhere(
-  //             (entry) => entry.value == savedStoreId,
-  //             orElse: () => MapEntry('', ''),
-  //           )
-  //           .key;
-  //     }
-
-  //     if (savedWarehouseId != null &&
-  //         warehouseMap.containsValue(savedWarehouseId)) {
-  //       selectedWarehouse.value = warehouseMap.entries
-  //           .firstWhere(
-  //             (entry) => entry.value == savedWarehouseId,
-  //             orElse: () => MapEntry('', ''),
-  //           )
-  //           .key;
-  //       selectedWarehouseId.value = savedWarehouseId;
-  //     }
-
-  //     if (savedCustomerId != null) {
-  //       if (savedCustomerId == "Walk-in Customer") {
-  //         customerId.value = "Walk-in Customer";
-  //         selectedCustomerId.value = "Walk-in Customer";
-  //       } else if (customerMap.containsValue(savedCustomerId)) {
-  //         customerId.value = customerMap.entries
-  //             .firstWhere(
-  //               (entry) => entry.value == savedCustomerId,
-  //               orElse: () => MapEntry('', ''),
-  //             )
-  //             .key;
-  //         selectedCustomerId.value = savedCustomerId;
-  //       }
-  //     }
-  //   } catch (e) {
-  //     debugPrint('Error loading state from Hive: $e');
-  //   }
-  // }
-
-  // Save current state to Hive
-  Future<void> saveCurrentState() async {
-    try {
-      await _settingsBox?.put('storeId', storeMap[storeId.value] ?? '');
-      await _settingsBox?.put(
-        'customerId',
-        customerId.value == "Walk-in Customer"
-            ? "Walk-in Customer"
-            : customerMap[customerId.value] ?? '',
-      );
-      await _settingsBox?.put(
-        'warehouseId',
-        warehouseMap[selectedWarehouse.value] ?? '',
-      );
-      await _settingsBox?.put('billNo', saleBillConrtoller.text ?? '');
-    } catch (e) {
-      debugPrint('Error saving state to Hive: $e');
+  void onCustomerTypeChanged(String? type) {
+    selectedCustomerType.value = type ?? '';
+    if (selectedCustomerType.value == 'B2B') {
+      showGstField.value = true;
+    } else {
+      showGstField.value = false;
+      gstController.clear();
     }
   }
 
@@ -500,9 +498,8 @@ class SalesController extends GetxController {
   }
 
   // Format current date
-  String getCurrentDateFormatted() {
-    final now = DateTime.now();
-    return '${now.month.toString().padLeft(2, '0')}/${now.day.toString().padLeft(2, '0')}/${now.year}';
+  void setBillDate(DateTime date) {
+    saleDateController.text = date.toString().split(' ')[0];
   }
 
   void onItemSelected(Item item, int rowIndex) {
@@ -757,6 +754,8 @@ class SalesController extends GetxController {
     required String salesNote,
     required String paidAmount,
     required String orderId,
+    required String customerNewType,
+    required String customerGst,
   }) async {
     try {
       final response = await _dioClient.dio.post(
@@ -774,6 +773,8 @@ class SalesController extends GetxController {
           "sales_note": salesNote,
           "paid_amount": paidAmount,
           "order_id": orderId,
+          "customer_gst": customerGst,
+          "customer_type": customerNewType,
           "status": "1",
           "app_order": "1",
           "tax_report": "0",
@@ -883,6 +884,36 @@ class SalesController extends GetxController {
       );
       return;
     }
+    if (showGstField.value) {
+      if (gstController.text.isEmpty) {
+        AppSnackbar.show(
+          color: Colors.red,
+          title: "Error",
+          message: "GST Number is required for B2B customers.",
+          icon: Icons.error,
+        );
+        return;
+      } else if (!gstRegex.hasMatch(gstController.text)) {
+        AppSnackbar.show(
+          color: Colors.red,
+          title: "Error",
+          message: "Invalid GST Number format.",
+          icon: Icons.error,
+        );
+        return;
+      }
+    }
+
+    // Validate Sale Date
+    if (saleDateController.text.isEmpty) {
+      AppSnackbar.show(
+        color: Colors.red,
+        title: "Error",
+        message: "Sale Date is required.",
+        icon: Icons.error,
+      );
+      return;
+    }
 
     final isLoadingFlag = print ? isLoadingSavePrint : isLoadingSave;
     isLoadingFlag.value = true;
@@ -914,7 +945,6 @@ class SalesController extends GetxController {
 
       await _processItemSales(saleId);
       await _processPayment(saleId);
-      await saveCurrentState();
 
       // Show success message before clearing fields
       Get.snackbar(
@@ -940,7 +970,6 @@ class SalesController extends GetxController {
     // Clear fields and generate new bill number in a separate try-catch
     try {
       clearFieldsAfterSave();
-      await saveCurrentState();
     } catch (e) {
       debugPrint('Error during field clearing: $e');
       // Do not show error snackbar to avoid overriding success message
@@ -1007,8 +1036,8 @@ class SalesController extends GetxController {
     return await createSales(
       storeId: storeMap[storeId.value]!,
       warehouseId: warehouseMap[selectedWarehouse.value]!,
-      referenceNo: saleBillConrtoller.text.trim(),
-      salesDate: getCurrentDateFormatted(),
+      referenceNo: referenceNocontroller.text.trim(),
+      salesDate: saleDateController.text,
       customerId: customerId.value == 'Walk-in Customer'
           ? 'Walk-in Customer'
           : customerMap[customerId.value]!,
@@ -1019,6 +1048,8 @@ class SalesController extends GetxController {
       salesNote: salesNoteController.text,
       paidAmount: paidAmountController.text,
       orderId: saleBillConrtoller.text.trim(),
+      customerNewType: selectedCustomerType.value,
+      customerGst: gstController.text,
     );
   }
 
@@ -1067,7 +1098,7 @@ class SalesController extends GetxController {
       paymentAmount: paidAmountController.text.isNotEmpty
           ? paidAmountController.text
           : '0',
-      paymentDate: getCurrentDateFormatted(),
+      paymentDate: saleDateController.text,
       paymentNote: salesNoteController.text,
       accountId: "",
     );

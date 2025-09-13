@@ -1,6 +1,7 @@
 // Placeholder for SalesPageTopSectionWidget
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:greenbiller/core/colors.dart';
 import 'package:greenbiller/features/parties/view/add_cutomer_dialog.dart';
 import 'package:greenbiller/features/sale/controller/sales_create_controller.dart';
 
@@ -13,7 +14,7 @@ class SalesPageTopSectionWidget extends StatelessWidget {
     required this.controller,
     required this.onCustomerAddSuccess,
   });
-  
+
   Widget _buildLoadingDropdown(String text) {
     return Container(
       decoration: BoxDecoration(
@@ -158,23 +159,32 @@ class SalesPageTopSectionWidget extends StatelessWidget {
                                 color: Colors.green.shade300,
                               ),
                             ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color:
+                                    Colors.green.shade300, // when not focused
+                                width: 1.5,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color:
+                                    Colors.green.shade600, // highlight on focus
+                                width: 2,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 4),
                       SizedBox(
-                        height: 42,
-                        child: ElevatedButton(
+                        child: IconButton(
                           onPressed: controller.generateBillNumber,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                          ),
-                          child: const Text(
-                            "Generate",
-                            style: TextStyle(fontSize: 12),
-                          ),
+                          icon: const Icon(Icons.refresh, color: Colors.green),
+                          tooltip:
+                              "Generate Bill Number", // optional hover text
                         ),
                       ),
                     ],
@@ -190,52 +200,198 @@ class SalesPageTopSectionWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
-              flex: 3,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("customer"),
+                  const Text("Bill Date"),
                   const SizedBox(height: 6),
-                  Obx(
-                    () =>
-                        controller.isLoadingCustomers.value ||
-                            controller.customerMap.isEmpty
-                        ? _buildLoadingDropdown(
-                            controller.customerMap.isEmpty
-                                ? "Select store first"
-                                : "Loading customers...",
-                          )
-                        : _buildDropdown(
-                            items: controller.customerMap.keys.toList(),
-                            value: controller.customerController.text.isEmpty
-                                ? null
-                                : controller.customerController.text,
-                            onChanged: (value) {
-                              controller.onCustomerSelected(value);
-                            },
-                            hint: "Select Customers",
-                            icon: Icons.supervised_user_circle_rounded,
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () async {
+                      DateTime? date = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now().subtract(
+                          const Duration(days: 365),
+                        ),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (date != null) {
+                        controller.setBillDate(date);
+                      }
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.green.shade300),
+                        color: Colors.green.shade50,
+                      ),
+                      child: TextField(
+                        controller: controller.saleDateController,
+                        readOnly: true,
+                        style: const TextStyle(fontSize: 14),
+                        onTap: () async {
+                          // Same behavior inside the field itself
+                          DateTime? date = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now().subtract(
+                              const Duration(days: 365),
+                            ),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365),
+                            ),
+                          );
+                          if (date != null) {
+                            controller.setBillDate(date);
+                          }
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Select date",
+                          hintStyle: TextStyle(color: Colors.grey.shade500),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
                           ),
+                          border: InputBorder.none,
+                          prefixIcon: Icon(
+                            Icons.calendar_today,
+                            color: Colors.green.shade600,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 10),
-            SizedBox(
-              height: 42,
-              child: ElevatedButton(
-                onPressed: () {
-                  Get.dialog(
-                    AddCustomerDialog(onSuccess: onCustomerAddSuccess),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                ),
-                child: const Text("Add", style: TextStyle(fontSize: 12)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Customer"),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Obx(
+                          () =>
+                              controller.isLoadingCustomers.value ||
+                                  controller.customerMap.isEmpty
+                              ? _buildLoadingDropdown(
+                                  controller.customerMap.isEmpty
+                                      ? "Select store first"
+                                      : "Loading customers...",
+                                )
+                              : _buildDropdown(
+                                  items: controller.customerMap.keys.toList(),
+                                  value:
+                                      controller.customerController.text.isEmpty
+                                      ? null
+                                      : controller.customerController.text,
+                                  onChanged: (value) {
+                                    controller.onCustomerSelected(value);
+                                  },
+                                  hint: "Select Customers",
+                                  icon: Icons.supervised_user_circle_rounded,
+                                ),
+                        ),
+                      ),
+                      SizedBox(
+                        child: IconButton(
+                          splashColor: accentColor,
+                          highlightColor: accentColor,
+                          onPressed: () {
+                            Get.dialog(
+                              AddCustomerDialog(
+                                onSuccess: onCustomerAddSuccess,
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.person_add_alt_1,
+                            color: Colors.green,
+                          ),
+                          tooltip: "Add new customer", // optional hover text
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Customer Type"),
+                  const SizedBox(height: 6),
+                  Obx(() {
+                    return _buildDropdown(
+                      items: ['None', 'B2B', 'B2C'],
+                      value: controller.selectedCustomerType.value.isEmpty
+                          ? null
+                          : controller.selectedCustomerType.value,
+                      onChanged: controller.onCustomerTypeChanged,
+                      hint: "Customer Type",
+                      icon: Icons.category,
+                    );
+                  }),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+
+            // GST Field (wrap with Expanded)
+            Expanded(
+              child: Obx(() {
+                if (!controller.showGstField.value) {
+                  return const SizedBox.shrink();
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("GST(* Mandatory)"),
+                    const SizedBox(height: 6),
+                    Obx(() {
+                      return TextField(
+                        readOnly: controller.isGstFieldEditable.value,
+                        controller: controller.gstController,
+                        style: const TextStyle(fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: "Enter GST No.",
+
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: Colors.green.shade300,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: Colors.green.shade300, // when not focused
+                              width: 1.5,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color:
+                                  Colors.green.shade600, // highlight on focus
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                );
+              }),
             ),
           ],
         ),

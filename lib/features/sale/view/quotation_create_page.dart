@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/colors.dart';
+import 'package:greenbiller/core/utils/subscription_util.dart';
 import 'package:greenbiller/features/items/model/item_model.dart';
 import 'package:greenbiller/features/sale/controller/quatation_controller.dart';
 import 'package:greenbiller/features/sale/model/temp_purchase_item.dart';
@@ -720,14 +723,31 @@ class QuotationCreatePage extends GetView<QuotationController> {
     });
   }
 
+  Future<pw.Font> loadFont() async {
+    final fontData = await rootBundle.load(systemWideFontPath);
+    return pw.Font.ttf(fontData);
+  }
+
   Future<void> printQuotation(
     BuildContext context,
     dynamic storeData,
     dynamic customerData,
   ) async {
+    final font = await loadFont();
     final pdf = pw.Document();
     final defaultPrinter = storeData?['default_printer'] ?? 'a4';
     final isA4 = defaultPrinter == 'a4';
+    final user = controller.authController.user.value;
+    final isFreeVersion = !SubscriptionUtil.hasValidSubscription(user);
+
+    // Load logo for free version
+    final logoImage = isFreeVersion
+        ? pw.MemoryImage(
+            (await rootBundle.load(
+              'assets/images/logo_image.png',
+            )).buffer.asUint8List(),
+          )
+        : null;
 
     String getStoreValue(String key, {String fallback = 'N/A'}) {
       if (key == 'currency_symbol') {
@@ -747,6 +767,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
           child: pw.Text(
             '#',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -758,6 +779,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
           child: pw.Text(
             'Item',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -769,6 +791,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
           child: pw.Text(
             'Qty',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -780,6 +803,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
           child: pw.Text(
             'Unit',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -791,6 +815,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
           child: pw.Text(
             'Price',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -802,6 +827,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
           child: pw.Text(
             'Subtotal',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -826,7 +852,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
                 child: pw.Text(
                   index.toString(),
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                 ),
               ),
               pw.Padding(
@@ -837,7 +863,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
                 child: pw.Text(
                   row['itemName']?.toString() ?? 'Unknown Item',
                   textAlign: pw.TextAlign.left,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                   maxLines: 2,
                 ),
               ),
@@ -849,7 +875,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
                 child: pw.Text(
                   row['quantity']?.toString() ?? '0',
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                 ),
               ),
               pw.Padding(
@@ -860,7 +886,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
                 child: pw.Text(
                   row['unit']?.toString() ?? '-',
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                 ),
               ),
               pw.Padding(
@@ -871,7 +897,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
                 child: pw.Text(
                   '${getStoreValue('currency_symbol')}${double.tryParse(row['price']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                 ),
               ),
               pw.Padding(
@@ -882,7 +908,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
                 child: pw.Text(
                   '${getStoreValue('currency_symbol')}${double.tryParse(row['subtotal']?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}',
                   textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: isA4 ? 10 : 7),
+                  style: pw.TextStyle(font: font, fontSize: isA4 ? 10 : 7),
                 ),
               ),
             ],
@@ -894,10 +920,14 @@ class QuotationCreatePage extends GetView<QuotationController> {
       pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text('Total:', style: pw.TextStyle(fontSize: isA4 ? 12 : 7)),
+          pw.Text(
+            'Total:',
+            style: pw.TextStyle(font: font, fontSize: isA4 ? 12 : 7),
+          ),
           pw.Text(
             '${getStoreValue('currency_symbol')}${controller.tempSubTotal.value.toStringAsFixed(2)}',
             style: pw.TextStyle(
+              font: font,
               fontWeight: pw.FontWeight.bold,
               fontSize: isA4 ? 12 : 7,
             ),
@@ -905,6 +935,96 @@ class QuotationCreatePage extends GetView<QuotationController> {
         ],
       ),
     ];
+
+    // Free version footer content
+    pw.Widget buildFreeVersionFooter() {
+      return pw.Column(
+        children: [
+          if (isA4) ...[
+            pw.SizedBox(height: 20),
+            pw.Divider(thickness: 1),
+            pw.SizedBox(height: 10),
+          ] else ...[
+            pw.SizedBox(height: 5),
+            pw.Divider(thickness: 0.5),
+            pw.SizedBox(height: 3),
+          ],
+          if (isFreeVersion) ...[
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                if (logoImage != null)
+                  pw.Container(
+                    width: isA4 ? 80 : 40,
+                    height: isA4 ? 30 : 15,
+                    child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+                  ),
+                pw.Expanded(
+                  child: pw.Container(
+                    padding: pw.EdgeInsets.only(right: isA4 ? 10 : 5),
+                    child: pw.Text(
+                      'This quotation is generated by greenbiller.in',
+                      style: pw.TextStyle(
+                        font: font,
+                        fontSize: isA4 ? 10 : 6,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.grey800,
+                        fontStyle: pw.FontStyle.italic,
+                      ),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          pw.SizedBox(height: isA4 ? 10 : 5),
+          pw.Container(
+            width: double.infinity,
+            child: pw.Text(
+              'Thank you for your inquiry!',
+              style: pw.TextStyle(
+                font: font,
+                fontSize: isA4 ? 12 : 8,
+                fontWeight: pw.FontWeight.bold,
+              ),
+              textAlign: pw.TextAlign.center,
+            ),
+          ),
+          if (isA4) ...[
+            pw.SizedBox(height: 10),
+            pw.Container(
+              width: double.infinity,
+              child: pw.Text(
+                'Please contact us at ${getStoreValue('store_email')} for any inquiries.',
+                style: pw.TextStyle(font: font, fontSize: 10),
+                textAlign: pw.TextAlign.center,
+              ),
+            ),
+            if (isFreeVersion) ...[
+              pw.SizedBox(height: 5),
+              pw.Container(
+                width: double.infinity,
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.grey400, width: 1),
+                ),
+                padding: const pw.EdgeInsets.all(4),
+                child: pw.Text(
+                  'Upgrade to Pro for custom branding and remove this footer!',
+                  style: pw.TextStyle(
+                    font: font,
+                    fontSize: 8,
+                    color: PdfColors.grey600,
+                    fontStyle: pw.FontStyle.italic,
+                  ),
+                  textAlign: pw.TextAlign.center,
+                ),
+              ),
+            ],
+          ],
+        ],
+      );
+    }
 
     pdf.addPage(
       pw.Page(
@@ -915,6 +1035,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
               ? pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
+                    // A4 Header
                     pw.Row(
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -931,6 +1052,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
                                     : 'Your Store Name',
                               ),
                               style: pw.TextStyle(
+                                font: font,
                                 fontSize: 20,
                                 fontWeight: pw.FontWeight.bold,
                               ),
@@ -938,23 +1060,23 @@ class QuotationCreatePage extends GetView<QuotationController> {
                             pw.SizedBox(height: 8),
                             pw.Text(
                               'Address: ${getStoreValue('store_address')}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               '${getStoreValue('store_city')}${getStoreValue('store_state').isNotEmpty ? ', ${getStoreValue('store_state')}' : ''}${getStoreValue('store_country').isNotEmpty ? ', ${getStoreValue('store_country')}' : ''}${getStoreValue('store_postal_code').isNotEmpty ? ' ${getStoreValue('store_postal_code')}' : ''}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               'Phone: ${getStoreValue('store_phone')}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               'Email: ${getStoreValue('store_email')}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               'Tax Number: ${getStoreValue('tax_number')}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                           ],
                         ),
@@ -964,6 +1086,7 @@ class QuotationCreatePage extends GetView<QuotationController> {
                             pw.Text(
                               'Quotation',
                               style: pw.TextStyle(
+                                font: font,
                                 fontSize: 24,
                                 fontWeight: pw.FontWeight.bold,
                               ),
@@ -971,23 +1094,23 @@ class QuotationCreatePage extends GetView<QuotationController> {
                             pw.SizedBox(height: 8),
                             pw.Text(
                               'Quote No: ${controller.quotationNumber.value}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               'Date: ${controller.getCurrentDateFormatted()}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               'Customer: ${controller.customerController.text.isNotEmpty ? controller.customerController.text : 'Unknown Customer'}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               'Owner: ${getStoreValue('owner_name')}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                             pw.Text(
                               'Owner Email: ${getStoreValue('owner_email')}',
-                              style: const pw.TextStyle(fontSize: 12),
+                              style: pw.TextStyle(font: font, fontSize: 12),
                             ),
                           ],
                         ),
@@ -995,9 +1118,11 @@ class QuotationCreatePage extends GetView<QuotationController> {
                     ),
                     pw.SizedBox(height: 20),
                     pw.Divider(thickness: 1),
+                    // A4 Items
                     pw.Text(
                       'Items',
                       style: pw.TextStyle(
+                        font: font,
                         fontSize: 16,
                         fontWeight: pw.FontWeight.bold,
                       ),
@@ -1017,33 +1142,25 @@ class QuotationCreatePage extends GetView<QuotationController> {
                     ),
                     pw.SizedBox(height: 20),
                     pw.Divider(thickness: 1),
+                    // A4 Totals
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: totalsSection,
                     ),
-                    pw.SizedBox(height: 20),
-                    pw.Divider(thickness: 1),
-                    pw.Text(
-                      'Thank you for your inquiry!',
-                      style: const pw.TextStyle(fontSize: 12),
-                      textAlign: pw.TextAlign.center,
-                    ),
-                    pw.SizedBox(height: 10),
-                    pw.Text(
-                      'This quotation is valid for 30 days. Please contact us at ${getStoreValue('store_email')} for any inquiries.',
-                      style: const pw.TextStyle(fontSize: 10),
-                      textAlign: pw.TextAlign.center,
-                    ),
+                    // A4 Footer
+                    buildFreeVersionFooter(),
                   ],
                 )
               : pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
+                    // Thermal Header
                     pw.Text(
                       controller.storeController.text.isNotEmpty
                           ? controller.storeController.text
                           : 'Your Store Name',
                       style: pw.TextStyle(
+                        font: font,
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
                       ),
@@ -1051,21 +1168,23 @@ class QuotationCreatePage extends GetView<QuotationController> {
                     pw.SizedBox(height: 2),
                     pw.Text(
                       'Date: ${controller.getCurrentDateFormatted()}',
-                      style: const pw.TextStyle(fontSize: 7),
+                      style: pw.TextStyle(font: font, fontSize: 7),
                     ),
                     pw.Text(
                       'Customer: ${controller.customerController.text.isNotEmpty ? controller.customerController.text : 'Unknown Customer'}',
-                      style: const pw.TextStyle(fontSize: 7),
+                      style: pw.TextStyle(font: font, fontSize: 7),
                     ),
                     pw.Text(
                       'Quote No: ${controller.quotationNumber.value}',
-                      style: const pw.TextStyle(fontSize: 7),
+                      style: pw.TextStyle(font: font, fontSize: 7),
                     ),
                     pw.SizedBox(height: 5),
                     pw.Divider(thickness: 0.5),
+                    // Thermal Items
                     pw.Text(
                       'Items',
                       style: pw.TextStyle(
+                        font: font,
                         fontSize: 7,
                         fontWeight: pw.FontWeight.bold,
                       ),
@@ -1085,14 +1204,10 @@ class QuotationCreatePage extends GetView<QuotationController> {
                     ),
                     pw.SizedBox(height: 5),
                     pw.Divider(thickness: 0.5),
+                    // Thermal Totals
                     ...totalsSection,
-                    pw.SizedBox(height: 5),
-                    pw.Divider(thickness: 0.5),
-                    pw.Text(
-                      'Thank you for your inquiry!',
-                      style: const pw.TextStyle(fontSize: 8),
-                      textAlign: pw.TextAlign.center,
-                    ),
+                    // Thermal Footer
+                    buildFreeVersionFooter(),
                   ],
                 );
         },

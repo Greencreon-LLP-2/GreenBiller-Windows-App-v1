@@ -139,6 +139,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      theme: ThemeData(
+        fontFamily: 'Roboto', // your primary font
+      ),
       title: 'GreenBiller',
       debugShowCheckedModeBanner: false,
       // initialRoute: AppRoutes.login,

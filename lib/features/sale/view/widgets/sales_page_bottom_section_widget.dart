@@ -119,7 +119,7 @@ class SalesPageBottomSectionWidget extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Sales Bill ID",
+                          "Reference No",
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -134,12 +134,12 @@ class SalesPageBottomSectionWidget extends StatelessWidget {
                             color: Colors.green.shade50,
                           ),
                           child: TextField(
-                            controller: controller.saleBillConrtoller,
+                            controller: controller.referenceNocontroller,
                             maxLines: 1,
                             style: const TextStyle(fontSize: 14),
-                            readOnly: true,
+                           
                             decoration: InputDecoration(
-                              hintText: "Sales Bill ID",
+                              hintText: "Reference No",
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               isDense: true,
                               contentPadding: const EdgeInsets.all(16),

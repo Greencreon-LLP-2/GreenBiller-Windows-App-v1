@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
@@ -15,11 +18,11 @@ class QuotationController extends GetxController {
   // Authentication and dependencies
   late final DioClient _dioClient;
   late final CommonApiFunctionsController _commonApi;
-  late final AuthController _authController;
+  late final AuthController authController;
   late final DropdownController storeDropdownController;
   final accessToken = RxnString();
   final userId = 0.obs;
-
+  final Rx<Uint8List?> appLogoBytes = Rx<Uint8List?>(null);
   // Loading states
   final isLoading = false.obs;
   final isLoadingStores = false.obs;
@@ -86,10 +89,11 @@ class QuotationController extends GetxController {
   void _initializeDependencies() {
     _dioClient = DioClient();
     _commonApi = CommonApiFunctionsController();
-    _authController = Get.find<AuthController>();
+    authController = Get.find<AuthController>();
     storeDropdownController = Get.find<DropdownController>();
-    userId.value = _authController.user.value?.userId ?? 0;
-    accessToken.value = _authController.user.value?.accessToken;
+    userId.value = authController.user.value?.userId ?? 0;
+    accessToken.value = authController.user.value?.accessToken;
+    _getAppLogo();
   }
 
   // Initialize controllers
@@ -97,6 +101,26 @@ class QuotationController extends GetxController {
     customerController = TextEditingController();
     storeController = TextEditingController();
     initControllers(0);
+  }
+
+  Future<void> _getAppLogo() async {
+    ;
+
+    try {
+      final response = await _dioClient.dio.get<List<int>>(
+        appUrl,
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        appLogoBytes.value = Uint8List.fromList(response.data!);
+      } else {
+        appLogoBytes.value = null; // fallback handling later
+      }
+    } catch (e) {
+      // log or handle error
+      appLogoBytes.value = null;
+    }
   }
 
   // Initialize Hive box

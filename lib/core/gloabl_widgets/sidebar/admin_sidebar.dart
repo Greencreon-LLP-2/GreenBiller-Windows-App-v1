@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
-import 'package:greenbiller/core/colors.dart';
+
 import 'package:greenbiller/core/gloabl_widgets/alerts/app_snackbar.dart';
 import 'package:greenbiller/core/utils/subscription_util.dart';
 import 'package:greenbiller/features/auth/controller/auth_controller.dart';
@@ -269,9 +269,12 @@ class AdminSidebar extends StatelessWidget {
                         Icons.point_of_sale_outlined,
                         color: Colors.grey,
                       ),
-                      title: const Text(
+                      title: Text(
                         "Sales",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
@@ -333,7 +336,10 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       title: const Text(
                         "Purchase",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
@@ -385,7 +391,10 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       title: const Text(
                         "Inventory",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
@@ -402,7 +411,10 @@ class AdminSidebar extends StatelessWidget {
                         ExpansionTile(
                           title: const Text(
                             "Item Management",
-                            style: TextStyle(fontSize: 15),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                            ),
                           ),
                           childrenPadding: const EdgeInsets.only(left: 16),
                           initiallyExpanded: [
@@ -468,7 +480,10 @@ class AdminSidebar extends StatelessWidget {
                         ExpansionTile(
                           title: const Text(
                             "Stock Management",
-                            style: TextStyle(fontSize: 15),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                            ),
                           ),
                           childrenPadding: const EdgeInsets.only(left: 16),
                           initiallyExpanded: [
@@ -504,7 +519,10 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       title: const Text(
                         "Expense",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
@@ -540,7 +558,10 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       title: const Text(
                         "Transaction",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
@@ -623,7 +644,10 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       title: const Text(
                         "Party Reports",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
@@ -673,12 +697,14 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       title: const Text(
                         "Item/Stock Reports",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
                         AppRoutes.nullroute,
-                   
                       ].contains(currentRoute),
                       children: [
                         _buildNavTile(
@@ -724,7 +750,10 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       title: const Text(
                         "GST Reports",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
@@ -748,7 +777,10 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       title: const Text(
                         "Expense Reports",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
@@ -799,7 +831,10 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       title: const Text(
                         "Utilities",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
@@ -832,7 +867,10 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       title: const Text(
                         "Account Settings",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
@@ -863,7 +901,10 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       title: const Text(
                         "User Management",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
@@ -901,7 +942,10 @@ class AdminSidebar extends StatelessWidget {
                       ),
                       title: const Text(
                         "Store Settings",
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       childrenPadding: const EdgeInsets.only(left: 16),
                       initiallyExpanded: [
