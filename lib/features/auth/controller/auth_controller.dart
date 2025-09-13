@@ -8,6 +8,7 @@ import 'package:greenbiller/core/app_handler/push_notification_service.dart';
 import 'package:greenbiller/core/app_handler/session_service.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
 import 'package:greenbiller/core/app_handler/hive_service.dart';
+import 'package:greenbiller/core/gloabl_widgets/alerts/app_snackbar.dart';
 
 import 'package:greenbiller/features/auth/model/user_model.dart';
 import 'package:greenbiller/routes/app_routes.dart';
@@ -95,6 +96,9 @@ class AuthController extends GetxController {
   }
 
   Future<bool> _validateToken(String token) async {
+    if (token.isEmpty) {
+      return false;
+    }
     try {
       final response = await dioClient.dio.post(
         ApiConstants.userSessionCheckUrl,
@@ -199,18 +203,20 @@ class AuthController extends GetxController {
     try {
       isLoading.value = true;
       if (!_isValidCountryCode(countryCode.value)) {
-        Get.snackbar(
-          'Error',
-          'Invalid country code. Please select a valid country code.',
-          backgroundColor: Colors.red,
+        AppSnackbar.show(
+          title: 'Error',
+          message: 'Invalid country code. Please select a valid country code.',
+          color: Colors.red,
+          icon: Icons.error,
         );
         return;
       }
       if (phoneNumber.value.isEmpty || phoneNumber.value.length != 10) {
-        Get.snackbar(
-          'Error',
-          'Please enter a valid 10-digit phone number.',
-          backgroundColor: Colors.red,
+        AppSnackbar.show(
+          title: 'Error',
+          message: 'Please enter a valid 10-digit phone number.',
+          color: Colors.red,
+          icon: Icons.error,
         );
         return;
       }
@@ -220,10 +226,11 @@ class AuthController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        Get.snackbar(
-          'Success',
-          'OTP sent successfully',
-          backgroundColor: Colors.green,
+        AppSnackbar.show(
+          title: 'Success',
+          message: 'OTP sent successfully',
+          color: Colors.green,
+          icon: Icons.thumb_up,
         );
         Get.toNamed(AppRoutes.otpVerify);
       } else {
@@ -232,7 +239,12 @@ class AuthController extends GetxController {
     } catch (e, stackTrace) {
       logger.e('Send OTP error: $e', e, stackTrace);
       final msg = _extractErrorMessage(e);
-      Get.snackbar('Error', msg, backgroundColor: Colors.red);
+      AppSnackbar.show(
+        title: 'Error',
+        message: msg,
+        color: Colors.red,
+        icon: Icons.error,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -266,17 +278,19 @@ class AuthController extends GetxController {
             await Get.find<PushNotificationService>().setUserData(userModel);
           }
 
-          Get.snackbar(
-            'Success',
-            'Login successful',
-            backgroundColor: Colors.green,
+          AppSnackbar.show(
+            title: 'Success',
+            message: 'Login successful',
+            color: Colors.green,
+            icon: Icons.thumb_up,
           );
           redirectToRoleBasedScreen();
         } else {
-          Get.snackbar(
-            'Success',
-            'Please create your account',
-            backgroundColor: Colors.green,
+          AppSnackbar.show(
+            title: 'Success',
+            message: 'Please create your account',
+            color: Colors.green,
+            icon: Icons.thumb_up,
           );
           Get.toNamed(AppRoutes.signUp);
         }
@@ -286,7 +300,12 @@ class AuthController extends GetxController {
     } catch (e, stackTrace) {
       logger.e('Verify OTP error: $e', e, stackTrace);
       final msg = _extractErrorMessage(e);
-      Get.snackbar('Error', msg, backgroundColor: Colors.red);
+      AppSnackbar.show(
+        title: 'Error',
+        message: msg,
+        color: Colors.red,
+        icon: Icons.error,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -324,22 +343,33 @@ class AuthController extends GetxController {
         if (!Platform.isLinux) {
           await Get.find<PushNotificationService>().setUserData(userModel);
         }
-        Get.snackbar(
-          'Success',
-          'Login successful',
-          backgroundColor: Colors.green,
+        AppSnackbar.show(
+          title: 'Success',
+          message: 'Login successful',
+          color: Colors.green,
+          icon: Icons.thumb_up,
         );
         redirectToRoleBasedScreen();
       } else {
         final message =
             response.data['message'] ?? 'Invalid username or password';
-        Get.snackbar('Error', message, backgroundColor: Colors.red);
+        AppSnackbar.show(
+          title: 'Error',
+          message: message,
+          color: Colors.red,
+          icon: Icons.error,
+        );
         throw Exception(message);
       }
     } catch (e, stackTrace) {
       logger.e('Login error: $e', e, stackTrace);
       final msg = _extractErrorMessage(e);
-      Get.snackbar('Error', msg, backgroundColor: Colors.red);
+      AppSnackbar.show(
+        title: 'Error',
+        message: msg,
+        color: Colors.red,
+        icon: Icons.error,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -379,10 +409,11 @@ class AuthController extends GetxController {
         if (!Platform.isLinux) {
           await Get.find<PushNotificationService>().setUserData(userModel);
         }
-        Get.snackbar(
-          'Success',
-          'Account created successfully',
-          backgroundColor: Colors.green,
+        AppSnackbar.show(
+          title: 'Success',
+          message: 'Account created successfully',
+          color: Colors.green,
+          icon: Icons.thumb_up,
         );
         redirectToRoleBasedScreen();
       } else {
@@ -391,7 +422,12 @@ class AuthController extends GetxController {
     } catch (e, stackTrace) {
       logger.e('Signup error: $e', e, stackTrace);
       final msg = _extractErrorMessage(e);
-      Get.snackbar('Error', msg, backgroundColor: Colors.red);
+      AppSnackbar.show(
+        title: 'Error',
+        message: msg,
+        color: Colors.red,
+        icon: Icons.error,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -429,7 +465,12 @@ class AuthController extends GetxController {
       Get.offAllNamed(AppRoutes.login);
     } catch (e, stackTrace) {
       logger.e('Logout error: $e', e, stackTrace);
-      Get.snackbar('Error', 'Logout failed: $e', backgroundColor: Colors.red);
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Logout failed: $e',
+        color: Colors.red,
+        icon: Icons.error,
+      );
     }
   }
 

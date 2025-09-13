@@ -186,11 +186,11 @@ class SalesController extends GetxController {
       // await loadSavedState();
       generateBillNumber();
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to fetch initial data: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to fetch initial data: $e',
+        color: Colors.red,
+        icon: Icons.error,
       );
     } finally {
       isLoading.value = false;
@@ -205,19 +205,19 @@ class SalesController extends GetxController {
       if (response.statusCode == 200) {
         taxList.value = List<Map<String, dynamic>>.from(response.data['data']);
       } else {
-        Get.snackbar(
-          'Error',
-          'Failed to fetch taxes: ${response.statusCode}',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        AppSnackbar.show(
+          title: 'Error',
+          message: 'Failed to fetch taxes: ${response.statusCode}',
+          color: Colors.red,
+          icon: Icons.error,
         );
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to fetch taxes: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to fetch taxes: $e',
+        color: Colors.red,
+        icon: Icons.error,
       );
     } finally {
       isLoadingTaxes.value = false;
@@ -229,16 +229,20 @@ class SalesController extends GetxController {
     try {
       final response = await _commonApi.fetchAllItems(storeId);
       if (response.isEmpty) {
-        Get.snackbar('Error', 'Please add items first, empty store');
+        AppSnackbar.show(
+          title: 'Error',
+          message: 'Please add items first, empty store',
+        );
       }
       itemsList.value = response
           .map((e) => Map<String, dynamic>.from(e as Map))
           .toList();
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to fetch items: $e',
-        backgroundColor: Colors.redAccent,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to fetch items: $e',
+        color: Colors.red,
+        icon: Icons.error,
       );
     } finally {
       isLoadingItems.value = false;
@@ -258,11 +262,11 @@ class SalesController extends GetxController {
         storeId.value = storeMap.keys.first;
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to fetch stores: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to fetch stores: $e',
+        color: Colors.red,
+        icon: Icons.error,
       );
     } finally {
       isLoadingStores.value = false;
@@ -281,11 +285,11 @@ class SalesController extends GetxController {
           warehouse['warehouse_name']: warehouse['id'].toString(),
       };
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to fetch warehouses: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to fetch warehouses: $e',
+        color: Colors.red,
+        icon: Icons.error,
       );
     } finally {
       isLoadingWarehouses.value = false;
@@ -302,7 +306,10 @@ class SalesController extends GetxController {
           customer['customer_name']: customer['id'].toString(),
       };
     } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch suppliers: $e');
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to fetch suppliers: $e',
+      );
     } finally {
       isLoadingCustomers.value = false;
     }
@@ -876,11 +883,11 @@ class SalesController extends GetxController {
     required BuildContext context,
   }) async {
     if (!_validateRequiredFields()) {
-      Get.snackbar(
-        'Error',
-        'Please fill all required fields.',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Please fill all required fields.',
+        color: Colors.red,
+        icon: Icons.error,
       );
       return;
     }
@@ -923,22 +930,22 @@ class SalesController extends GetxController {
       await _buildTempPurchaseItems();
       final validItems = getValidPurchaseItems();
       if (validItems.isEmpty) {
-        Get.snackbar(
-          'Error',
-          'No valid items selected for sale.',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        AppSnackbar.show(
+          title: 'Error',
+          message: 'No valid items selected for sale.',
+          color: Colors.red,
+          icon: Icons.error,
         );
         return;
       }
 
       saleId = await _createSaleRecord();
       if (saleId == "sales failed") {
-        Get.snackbar(
-          'Error',
-          saleId,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        AppSnackbar.show(
+          title: 'Error',
+          message: saleId,
+          color: Colors.red,
+          icon: Icons.error,
         );
         return;
       }
@@ -947,20 +954,21 @@ class SalesController extends GetxController {
       await _processPayment(saleId);
 
       // Show success message before clearing fields
-      Get.snackbar(
-        'Success',
-        print
+      AppSnackbar.show(
+        title: 'Success',
+        message: print
             ? 'Sale saved and printed successfully'
             : 'Sale saved successfully',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
+
+        color: Colors.green,
+        icon: Icons.thumb_up,
       );
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Something went wrong: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Something went wrong: $e',
+        color: Colors.red,
+        icon: Icons.error,
       );
       return;
     } finally {
@@ -1076,11 +1084,11 @@ class SalesController extends GetxController {
         totalCost: item.totalCost,
       );
       if (!success) {
-        Get.snackbar(
-          'Error',
-          'Failed to process item sale for item ID ${item.itemId}',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        AppSnackbar.show(
+          title: 'Error',
+          message: 'Failed to process item sale for item ID ${item.itemId}',
+          color: Colors.red,
+          icon: Icons.error,
         );
       }
     }
@@ -1103,11 +1111,11 @@ class SalesController extends GetxController {
       accountId: "",
     );
     if (!success) {
-      Get.snackbar(
-        'Error',
-        'Failed to process payment',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to process payment',
+        color: Colors.red,
+        icon: Icons.error,
       );
     }
   }

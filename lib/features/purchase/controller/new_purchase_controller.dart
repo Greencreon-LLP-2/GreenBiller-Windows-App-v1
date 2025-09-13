@@ -287,7 +287,12 @@ class NewPurchaseController extends GetxController {
         for (var store in response) store['store_name']: store['id'].toString(),
       };
     } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch stores: $e');
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to fetch stores: $e',
+        color: Colors.red,
+        icon: Icons.error,
+      );
     } finally {
       isLoadingStores.value = false;
     }
@@ -304,7 +309,12 @@ class NewPurchaseController extends GetxController {
           warehouse['warehouse_name']: warehouse['id'].toString(),
       };
     } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch warehouses: $e');
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to fetch warehouses: $e',
+        color: Colors.red,
+        icon: Icons.error,
+      );
     } finally {
       isLoadingWarehouses.value = false;
     }
@@ -320,7 +330,12 @@ class NewPurchaseController extends GetxController {
           supplier['supplier_name']: supplier['id'].toString(),
       };
     } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch suppliers: $e');
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to fetch suppliers: $e',
+        color: Colors.red,
+        icon: Icons.error,
+      );
     } finally {
       isLoadingSuppliers.value = false;
     }
@@ -362,7 +377,12 @@ class NewPurchaseController extends GetxController {
         taxList.value = List<Map<String, dynamic>>.from(response.data['data']);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch taxes: $e');
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Failed to fetch taxes: $e',
+        color: Colors.red,
+        icon: Icons.error,
+      );
     } finally {
       isLoadingTaxes.value = false;
     }
@@ -687,14 +707,13 @@ class NewPurchaseController extends GetxController {
           // logger.e('Failed to save purchase locally: $e');
         }
 
-        Get.snackbar(
-          'Success',
-          printer
+        AppSnackbar.show(
+          title: 'Success',
+          message: printer
               ? 'Purchase saved and printed successfully!'
               : 'Purchase saved successfully!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
+          color: Colors.green,
+          icon: Icons.thumb_up,
         );
         generateBillNumber();
         // Restore items for printing
@@ -719,12 +738,12 @@ class NewPurchaseController extends GetxController {
         _handleErrorResponse(purchaseResponse);
       }
     } catch (e, stack) {
-      Get.snackbar(
-        'Error',
-        'Unexpected error: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      AppSnackbar.show(
+        title: 'Error',
+        message: 'Unexpected error: $e',
+
+        color: Colors.red,
+        icon: Icons.error,
       );
       print(e);
       print(stack);
@@ -756,12 +775,12 @@ class NewPurchaseController extends GetxController {
       message = data['message'] ?? 'Unknown error occurred.';
     }
 
-    Get.snackbar(
-      'Error',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
+    AppSnackbar.show(
+      title: 'Error',
+      message: message,
+
+      color: Colors.green,
+      icon: Icons.thumb_up,
       duration: const Duration(seconds: 5),
     );
   }
