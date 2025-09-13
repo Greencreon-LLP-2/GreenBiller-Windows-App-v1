@@ -285,13 +285,7 @@ class AddItemController extends GetxController
 
     try {
       if (formKey.currentState!.validate()) {
-        if (storeDropdownController.selectedCategoryId.value.toString() ==
-            'null') {
-          throw Exception('Category  is required');
-        }
-        if (storeDropdownController.selectedBrandId.value.toString()=='null') {
-          throw Exception('Brand  is required');
-        }
+       
         if (skuController.text.isNotEmpty) {
           if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(skuController.text)) {
             throw Exception(

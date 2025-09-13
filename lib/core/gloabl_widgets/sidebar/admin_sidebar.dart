@@ -953,6 +953,14 @@ class AdminSidebar extends StatelessWidget {
                       ].contains(currentRoute),
                       children: [
                         _buildNavTile(
+                          title: "Stores",
+                          icon: Icons.receipt_outlined,
+                          route: AppRoutes.invoiceSettings,
+                          currentRoute: currentRoute,
+                          onTap: () => Get.toNamed(AppRoutes.viewStore),
+                          indent: 16,
+                        ),
+                        _buildNavTile(
                           title: "Invoice Settings",
                           icon: Icons.receipt_outlined,
                           route: AppRoutes.invoiceSettings,
