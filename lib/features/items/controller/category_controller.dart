@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:dio/dio.dart' as dio;
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide FormData, MultipartFile;
 import 'package:greenbiller/core/api_constants.dart';
@@ -13,6 +15,8 @@ import 'package:greenbiller/features/items/model/category_list_model.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 
 class CategoryController extends GetxController {
   // Services
@@ -33,6 +37,10 @@ class CategoryController extends GetxController {
   late TextEditingController categoryNameController;
   late TextEditingController editCategoryNameController;
   Rxn<File> selectedImage = Rxn<File>();
+
+  final Rxn<Map<String, dynamic>> importedFile = Rxn<Map<String, dynamic>>();
+  final selectedStoreIdForFileUpload = Rxn<int>();
+  final RxBool isProcessing = false.obs;
 
   @override
   void onInit() {
@@ -453,6 +461,186 @@ class CategoryController extends GetxController {
         return Icons.music_note;
       default:
         return Icons.category;
+    }
+  }
+
+  Future<void> pickFile() async {
+    selectedStoreIdForFileUpload.value = null;
+    try {
+      const XTypeGroup typeGroup = XTypeGroup(
+        label: 'Excel/CSV files',
+        extensions: ['csv', 'xls', 'xlsx'], // desktop
+        mimeTypes: [
+          'text/csv',
+          'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ], // mobile/web
+        uniformTypeIdentifiers: ['public.comma-separated-values-text'], // Apple
+        webWildCards: ['.csv', '.xls', '.xlsx'], // Web
+      );
+      final XFile? result = await openFile(
+        acceptedTypeGroups: <XTypeGroup>[typeGroup],
+        confirmButtonText: "Select upload file",
+      );
+      // #enddocregion SingleOpen
+      if (result == null) {
+        // Operation was canceled by the user.
+        return;
+      }
+      if (result.path.isNotEmpty) {
+        final filePath = result.path;
+        final file = File(filePath);
+        if (await file.exists()) {
+          importedFile.value = {'name': result.path, 'file': file};
+        } else {
+          Get.snackbar(
+            'Error',
+            'Selected file does not exist',
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      } else {
+        Get.snackbar(
+          'Error',
+          'No file selected',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Error selecting file: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  Future<void> loadSelctedFile() async {
+    if (importedFile.value != null && importedFile.value!['file'] != null) {
+      try {
+        final file = importedFile.value!['file'] as File;
+        final filePath = file.path;
+
+        if (await file.exists()) {
+          final result = await OpenFile.open(filePath);
+          if (result.type != ResultType.done) {
+            Get.snackbar(
+              'Error',
+              'Failed to open file: ${result.message}',
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+          } else {}
+        } else {
+          Get.snackbar(
+            'Error',
+            'File does not exist',
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      } catch (e) {
+        Get.snackbar(
+          'Error',
+          'Error opening file: $e',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } else {
+      Get.snackbar(
+        'Error',
+        'No file selected to open',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  Future<void> processImportedFile() async {
+    if (importedFile.value == null || isProcessing.value) return;
+    print(selectedStoreIdForFileUpload.value);
+    isProcessing.value = true;
+    try {
+      if (selectedStoreIdForFileUpload.value == null) {
+        Get.snackbar(
+          'Error',
+          'Please select a store before importing',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      final file = importedFile.value!['file'] as File;
+      final formData = dio.FormData.fromMap({
+        'store_id': selectedStoreIdForFileUpload.value,
+        'file': await dio.MultipartFile.fromFile(
+          file.path,
+          filename: importedFile.value!['name'],
+        ),
+      });
+
+      final response = await dioClient.dio.post(
+        bulkItemUpdate, // ✅ correct API
+        data: formData,
+      );
+
+      if (response.statusCode == 201 && response.data['status'] == true) {
+        Get.snackbar(
+          'Success',
+          response.data['message'] ?? 'Items imported successfully',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        importedFile.value = null;
+        fetchCategories();
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to import items');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Error importing items: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isProcessing.value = false;
+    }
+  }
+
+  Future<void> downloadTemplate() async {
+    try {
+      final response = await dioClient.dio.get(
+        sampleBrandsExcellTemplateUrl,
+        options: dio.Options(responseType: dio.ResponseType.bytes),
+      );
+
+      if (response.statusCode == 200) {
+        final dir = await getApplicationDocumentsDirectory();
+        final file = File('${dir.path}/brand_bulk_template.xlsx');
+        await file.writeAsBytes(response.data);
+        Get.snackbar(
+          'Success',
+          'Template downloaded: ${file.path}',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        await OpenFile.open(file.path);
+      } else {
+        throw Exception('Failed to download template');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to download template: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 

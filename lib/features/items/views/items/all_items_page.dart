@@ -67,34 +67,127 @@ class AllItemsPage extends GetView<AllItemsController> {
               children: [
                 Obx(
                   () => controller.importedFile.value != null
-                      ? Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: ElevatedButton.icon(
-                            onPressed: controller.isProcessing.value
-                                ? null
-                                : controller.processImportedFile,
-                            icon: controller.isProcessing.value
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
+                      ? Column(
+                          children: [
+                            Obx(() {
+                              return Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  border: Border.all(
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Selected File:",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey.shade800,
                                       ),
                                     ),
-                                  )
-                                : const Icon(Icons.upload_file),
-                            label: const Text('Process Imported File'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: accentColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              minimumSize: const Size(double.infinity, 48),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            controller
+                                                .importedFile
+                                                .value?['name'],
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          iconSize: 32,
+                                          color: Colors.red,
+                                          onPressed: () {
+                                            controller.importedFile.value =
+                                                null;
+                                            controller
+                                                    .selectedStoreIdForFileUpload
+                                                    .value =
+                                                null;
+                                          },
+                                          icon: Icon(Icons.clear),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: AppDropdown(
+                                    label: "Store to upload",
+                                    placeHolderText: 'Choose Store to upload',
+                                    selectedValue: controller
+                                        .storeDropdownController
+                                        .selectedStoreId,
+                                    options: controller
+                                        .storeDropdownController
+                                        .storeMap,
+                                    isLoading: controller
+                                        .storeDropdownController
+                                        .isLoadingStores,
+                                    onChanged: (val) async {
+                                      if (val != null) {
+                                        controller
+                                                .selectedStoreIdForFileUpload
+                                                .value =
+                                            val;
+                                      }
+                                    },
+                                  ),
+                                ),
+                                SizedBox(width: 20),
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: controller.isProcessing.value
+                                        ? null
+                                        : controller.processImportedFile,
+                                    icon: controller.isProcessing.value
+                                        ? const SizedBox(
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    Colors.white,
+                                                  ),
+                                            ),
+                                          )
+                                        : const Icon(Icons.upload_file),
+                                    label: const Text('Process Imported File'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: accentColor,
+                                      foregroundColor: Colors.white,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 14,
+                                      ),
+
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      minimumSize: const Size(
+                                        double.infinity,
+                                        55,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                            SizedBox(height: 20),
+                          ],
                         )
                       : const SizedBox.shrink(),
                 ),

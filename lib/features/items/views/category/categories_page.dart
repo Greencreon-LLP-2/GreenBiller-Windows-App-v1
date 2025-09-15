@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/colors.dart';
+import 'package:greenbiller/core/gloabl_widgets/dropdowns/custom_dropdown.dart';
 
 import 'package:greenbiller/features/items/controller/category_controller.dart';
 import 'package:greenbiller/features/items/views/category/category_items_dialog.dart';
@@ -40,9 +41,141 @@ class CategoriesPage extends GetView<CategoryController> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.upload_file),
+            onPressed: controller.pickFile,
+            tooltip: 'Upload File',
+          ),
+
+          // Download Template Button
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: controller.downloadTemplate, // add method below
+            tooltip: 'Download Template',
+          ),
+        ],
       ),
       body: Column(
         children: [
+          Obx(
+            () => controller.importedFile.value != null
+                ? Padding(
+                    padding: EdgeInsets.all(isDesktop ? 24 : 16),
+                    child: Column(
+                      children: [
+                        Obx(() {
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              border: Border.all(color: Colors.grey.shade400),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Selected File:",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey.shade800,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        controller.importedFile.value?['name'],
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      iconSize: 32,
+                                      color: Colors.red,
+                                      onPressed: () {
+                                        controller.importedFile.value = null;
+                                        controller
+                                                .selectedStoreIdForFileUpload
+                                                .value =
+                                            null;
+                                      },
+                                      icon: Icon(Icons.clear),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppDropdown(
+                                label: "Store to upload",
+                                placeHolderText: 'Choose Store to upload',
+                                selectedValue: controller
+                                    .storeDropdownController
+                                    .selectedStoreId,
+                                options:
+                                    controller.storeDropdownController.storeMap,
+                                isLoading: controller
+                                    .storeDropdownController
+                                    .isLoadingStores,
+                                onChanged: (val) async {
+                                  if (val != null) {
+                                    controller
+                                            .selectedStoreIdForFileUpload
+                                            .value =
+                                        val;
+                                  }
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 20),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: controller.isProcessing.value
+                                    ? null
+                                    : controller.processImportedFile,
+                                icon: controller.isProcessing.value
+                                    ? const SizedBox(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        ),
+                                      )
+                                    : const Icon(Icons.upload_file),
+                                label: const Text('Process Imported File'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: accentColor,
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 14,
+                                  ),
+
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  minimumSize: const Size(double.infinity, 55),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(16),

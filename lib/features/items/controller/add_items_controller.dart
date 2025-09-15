@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart' as dio;
-import 'package:file_picker/file_picker.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/app_handler/dropdown_controller.dart';
@@ -9,7 +9,7 @@ import 'package:greenbiller/core/utils/common_api_functions_controller.dart';
 import 'package:greenbiller/features/items/model/unit_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
-import 'package:open_file/open_file.dart';
+
 import 'package:greenbiller/core/api_constants.dart';
 import 'package:greenbiller/core/app_handler/dio_client.dart';
 
@@ -39,7 +39,6 @@ class AddItemController extends GetxController
   final selectedDiscountType = Rxn<String>();
   final calculatedProfit = 0.0.obs;
 
-  final importedFile = Rxn<Map<String, dynamic>>();
   final imageFile = Rxn<File>();
   final isLoadingCategories = false.obs;
   final isLoadingUnits = false.obs;
@@ -177,104 +176,6 @@ class AddItemController extends GetxController
     }
   }
 
-  Future<void> pickFile() async {
-    try {
-      _logger.d('Opening file picker for Excel/CSV');
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx', 'xls', 'csv'],
-      );
-
-      if (result != null && result.files.single.path != null) {
-        final filePath = result.files.single.path!;
-        final file = File(filePath);
-        if (await file.exists()) {
-          importedFile.value = {'name': result.files.single.name, 'file': file};
-          _logger.i(
-            'File selected: ${importedFile.value!['name']} at path: $filePath',
-          );
-        } else {
-          _logger.w('File does not exist at path: $filePath');
-          AppSnackbar.show(
-            title: 'Error',
-            message: 'Selected file does not exist',
-            color: Colors.red,
-            icon: Icons.error_outline,
-          );
-        }
-      } else {
-        _logger.w('No file selected');
-        AppSnackbar.show(
-          title: 'Error',
-          message: 'No file selected',
-          color: Colors.red,
-          icon: Icons.error_outline,
-        );
-      }
-    } catch (e, stackTrace) {
-      _logger.e('Error picking file: $e', stackTrace);
-      AppSnackbar.show(
-        title: 'Error',
-        message: 'Error selecting file: $e',
-        color: Colors.red,
-        icon: Icons.error_outline,
-      );
-    }
-  }
-
-  Future<void> openFile() async {
-    if (importedFile.value != null && importedFile.value!['file'] != null) {
-      try {
-        final file = importedFile.value!['file'] as File;
-        final filePath = file.path;
-        _logger.d(
-          'Attempting to open file: ${importedFile.value!['name']} at path: $filePath',
-        );
-
-        if (await file.exists()) {
-          final result = await OpenFile.open(filePath);
-          if (result.type != ResultType.done) {
-            _logger.w('Failed to open file: ${result.message}');
-            AppSnackbar.show(
-              title: 'Error',
-              message: 'Failed to open file: ${result.message}',
-              color: Colors.red,
-              icon: Icons.error_outline,
-            );
-          } else {
-            _logger.i(
-              'File opened successfully: ${importedFile.value!['name']}',
-            );
-          }
-        } else {
-          _logger.w('File does not exist at path: $filePath');
-          AppSnackbar.show(
-            title: 'Error',
-            message: 'File does not exist',
-            color: Colors.red,
-            icon: Icons.error_outline,
-          );
-        }
-      } catch (e, stackTrace) {
-        _logger.e('Error opening file: $e', stackTrace);
-        AppSnackbar.show(
-          title: 'Error',
-          message: 'Error opening file: $e',
-          color: Colors.red,
-          icon: Icons.error_outline,
-        );
-      }
-    } else {
-      _logger.w('No file to open');
-      AppSnackbar.show(
-        title: 'Error',
-        message: 'No file selected to open',
-        color: Colors.red,
-        icon: Icons.error_outline,
-      );
-    }
-  }
-
   void genereateItemCode(val) {
     final unixTime = DateTime.now().millisecondsSinceEpoch;
     itemCodeController.text = "ST-$val-Item-$unixTime";
@@ -285,7 +186,6 @@ class AddItemController extends GetxController
 
     try {
       if (formKey.currentState!.validate()) {
-       
         if (skuController.text.isNotEmpty) {
           if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(skuController.text)) {
             throw Exception(

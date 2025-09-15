@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart' as dio;
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:greenbiller/core/api_constants.dart';
@@ -21,13 +22,16 @@ class AllItemsController extends GetxController {
   late AuthController authController;
   late DropdownController storeDropdownController;
 
+  final Rxn<Map<String, dynamic>> importedFile = Rxn<Map<String, dynamic>>();
+  final selectedStoreIdForFileUpload = Rxn<int>();
+
   final RxBool isGridView = false.obs;
   final RxString selectedCategory = 'All'.obs;
   final RxString selectedSort = 'Name (A-Z)'.obs;
 
   final RxBool isLoading = false.obs;
   final RxBool isProcessing = false.obs;
-  final Rxn<Map<String, dynamic>> importedFile = Rxn<Map<String, dynamic>>();
+
   final RxString error = ''.obs;
   final RxList<Item> items = <Item>[].obs;
   final RxString searchQuery = ''.obs;
@@ -119,18 +123,34 @@ class AllItemsController extends GetxController {
   }
 
   Future<void> pickFile() async {
+    selectedStoreIdForFileUpload.value = null;
     try {
       _logger.d('Opening file picker for Excel/CSV');
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx', 'xls', 'csv'],
+      const XTypeGroup typeGroup = XTypeGroup(
+        label: 'Excel/CSV files',
+        extensions: ['csv', 'xls', 'xlsx'], // desktop
+        mimeTypes: [
+          'text/csv',
+          'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ], // mobile/web
+        uniformTypeIdentifiers: ['public.comma-separated-values-text'], // Apple
+        webWildCards: ['.csv', '.xls', '.xlsx'], // Web
       );
-
-      if (result != null && result.files.single.path != null) {
-        final filePath = result.files.single.path!;
+      final XFile? result = await openFile(
+        acceptedTypeGroups: <XTypeGroup>[typeGroup],
+        confirmButtonText: "Select upload file",
+      );
+      // #enddocregion SingleOpen
+      if (result == null) {
+        // Operation was canceled by the user.
+        return;
+      }
+      if (result.path.isNotEmpty) {
+        final filePath = result.path;
         final file = File(filePath);
         if (await file.exists()) {
-          importedFile.value = {'name': result.files.single.name, 'file': file};
+          importedFile.value = {'name': result.path, 'file': file};
           _logger.i(
             'File selected: ${importedFile.value!['name']} at path: $filePath',
           );
@@ -163,7 +183,7 @@ class AllItemsController extends GetxController {
     }
   }
 
-  Future<void> openFile() async {
+  Future<void> loadSelctedFile() async {
     if (importedFile.value != null && importedFile.value!['file'] != null) {
       try {
         final file = importedFile.value!['file'] as File;
@@ -221,7 +241,7 @@ class AllItemsController extends GetxController {
 
     isProcessing.value = true;
     try {
-      if (storeDropdownController.selectedStoreId.value == null) {
+      if (selectedStoreIdForFileUpload.value == null) {
         Get.snackbar(
           'Error',
           'Please select a store before importing',
@@ -233,7 +253,7 @@ class AllItemsController extends GetxController {
 
       final file = importedFile.value!['file'] as File;
       final formData = dio.FormData.fromMap({
-        'store_id': storeDropdownController.selectedStoreId.value,
+        'store_id': selectedStoreIdForFileUpload.value,
         'file': await dio.MultipartFile.fromFile(
           file.path,
           filename: importedFile.value!['name'],
@@ -273,7 +293,7 @@ class AllItemsController extends GetxController {
   Future<void> downloadTemplate() async {
     try {
       final response = await dioClient.dio.get(
-        sampleExcellTemplateUrl,
+        sampleItemsExcellTemplateUrl,
         options: dio.Options(responseType: dio.ResponseType.bytes),
       );
 

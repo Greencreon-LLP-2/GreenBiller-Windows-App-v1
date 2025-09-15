@@ -112,7 +112,9 @@ const String businessProfileEditUrl = '$baseUrl/profile-update';
 
 const String updatePasswordUrl = '$baseUrl/update-password';
 //*===================================Others===================================*//
-const String sampleExcellTemplateUrl = '$baseUrl/item-bulk/csv/items';
+const String sampleItemsExcellTemplateUrl = '$baseUrl/item-bulk/csv/items';
+const String sampleBrandsExcellTemplateUrl = '$baseUrl/item-bulk/csv/items';
+const String sampleCategoryExcellTemplateUrl = '$baseUrl/item-bulk/csv/items';
 
 const String systemWideFontPath = 'assets/fonts/NotoSans-Regular.ttf';
 const String fallbackAppurl = 'assets/images/logo_image.png';
