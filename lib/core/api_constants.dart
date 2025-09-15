@@ -4,12 +4,12 @@
 //!======================================================================================================
 //!======================================================================================================
 
-const String baseUrl = "http://127.0.0.1:8000/api";
-const String publicUrl = "http://127.0.0.1:8000";
+// const String baseUrl = "http://127.0.0.1:8000/api";
+// const String publicUrl = "http://127.0.0.1:8000";
 
 // const String onesignal = "rfpuvfb7pfgr3pvi2ns4izmlhugjfq7fpfcel7nmsrhch5jxtgca5r2hgnwo3z7cdionapma4ukgkrx7qyzvi6tl7rpxkg7plmhx3wa";
-// const String baseUrl = "https://greenbiller.in/api";
-// const String publicUrl = "https://greenbiller.in";
+const String baseUrl = "https://app.greenbiller.in/api";
+const String publicUrl = "https://app.greenbiller.in";
 //!===================================auth====================================&//
 
 const String loginUrl = "$baseUrl/login";
