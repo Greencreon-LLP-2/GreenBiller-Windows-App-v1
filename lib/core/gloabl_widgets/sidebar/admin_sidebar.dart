@@ -855,6 +855,22 @@ class AdminSidebar extends StatelessWidget {
                           }
                           return const SizedBox.shrink();
                         }),
+                        _buildNavTile(
+                          title: "Bulk Upload",
+                          icon: Icons.subscriptions_outlined,
+                          route: AppRoutes.bulkUploadView,
+                          currentRoute: currentRoute,
+                          onTap: () => Get.toNamed(AppRoutes.bulkUploadView),
+                          indent: 16,
+                        ),
+                        // _buildNavTile(
+                        //   title: "Subscription",
+                        //   icon: Icons.subscriptions_outlined,
+                        //   route: AppRoutes.nullroute,
+                        //   currentRoute: currentRoute,
+                        //   onTap: () => AppSnackbar.show(),
+                        //   indent: 16,
+                        // ),
                       ],
                     ),
 

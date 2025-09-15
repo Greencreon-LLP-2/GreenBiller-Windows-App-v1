@@ -4,12 +4,12 @@
 //!======================================================================================================
 //!======================================================================================================
 
-// const String baseUrl = "http://127.0.0.1:8000/api";
-// const String publicUrl = "http://127.0.0.1:8000";
+const String baseUrl = "http://127.0.0.1:8000/api";
+const String publicUrl = "http://127.0.0.1:8000";
 
 // const String onesignal = "rfpuvfb7pfgr3pvi2ns4izmlhugjfq7fpfcel7nmsrhch5jxtgca5r2hgnwo3z7cdionapma4ukgkrx7qyzvi6tl7rpxkg7plmhx3wa";
-const String baseUrl = "https://greenbiller.in/api";
-const String publicUrl = "https://greenbiller.in";
+// const String baseUrl = "https://greenbiller.in/api";
+// const String publicUrl = "https://greenbiller.in";
 //!===================================auth====================================&//
 
 const String loginUrl = "$baseUrl/login";
@@ -112,9 +112,9 @@ const String businessProfileEditUrl = '$baseUrl/profile-update';
 
 const String updatePasswordUrl = '$baseUrl/update-password';
 //*===================================Others===================================*//
-const String sampleItemsExcellTemplateUrl = '$baseUrl/item-bulk/csv/items';
-const String sampleBrandsExcellTemplateUrl = '$baseUrl/item-bulk/csv/items';
-const String sampleCategoryExcellTemplateUrl = '$baseUrl/item-bulk/csv/items';
+const String sampleItemsExcellTemplateUrl = '$baseUrl/item-bulk/sampleTemplate';
+const String sampleBrandsExcellTemplateUrl = '$baseUrl/item-bulk/sampleTemplate';
+const String sampleCategoryExcellTemplateUrl = '$baseUrl/item-bulk/sampleTemplate';
 
 const String systemWideFontPath = 'assets/fonts/NotoSans-Regular.ttf';
 const String fallbackAppurl = 'assets/images/logo_image.png';

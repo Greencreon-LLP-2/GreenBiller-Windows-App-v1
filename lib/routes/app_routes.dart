@@ -78,5 +78,6 @@ class AppRoutes {
   static const String overview = '/overview';
   static const String parties = '/parties';
   static const String plans = '/plans';
+  static const String bulkUploadView = '/bulk-upload';
   static const String nullroute = '';
 }

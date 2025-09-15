@@ -87,6 +87,8 @@ import 'package:greenbiller/features/stock/view/stock_adjustment_item_page.dart'
 import 'package:greenbiller/features/stock/view/stock_transfer_item_page.dart';
 import 'package:greenbiller/features/store/controller/store_controller.dart';
 import 'package:greenbiller/features/store/view/store_page.dart';
+import 'package:greenbiller/features/utilities/controller/bulk_update_import_controller.dart';
+import 'package:greenbiller/features/utilities/view/bulk_update_page.dart';
 import 'package:greenbiller/routes/app_routes.dart';
 import 'package:greenbiller/entry_point/dashboards.dart';
 import 'package:greenbiller/entry_point/store_admin/store_admin_entry_point.dart';
@@ -471,6 +473,13 @@ class MyApp extends StatelessWidget {
           page: () => QuotationCreatePage(),
           binding: BindingsBuilder(() {
             Get.put(QuotationController());
+          }),
+        ),
+         GetPage(
+          name: AppRoutes.bulkUploadView,
+          page: () => BulkUpdatePage(),
+          binding: BindingsBuilder(() {
+            Get.put(BulkUpdateImportController());
           }),
         ),
       ],
